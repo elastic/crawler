@@ -1,0 +1,15 @@
+#!/bin/bash
+
+set -eu
+
+echo 'Looking for a forego binary in $PATH'
+FOREGO_BIN=$(which forego || true) # working around the set -e
+
+if [ "$FOREGO_BIN" == "" ]; then
+   >&2 echo "Could not find forego in PATH! Run 'brew install forego' to install it."
+  exit 42
+fi
+
+
+
+exec "$FOREGO_BIN" start "$@"

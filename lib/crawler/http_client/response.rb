@@ -1,0 +1,191 @@
+# frozen_string_literal: true
+
+require 'active_support/core_ext/string/filters'
+require_dependency File.join(__dir__, '..', 'http_client')
+
+class Crawler::HttpClient::Response
+  java_import org.apache.hc.core5.util.ByteArrayBuffer
+  java_import org.apache.hc.core5.http.ContentType
+  java_import org.apache.hc.core5.http.message.StatusLine
+
+  DEFAULT_BUFFER_SIZE = 4_096
+  DEFAULT_MAX_RESPONSE_SIZE = 10_485_760 # 10 MB
+
+  attr_reader :url
+  attr_reader :request_start_time, :request_end_time
+
+  def initialize(apache_response:, url:, request_start_time:, request_end_time:)
+    raise ArgumentError, 'Need a Crawler URL object!' unless url.kind_of?(Crawler::Data::URL)
+    @url = url
+
+    @apache_response = apache_response
+    @http_entity = apache_response.entity
+
+    @request_start_time = request_start_time
+    @request_end_time = request_end_time
+  end
+
+  def release_connection
+    apache_response.close
+  end
+
+  def body(max_response_size: DEFAULT_MAX_RESPONSE_SIZE, request_timeout: nil, default_encoding: Encoding.default_external)
+    return @body if defined?(@body)
+
+    return unless http_entity.content
+    content_bytes = consume_http_entity(
+      :max_response_size => max_response_size,
+      :request_timeout => request_timeout
+    )
+
+    encoding = detect_encoding_from_content_charset || default_encoding
+    @body = String.from_java_bytes(content_bytes, encoding)
+  end
+
+  def apache_status_line
+    @apache_status_line ||= StatusLine.new(apache_response)
+  end
+
+  def code
+    apache_status_line.status_code
+  end
+
+  def reason_phrase
+    apache_status_line.reason_phrase
+  end
+
+  def [](key)
+    v = headers[key.downcase]
+    v.is_a?(Array) ? v.first : v
+  end
+
+  def headers
+    @headers ||= apache_response.headers.each_with_object({}) do |h, o|
+      key = h.get_name.downcase
+
+      if o.key?(key)
+        o[key] = Array(o[key]) unless o[key].is_a?(Array)
+        o[key].push(h.get_value)
+      else
+        o[key] = h.get_value
+      end
+    end
+  end
+
+  def content_type
+    http_entity&.content_type || headers['content-type']
+  end
+
+  def mime_type
+    (content_type || '').downcase.split(';').first.presence&.strip
+  end
+
+  def time_since_request_start
+    Time.now - request_start_time
+  end
+
+  def redirect?
+    code >= 300 && code <= 399
+  end
+
+  def error?
+    code >= 400
+  end
+
+  def unsupported_method?
+    code == 405
+  end
+
+  def redirect_location
+    url.join(headers['location'])
+  end
+
+  private
+
+  attr_reader :apache_response, :http_entity
+
+  def detect_encoding_from_content_charset
+    return unless http_entity.content_type
+
+    content_type = ContentType.parse(http_entity.content_type)
+    charset = content_type.charset&.to_string
+    return unless charset
+
+    begin
+      Encoding.find(charset)
+    rescue ArgumentError
+      nil
+    end
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  # Returns a byte buffer to be used for reading the response
+  def create_response_buffer(max_response_size)
+    content_length = http_entity.content_length
+    buffer_capacity = content_length < 0 ? DEFAULT_BUFFER_SIZE : [content_length, max_response_size].min
+    ByteArrayBuffer.new(buffer_capacity)
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  # Load data from the input http entity into a byte buffer, controlling for response size limits
+  def consume_http_entity(max_response_size:, request_timeout:)
+    stream = http_entity.content
+
+    # Make sure we understand the encoding used by the server
+    check_content_encoding
+
+    # The buffer for holding the whole response
+    response_buffer = create_response_buffer(max_response_size)
+
+    # A single chunk to be read from the response at a time
+    chunk = Java::byte[1024].new
+
+    # Consume the stream in chunks while checking response size limits and timeouts
+    loop do
+      received_bytes = stream.read(chunk)
+      break if received_bytes < 0 # -1 indicates end of stream
+
+      total_downloaded = response_buffer.length + received_bytes
+      if max_response_size && total_downloaded >= max_response_size
+        raise Crawler::HttpClient::ResponseTooLarge.new(<<~EOM.squish)
+          Failed to fetch the response from #{url.inspect} after downloading
+          #{total_downloaded} bytes (hit the response size limit of
+          #{max_response_size})
+        EOM
+      end
+      response_buffer.append(chunk, 0, received_bytes)
+
+      if request_timeout && time_since_request_start > request_timeout
+        raise Crawler::HttpClient::RequestTimeout.new(url)
+      end
+    end
+
+    response_buffer.to_byte_array
+  ensure
+    # NOTE: In case of a timeout, this may block for a bit, so our timeout errors
+    # are not raised immediately after a connection timeout has been reached.
+    stream.close
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  # Returns the list of content encodings applied to the response
+  def response_content_encodings
+    content_encoding = http_entity.content_encoding.to_s
+    content_encoding.downcase.split(',').map(&:strip).reject(&:blank?)
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  # Makes sure the content-encoding used by the server is supported by our client
+  #
+  # The client usually takes care of the encoding transparently for us, but
+  # if an encoding is not supported, it will pass it through to us here and we
+  # need to detect unsupported encoding values and raise an error instead of
+  # ingesting binary garbage as content.
+  #
+  def check_content_encoding
+    response_content_encodings.each do |encoding|
+      next if Crawler::HttpClient::CONTENT_DECODERS.include?(encoding)
+      raise Crawler::HttpClient::InvalidEncoding.new(encoding)
+    end
+  end
+end

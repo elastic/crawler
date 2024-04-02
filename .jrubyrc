@@ -1,0 +1,2 @@
+# Make it possible to use timeout regexp matching
+regexp.interruptible=true

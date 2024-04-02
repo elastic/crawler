@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Atom feed with example.com links for easy combination with the sitemap fixtures -->
+<feed xmlns="http://www.w3.org/2005/Atom">
+ <title>Example.com</title>
+ <link href="http://www.example.com/atom.xml" rel="self"/>
+ <link href="http://www.example.com/"/>
+ <updated>2012-10-11T12:46:09-07:00</updated>
+ <id>http://www.example.com/</id>
+ <author>
+   <name>Example.com</name>
+ </author>
+
+ <entry>
+   <title>Example.com Stuff thing Blah</title>
+   <link href="http://www.example.com/atom-feed-page-1"/>
+   <published>2012-10-11T00:00:00-07:00</published>
+   <updated>2012-10-11T00:00:00-07:00</updated>
+   <id>http://www.example.com/atom-feed-page-1</id>
+   <content type="html">blah blah blah</content>
+   <author>
+     <name>Example.com Author</name>
+   </author>
+ </entry>
+</feed>

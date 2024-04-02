@@ -1,0 +1,79 @@
+#!/usr/bin/env ruby
+
+# Load crawler environment
+require_relative '../environment'
+
+# Standard libraries
+require 'getoptlong'
+require 'yaml'
+
+#---------------------------------------------------------------------------------------------------
+def die(message, print_help = false)
+  puts "ERROR: #{message}"
+  if print_help
+    puts
+    print_usage_help
+  end
+
+  exit(1)
+end
+
+#---------------------------------------------------------------------------------------------------
+def print_usage_help
+  puts "Usage: #{$PROGRAM_NAME} [options] CONFIG_FILE"
+  puts
+  puts 'Where:'
+  puts ' --debug     Enable verbose mode (optional)'
+  puts ' --help      Shows this help.'
+  puts
+  puts 'Useful examples:'
+  puts " # #{$PROGRAM_NAME} examples/swiftype.yml"
+  puts
+end
+
+#---------------------------------------------------------------------------------------------------
+# Defaults
+verbose_logging = false
+
+# Parse options
+opts = GetoptLong.new(
+  ['--debug', '-v', GetoptLong::NO_ARGUMENT],
+  ['--help',  '-h', GetoptLong::NO_ARGUMENT]
+)
+
+# Process options
+begin
+  opts.each do |opt, _arg|
+    case opt
+    when '--debug'
+      verbose_logging = true
+    when '--help'
+      print_usage_help
+      exit(0)
+    end
+  end
+rescue GetoptLong::Error => e
+  puts
+  die(e, true)
+end
+
+# Get config file name the command line (last argument)
+config_file = ARGV.shift
+
+# Validate the config file name
+die('Please specify the crawl config file!') unless config_file
+die("Crawl config #{config_file.inspect} does not exist!") unless File.readable?(config_file)
+
+# Load the config file
+config = begin
+  YAML.load_file(config_file)
+rescue StandardError => e
+  die("Failed to load config #{config_file.inspect}: #{e}")
+end
+
+# Configure the crawler
+crawl_config = Crawler::API::Config.new(**config.symbolize_keys)
+crawl = Crawler::API::Crawl.new(crawl_config)
+
+# Perform the crawl
+crawl.start!

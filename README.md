@@ -20,4 +20,3 @@ understand the project.
 
 * [Initial project brief](https://docs.google.com/document/d/1LK2l5zMzavLdM_Ki_8qx_4Rr8fSGCYtGMhNbjGYopok/edit)
 * [Project sync meeting notes](https://docs.google.com/document/d/1FsNSDeJgszhN9I-No-8KFa4j2gkXUfaJb_BuubYukcs/edit?usp=sharing)
-# decoupled_crawler_poc

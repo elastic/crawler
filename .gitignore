@@ -1,0 +1,64 @@
+# bundler state
+/.bundle
+/vendor/bundle/
+/vendor/ruby/
+/vendor/filebeat/
+/vendor/metricbeat/
+/vendor/jruby/
+
+# homebrew state
+.Brewfile.cached
+Brewfile.lock.json
+
+# Foreman configuration (copied from Procfile.example)
+/Procfile
+
+# Mac finder artifacts
+.DS_Store
+
+# Rubymine project files
+/.idea/
+/.run/
+*.iml
+
+# VSCode Workspace files
+/.vscode/
+
+# Silver surfer ignore file
+.agignore
+
+# Sublime project files
+/*.sublime-project
+/*.sublime-workspace
+
+# vim artifacts
+*.swp
+*.swo
+*.un~
+
+ngrok
+
+/data
+/.rvmrc
+/.envrc
+/.rbenv-vars
+/.irbrc
+/public/blog
+
+# honeypot dump
+dump/
+
+# Emacs restclient files
+*.http
+
+# Codekit settings
+*.codekit
+
+# Static asset build system
+node_modules
+!package.json
+.tmp/
+.npm/
+
+# Ignore example file outputs
+examples/output

@@ -1,0 +1,151 @@
+# frozen_string_literal: true
+
+RSpec.describe(Crawler::RuleEngine::Base) do
+  let(:domains) { ['http://example.com'] }
+  let(:seed_urls) { ['http://example.com/'] }
+  let(:config) { Crawler::API::Config.new(:domain_allowlist => domains, :seed_urls => seed_urls, :robots_txt_service => Crawler::RobotsTxtService.always_allow) }
+  subject(:rule_engine) { described_class.new(config) }
+
+  #-------------------------------------------------------------------------------------------------
+  describe '#discover_url_outcome' do
+    it 'should require a domain object' do
+      expect do
+        rule_engine.discover_url_outcome('google.com')
+      end.to raise_error(ArgumentError, 'Needs a Crawler::Data::URL object')
+    end
+
+    it 'should allow when a given domain is in the allow list' do
+      url = Crawler::Data::URL.parse('http://example.com/something')
+      expect(rule_engine.discover_url_outcome(url)).to be_allowed
+    end
+
+    it 'should deny when a given domain is not in the allow list' do
+      url = Crawler::Data::URL.parse('http://google.com/something')
+      expect(rule_engine.discover_url_outcome(url)).to be_denied
+    end
+
+    context 'robots.txt' do
+      let(:domain) { Crawler::Data::Domain.new('http://example.com') }
+      let(:config) { Crawler::API::Config.new(:domain_allowlist => [domain.to_s], :seed_urls => seed_urls, :robots_txt_service => @robots_txt_service) }
+
+      context 'with crawl delay' do
+        before do
+          @robots_txt_service = Crawler::RobotsTxtService.new(:user_agent => 'Elastic Crawler')
+          @robots_txt_service.register_crawl_result(domain, double(:status_code => 200, :content => "User-agent: *\nDisallow: /wp-admin\nCrawl-delay: 600"))
+        end
+
+        it 'allows' do
+          url = Crawler::Data::URL.parse('http://example.com/allowed')
+          outcome = rule_engine.discover_url_outcome(url)
+          expect(outcome).to be_allowed
+        end
+
+        it 'disallows' do
+          url = Crawler::Data::URL.parse('http://example.com/wp-admin')
+          outcome = rule_engine.discover_url_outcome(url)
+          expect(outcome).to be_denied
+          expect(outcome.message).to eq('Disallowed by robots.txt')
+        end
+      end
+
+      context 'status 4xx' do
+        before do
+          @robots_txt_service = Crawler::RobotsTxtService.new(:user_agent => 'Elastic Crawler')
+          @robots_txt_service.register_crawl_result(domain, double(:status_code => 404))
+        end
+
+        it 'always allows' do
+          url = Crawler::Data::URL.parse('http://example.com/')
+          outcome = rule_engine.discover_url_outcome(url)
+          expect(outcome).to be_allowed
+        end
+      end
+
+      context 'status 5xx' do
+        before do
+          @robots_txt_service = Crawler::RobotsTxtService.new(:user_agent => 'Elastic Crawler')
+          @robots_txt_service.register_crawl_result(domain, double(:status_code => 500))
+        end
+
+        it 'never allows' do
+          url = Crawler::Data::URL.parse('http://example.com/')
+          outcome = rule_engine.discover_url_outcome(url)
+          expect(outcome).to be_denied
+          expect(outcome.message).to eq('Allow none because robots.txt responded with status 500')
+        end
+      end
+    end
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  describe '#output_crawl_result_outcome' do
+    let(:url) { Crawler::Data::URL.parse('http://example.com/') }
+    let(:outcome) { rule_engine.output_crawl_result_outcome(mock_crawl_result) }
+
+    context 'noindex meta tag' do
+      let(:mock_crawl_result) do
+        Crawler::Data::CrawlResult::HTML.new(
+          :url => url,
+          :content => '<html><head><meta name="robots" content="noindex"></head><body><a href="http://example.com/link"></a></body></html>'
+        )
+      end
+
+      it 'should deny' do
+        expect(outcome).to be_denied
+      end
+    end
+
+    context 'noindex and nofollow meta tag' do
+      let(:mock_crawl_result) do
+        Crawler::Data::CrawlResult::HTML.new(
+          :url => url,
+          :content => '<html><head><meta name="robots" content="noindex, nofollow"></head><body><a href="http://example.com/link"></a></body></html>'
+        )
+      end
+
+      it 'should deny' do
+        expect(outcome).to be_denied
+      end
+    end
+
+    context 'for a fatal error response' do
+      let(:mock_crawl_result) do
+        Crawler::Data::CrawlResult::Error.new(
+          :url => url,
+          :error => 'Something went horribly wrong'
+        )
+      end
+
+      it 'should deny' do
+        expect(outcome).to be_denied
+      end
+    end
+
+    context 'for a response for an unsupported content type' do
+      let(:mock_crawl_result) do
+        Crawler::Data::CrawlResult::UnsupportedContentType.new(
+          :url => url,
+          :status_code => 200,
+          :content_type => 'application/java'
+        )
+      end
+
+      it 'should deny' do
+        expect(outcome).to be_denied
+      end
+    end
+
+    context 'ok to index page' do
+      let(:mock_crawl_result) do
+        Crawler::Data::CrawlResult::HTML.new(
+          :url => url,
+          :content => '<html><body><a href="http://example.com/link"></a></body></html>'
+        )
+      end
+
+      it 'should allow' do
+        expect(outcome).to be_allowed
+      end
+    end
+  end
+end

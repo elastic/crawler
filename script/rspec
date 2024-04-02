@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -ex
+
+export JRUBY_OPTS="${JRUBY_OPTS} --debug"
+
+BUNDLE_CMD=${BUNDLE_CMD:-bundle}
+$BUNDLE_CMD exec rspec $*

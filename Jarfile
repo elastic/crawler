@@ -1,0 +1,40 @@
+# This file is used to control our Jar dependencies and is used with jar-dependencies to vendor
+# our java dependencies into vendor/jars (see https://github.com/mkristian/jar-dependencies for details)
+#
+# If you update this file, please run the following command to update the jars cache:
+#    rm -rf Jars.lock vendor/jars && script/development exec script/vendor_jars
+#
+# When adding a new dependency, please explain what it is and why we're adding it in a comment.
+#---------------------------------------------------------------------------------------------------
+# Crawler-Commons is a set of reusable Java components that implement functionality common to any web crawler.
+# For now we're only interested in using the robots.txt parsing functionality.
+jar 'com.github.crawler-commons:crawler-commons', '1.2'
+
+# Apache HTTP client used by the crawler
+jar 'org.apache.httpcomponents.client5:httpclient5', '5.1'
+
+#---------------------------------------------------------------------------------------------------
+# Text extraction and other utilities
+jar 'org.apache.tika:tika-parsers', '1.27'
+jar 'org.slf4j:slf4j-nop', '1.7.26'
+jar 'org.apache.commons:commons-lang3', '3.10'
+
+#---------------------------------------------------------------------------------------------------
+# Indirect dependencies that we needed to upgrade
+jar 'com.google.protobuf:protobuf-java', '3.19.6'
+jar 'com.github.junrar:junrar', '7.4.1'
+jar 'org.jsoup:jsoup', '1.14.3'
+jar 'commons-io:commons-io', '2.11.0'
+jar 'org.apache.cxf:cxf-rt-transports-http', '3.4.10'
+jar 'org.apache.cxf:cxf-core', '3.4.10'
+jar 'com.mchange:c3p0', '0.9.5.4'
+jar 'com.drewnoakes:metadata-extractor', '2.13.0'
+jar 'com.beust:jcommander', '1.75'
+jar 'com.mchange:c3p0', '0.9.5.4'
+jar 'org.apache.commons:commons-compress', '1.21'
+jar 'com.google.code.gson:gson', '2.8.9'
+jar 'com.fasterxml.jackson.core:jackson-databind', '2.14.2'
+jar 'com.fasterxml.woodstox:woodstox-core', '6.5.1'
+jar 'com.google.guava:guava', '32.1.3-jre'
+jar 'org.bouncycastle:bcprov-jdk18on', '1.76'
+jar 'org.apache.uima:uimaj-core', '3.3.1'

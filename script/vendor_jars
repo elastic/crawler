@@ -1,0 +1,9 @@
+#!/usr/bin/env jruby
+
+require 'jar-dependencies'
+
+Jars.lock_down(
+  ENV['JARS_DEBUG'] == 'true',
+  ENV['JARS_VERBOSE'] == 'true',
+  :vendor_dir => 'vendor/jars'
+)

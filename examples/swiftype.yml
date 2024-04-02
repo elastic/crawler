@@ -1,0 +1,42 @@
+# This is a sample config file for crawling the swiftype.com website writing output to a directory
+
+# Domains allowed for the crawl
+domain_allowlist:
+  - https://swiftype.com
+
+# URLs used to seed the crawl
+seed_urls:
+  - https://swiftype.com/
+
+# Where to send the results
+output_sink: file
+output_dir: examples/output/swiftype
+
+# Crawl tuning
+max_crawl_depth: 2
+
+# Enable local proxy
+# http_proxy_host: localhost
+# http_proxy_port: 8888
+# http_proxy_protocol: http
+# http_proxy_username: ent-search
+# http_proxy_password: changeme
+# loopback_allowed: true
+# ssl_verification_mode: none
+
+# Enable auth
+# auth:
+#   -
+#     domain: https://swiftype.com
+#     type: basic
+#     username: user
+#     password: pass
+
+# Enable content extraction (from files)
+# content_extraction_enabled: true
+# content_extraction_mime_types:
+#   - application/pdf
+#   - application/msword
+#   - application/vnd.openxmlformats-officedocument.wordprocessingml.document
+#   - application/vnd.ms-powerpoint
+#   - application/vnd.openxmlformats-officedocument.presentationml.presentation
