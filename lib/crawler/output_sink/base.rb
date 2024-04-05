@@ -6,7 +6,7 @@ module Crawler
   class OutputSink::Base
     attr_reader :config, :rule_engine
 
-    delegate :events, :to => :config
+    delegate :document_mapper, :events, :to => :config
 
     def initialize(config)
       @config = config
@@ -19,6 +19,10 @@ module Crawler
 
     def write(_crawl_result)
       raise NotImplementedError
+    end
+
+    def to_doc(crawl_result)
+      document_mapper.document_fields(crawl_result)
     end
 
     def close

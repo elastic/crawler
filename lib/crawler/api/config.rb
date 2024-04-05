@@ -4,6 +4,7 @@ require 'active_support/core_ext/numeric/bytes'
 
 require_dependency(File.join(__dir__, '..', '..', 'statically_tagged_logger'))
 require_dependency(File.join(__dir__, '..', 'data', 'crawl_result', 'html'))
+require_dependency(File.join(__dir__, '..', 'document_mapper'))
 
 java_import java.io.ByteArrayInputStream
 java_import java.security.cert.CertificateFactory
@@ -321,9 +322,15 @@ module Crawler
         @events ||= Crawler::EventGenerator.new(self)
       end
 
+      #---------------------------------------------------------------------------------------------
       # Returns the per-crawl stats object used for aggregating crawl statistics
       def stats
         @stats ||= Crawler::Stats.new
+      end
+
+      #---------------------------------------------------------------------------------------------
+      def document_mapper
+        @document_mapper ||= ::Crawler::DocumentMapper.new(self)
       end
 
       #---------------------------------------------------------------------------------------------
