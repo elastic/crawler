@@ -19,6 +19,8 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   if spec.respond_to?(:metadata)
+    spec.metadata['allowed_push_host'] = 'https://artifactory.elastic.dev/artifactory/api/gems/swiftype-gems'
+  else
     raise "RubyGems 2.0 or newer is required to protect against public gem pushes."
   end
 
