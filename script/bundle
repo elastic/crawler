@@ -39,10 +39,6 @@ JRUBY_VERSION="$(cat .ruby-version)"
 JAVA_VERSION="$(cat .java-version)"
 
 #---------------------------------------------------------------------------------------------------
-# Enable jenv and rbenv support
-rbenv_init
-jenv_init
-
 # Make sure we have the java version we need
 ensure_java_installed "$JAVA_VERSION"
 
@@ -51,15 +47,11 @@ ensure_jruby_installed "$JRUBY_VERSION"
 
 #---------------------------------------------------------------------------------------------------
 echo "------------------------------------------------------------------------"
-yellow_echo "Bundling jruby gems using the Gemfile file..."
+yellow_echo "Bundling jruby gems..."
 echo "------------------------------------------------------------------------"
 
 # Remove the legacy config
 rm -rf .bundle/config-JRuby
-
-jenv shell "$JAVA_VERSION"
-rbenv shell "$JRUBY_VERSION"
-export BUNDLE_GEMFILE=Gemfile
 
 # Make sure all gems will be cached, including git-sourced
 bundle_command config cache_all true
