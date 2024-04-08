@@ -4,31 +4,22 @@
 gem 'rails-html-sanitizer', '= 1.5.0'
 gem 'thread_safe', '= 0.3.6'
 
-# def rails_next?
-#   File.basename(__FILE__) == 'Gemfile_rails_next'
-# end
-#
-# def rails_current?
-#   !rails_next?
-# end
-#
 # #---------------------------------------------------------------------------------------------------
 # # Unless we are in a deployment mode or are running from a script bundle, show a warning
-# is_install_or_update = (ARGV.empty? || ARGV.include?('install') || ARGV.include?('update'))
-# not_deployment_mode = !ARGV.include?('--deployment')
-#
-# if File.basename($PROGRAM_NAME) == 'bundle' && is_install_or_update && not_deployment_mode && !ENV['SCRIPT_BUNDLE'] && !$printed_bundle_warning
-#   require_relative 'script/support/string_colors'
-#   puts
-#   puts 'WARNING: You seem to be running a bundle install command directly. This is not recommended.'.yellow
-#   puts
-#   puts "Please note: You need to use the #{'./script/bundle'.yellow} script for managing gems to ensure proper rubygems caching within the repository."
-#   puts 'If you are in a deployment/CI situation, please use the --deployment flag for bundle install'
-#   puts
-#
-#   # Only show the warning once
-#   $printed_bundle_warning = true
-# end
+is_install_or_update = (ARGV.empty? || ARGV.include?('install') || ARGV.include?('update'))
+not_deployment_mode = !ARGV.include?('--deployment')
+
+if File.basename($PROGRAM_NAME) == 'bundle' && is_install_or_update && not_deployment_mode && !ENV['SCRIPT_BUNDLE'] && !$printed_bundle_warning
+  require_relative 'script/support/string_colors'
+  puts
+  puts 'WARNING: You seem to be running a bundle install command directly. This is not recommended.'.yellow
+  puts
+  puts "Please note: You need to use the #{'./script/bundle'.yellow} script for managing gems to ensure proper rubygems caching within the repository."
+  puts 'If you are in a deployment/CI situation, please use the --deployment flag for bundle install'
+  puts
+  # Only show the warning once
+  $printed_bundle_warning = true
+end
 
 #---------------------------------------------------------------------------------------------------
 jruby_version = File.read(File.join(__dir__, '.ruby-version')).strip.delete_prefix('jruby-')

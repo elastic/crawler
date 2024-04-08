@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 # Load crawler environment
-require_relative '../environment'
+require_relative '../lib/environment'
 
 # Standard libraries
 require 'getoptlong'
@@ -27,7 +27,7 @@ def print_usage_help
   puts ' --help      Shows this help.'
   puts
   puts 'Useful examples:'
-  puts " # #{$PROGRAM_NAME} examples/swiftype.yml"
+  puts " # #{$PROGRAM_NAME} crawlers/parks-australia.example.yml"
   puts
 end
 

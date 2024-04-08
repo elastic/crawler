@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 # Load crawler environment
-require_relative '../environment'
+require_relative '../lib/environment'
 
 # Start a pry console
 require 'pry'

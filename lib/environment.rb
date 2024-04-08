@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Add the lib directory to the load path
-$LOAD_PATH << "#{__dir__}/lib"
+$LOAD_PATH << "#{__dir__}"
 
 # Calculate the current environment
 CRAWLER_ENV = ENV.fetch('CRAWLER_ENV', 'development')
