@@ -14,8 +14,6 @@ module Crawler
       'url_path_dir2' => 'string',
       'url_path_dir3' => 'string',
 
-      'additional_urls' => 'string',
-      'domains' => 'string',
       'last_crawled_at' => 'date',
       'title' => 'string',
       'body_content' => 'string',
@@ -47,6 +45,7 @@ module Crawler
       url = Crawler::Data::URL.parse(url.to_s) unless url.kind_of?(Crawler::Data::URL)
       path_components = url.path.split('/')
       remove_empty_values(
+        'url' => url.to_s,
         'url_scheme' => url.scheme,
         'url_host' => url.host,
         'url_port' => url.inferred_port,
@@ -55,12 +54,6 @@ module Crawler
         'url_path_dir2' => path_components[2],
         'url_path_dir3' => path_components[3]
       )
-    end
-
-    def update_engine_mapping!(engine)
-      field_mappings = [FieldMapping::ManagedFieldMapping.new(CRAWLER_DOC_SCHEMA)]
-      engine.search_index.augment_field_mapping!(field_mappings, :require_same_types => false)
-      engine.search_index.confirm_fields!(CRAWLER_DOC_SCHEMA.keys)
     end
 
     private
