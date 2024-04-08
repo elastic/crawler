@@ -56,10 +56,10 @@ GEM
     elastic-transport (8.3.2)
       faraday (< 3)
       multi_json
-    elasticsearch (8.12.2)
+    elasticsearch (8.13.0)
       elastic-transport (~> 8.3)
-      elasticsearch-api (= 8.12.2)
-    elasticsearch-api (8.12.2)
+      elasticsearch-api (= 8.13.0)
+    elasticsearch-api (8.13.0)
       multi_json
     erubi (1.12.0)
     execjs (2.9.1)
@@ -262,7 +262,7 @@ DEPENDENCIES
   climate_control
   concurrent-ruby (~> 1.1.4)
   ejson
-  elasticsearch (~> 8.12.2)
+  elasticsearch (~> 8.13.0)
   execjs
   factory_bot_rails (~> 6.2.0)
   faux!
