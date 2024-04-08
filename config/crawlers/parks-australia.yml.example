@@ -1,0 +1,63 @@
+## This is a sample config file for crawling the parksaustralia.gov.au website writing output to a directory
+#
+## Domains allowed for the crawl
+#domain_allowlist:
+#  - https://parksaustralia.gov.au
+#
+## URLs used to seed the crawl
+#seed_urls:
+#  - https://parksaustralia.gov.au
+#
+## Where to send the results. Possible values are console, file, or elasticsearch
+#output_sink: elasticsearch
+#
+## Elasticsearch index name to ingest crawl results into. Required if output_sink is elasticsearch
+#output_index: my-index
+#
+## Local directory to output crawl results. Required if output_sink is file
+#output_dir: output/parks-australia
+#
+## Crawl tuning
+#max_crawl_depth: 2
+#
+## Crawl result field size limits
+#max_title_size: 1000
+#max_body_size: 5_242_880 # 5 megabytes
+#max_keywords_size: 512
+#max_description_size: 512
+#max_indexed_links_count: 10
+#max_headings_count: 10
+#
+## Enable local proxy
+#http_proxy_host: localhost
+#http_proxy_port: 8888
+#http_proxy_protocol: http
+#http_proxy_username: ent-search
+#http_proxy_password: changeme
+#loopback_allowed: true
+#ssl_verification_mode: none
+#
+## Enable auth
+#auth:
+#  -
+#  domain: https://parksaustralia.gov.au
+#  type: basic
+#  username: user
+#  password: pass
+#
+## Enable content extraction (from files)
+#content_extraction_enabled: true
+#content_extraction_mime_types:
+#  - application/pdf
+#  - application/msword
+#  - application/vnd.openxmlformats-officedocument.wordprocessingml.document
+#  - application/vnd.ms-powerpoint
+#  - application/vnd.openxmlformats-officedocument.presentationml.presentation
+#
+## Elasticsearch connection settings. These can be defined for all crawlers in `config/elasticsearch.yml`,
+##
+#elasticsearch:
+#  host: http://localhost:9200
+#  username: elastic
+#  password: changeme
+#  api_key: 1234

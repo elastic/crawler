@@ -58,6 +58,8 @@ node_modules
 .npm/
 
 # Ignore example file outputs
-crawlers/output
-crawlers/*.yml
-!crawlers/*.example.yml
+output
+
+# Config files
+config/*.yml
+config/crawlers/*.yml

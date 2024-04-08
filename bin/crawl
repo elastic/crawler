@@ -27,7 +27,7 @@ def print_usage_help
   puts ' --help      Shows this help.'
   puts
   puts 'Useful examples:'
-  puts " # #{$PROGRAM_NAME} crawlers/parks-australia.example.yml"
+  puts " # #{$PROGRAM_NAME} crawler-name.yml"
   puts
 end
 
@@ -59,14 +59,15 @@ end
 
 # Get config file name the command line (last argument)
 config_file = ARGV.shift
+config_file_path = "config/crawlers/#{config_file}"
 
 # Validate the config file name
 die('Please specify the crawl config file!') unless config_file
-die("Crawl config #{config_file.inspect} does not exist!") unless File.readable?(config_file)
+die("Crawl config #{config_file.inspect} does not exist!") unless File.readable?(config_file_path)
 
 # Load the config file
 config = begin
-  YAML.load_file(config_file)
+  YAML.load_file(config_file_path)
 rescue StandardError => e
   die("Failed to load config #{config_file.inspect}: #{e}")
 end
