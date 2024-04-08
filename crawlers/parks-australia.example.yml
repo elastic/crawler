@@ -1,16 +1,16 @@
-# This is a sample config file for crawling the swiftype.com website writing output to a directory
+# This is a sample config file for crawling the https://parksaustralia.gov.au website writing output to a directory
 
 # Domains allowed for the crawl
 domain_allowlist:
-  - https://swiftype.com
+  - https://parksaustralia.gov.au
 
 # URLs used to seed the crawl
 seed_urls:
-  - https://swiftype.com/
+  - https://parksaustralia.gov.au
 
 # Where to send the results
 output_sink: file
-output_dir: examples/output/swiftype
+output_dir: crawlers/output/parks-australia
 
 # Crawl tuning
 max_crawl_depth: 2
@@ -35,7 +35,7 @@ max_crawl_depth: 2
 # Enable auth
 # auth:
 #   -
-#     domain: https://swiftype.com
+#     domain: https://parksaustralia.gov.au
 #     type: basic
 #     username: user
 #     password: pass

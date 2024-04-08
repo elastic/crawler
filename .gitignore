@@ -10,9 +10,6 @@
 .Brewfile.cached
 Brewfile.lock.json
 
-# Foreman configuration (copied from Procfile.example)
-/Procfile
-
 # Mac finder artifacts
 .DS_Store
 
@@ -61,4 +58,6 @@ node_modules
 .npm/
 
 # Ignore example file outputs
-examples/output
+crawlers/output
+crawlers/*.yml
+!crawlers/*.example.yml

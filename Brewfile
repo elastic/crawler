@@ -1,8 +1,6 @@
 # Local dev utils
 brew 'rbenv'
 brew 'jenv'
-brew 'node'
-brew 'yarn'
 brew 'icu4c'
 brew 'forego'
 
