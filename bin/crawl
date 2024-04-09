@@ -57,23 +57,36 @@ rescue GetoptLong::Error => e
   die(e, true)
 end
 
-# Get config file name the command line (last argument)
-config_file = ARGV.shift
-config_file_path = "config/crawlers/#{config_file}"
+# Elasticsearch config path is static
+es_config_file_path = "config/elasticsearch.yml"
 
-# Validate the config file name
-die('Please specify the crawl config file!') unless config_file
-die("Crawl config #{config_file.inspect} does not exist!") unless File.readable?(config_file_path)
+# Validate and load the config file
+die("Crawler config elasticsearch.yml does not exist!") unless File.readable?(es_config_file_path)
+es_config =
+  begin
+    YAML.load_file(es_config_file_path)
+  rescue StandardError => e
+    die("Failed to load config elasticsearch.yml: #{e}")
+  end
 
-# Load the config file
-config = begin
-  YAML.load_file(config_file_path)
-rescue StandardError => e
-  die("Failed to load config #{config_file.inspect}: #{e}")
-end
+# Get crawler config file name the command line (last argument)
+crawler_config_file = ARGV.shift
+crawler_config_file_path = "config/crawlers/#{crawler_config_file}"
 
-# Configure the crawler
-crawl_config = Crawler::API::Config.new(**config.symbolize_keys)
+# Validate and load the crawler config file name
+die('Please specify the crawler config file!') unless crawler_config_file
+die("Crawler config #{crawler_config_file.inspect} does not exist!") unless File.readable?(crawler_config_file_path)
+crawler_config =
+  begin
+    YAML.load_file(crawler_config_file_path)
+  rescue StandardError => e
+    die("Failed to load crawler config #{crawler_config_file.inspect}: #{e}")
+  end
+
+
+# Combine configs and apply to crawler
+config = es_config.merge(crawler_config)
+crawl_config = Crawler::API::Config.new(**config.deep_symbolize_keys)
 crawl = Crawler::API::Crawl.new(crawl_config)
 
 # Perform the crawl

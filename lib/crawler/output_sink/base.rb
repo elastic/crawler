@@ -6,7 +6,7 @@ module Crawler
   class OutputSink::Base
     attr_reader :config, :rule_engine
 
-    delegate :document_mapper, :events, :to => :config
+    delegate :document_mapper, :events, :system_logger, :to => :config
 
     def initialize(config)
       @config = config
