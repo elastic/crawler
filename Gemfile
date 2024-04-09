@@ -42,7 +42,7 @@ group :default, :crawler do
   gem 'addressable', '>= 2.8.0'
   gem 'bson', '~> 4.2.2'
   gem 'concurrent-ruby', '~> 1.1.4'
-  gem 'elasticsearch', '~> 8.12.2'
+  gem 'elasticsearch', '~> 8.13.0'
   gem 'nokogiri', '= 1.13.10', :require => false
   gem 'mail', '2.7.1'
   gem 'rake', '~> 12.3.2'
