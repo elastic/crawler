@@ -28,58 +28,43 @@ module Crawler
         @client = Elasticsearch::Client.new(url: basic_auth_url)
       end
       @index_name = config.output_index
-      @doc_backlog = []
-      @backlog_size = 0
     end
 
     def write(crawl_result)
+      # TODO: run this in an async buffer
+      # max documents count
+      # max size
+      # max time waited
+      # then flush if conditions to meet
       doc = to_doc(crawl_result)
       payload = update_payload(doc)
-
       response = send_bulk(payload)
 
-      # ES HTTP requests have a 100MB limit, so if the next doc would put the bulk request body over that limit
-      # We send off the current backlog as a bulk index request and begin filling the backlog again
-      # if @backlog_size + array_size([doc]) > 1#MEGABYTES_100
-      #   response = send_bulk
-      #
-      #   @doc_backlog.clear
-      # end
+      return success unless response.body['errors']
 
-      # update_backlog(doc)
+      errors = response.body['items'].map do |item|
+        error = item['update']['error']
+        next unless error
 
-      success
-    end
+        "#{error['type']}: #{error['reason']}"
+      end
 
-    def close
-      # unless @doc_backlog.empty?
-      #   response = send_bulk
-      # end
+      failure(errors.compact.join(', '))
     end
 
     def send_bulk(payload)
-      system_logger.info(@index_name)
-      system_logger.info(payload)
-
-      response = @client.bulk(
+      @client.bulk(
         index: @index_name,
         body: payload
       )
-
-      system_logger.info(response)
-
-      response
     end
 
     def update_payload(doc)
-      # @doc_backlog.append({ update: { _index: @index_name, _id: doc['_id'] } }.deep_stringify_keys)
-      # @doc_backlog.append({ doc: doc, doc_as_upsert: true}.deep_stringify_keys)
-      # @backlog_size = array_size(@doc_backlog)
+      # TODO: run this in an async buffer
       payload = []
       payload.append({ update: { _index: @index_name, _id: doc['id'] } })
       payload.append({ doc: doc, doc_as_upsert: true })
       payload
-      # @backlog_size = array_size(@doc_backlog)
     end
 
     def array_size(array)

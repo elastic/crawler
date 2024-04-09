@@ -21,7 +21,7 @@ WebMock.disable_net_connect!(:allow_localhost => true)
 WebMock.enable!
 
 # Load the standalone crawler environment
-require_relative '../environment'
+require_relative '../lib/environment'
 
 # Load the crawler itself
 require 'crawler'
