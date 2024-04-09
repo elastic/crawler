@@ -244,7 +244,7 @@ end
 
 group(*ALL_DEVELOPMENT_ENVS, *ALL_TEST_ENVS) do
   gem 'pry'
-  gem 'factory_bot_rails', '~> 6.2.0', :require => false
+  gem 'factory_bot', '~> 6.2.0', :require => false
 
   gem 'rb-fsevent', :require => false
   gem 'rb-inotify', :require => false
@@ -253,13 +253,3 @@ group(*ALL_DEVELOPMENT_ENVS, *ALL_TEST_ENVS) do
   gem 'ejson'
 end
 
-#---------------------------------------------------------------------------------------------------
-# Test dependencies for Rails environments (but not for the crawler)
-#---------------------------------------------------------------------------------------------------
-# group :test do
-#   gem 'rack-test', '~> 1.1.0'
-#   gem 'rswag-specs', '~> 2.4.0'
-#
-#   # Used for checking migration fixtures against ES state
-#   gem 'json-diff'
-# end
