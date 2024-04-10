@@ -209,10 +209,8 @@ end
 # Development and test dependencies for all environments (including the crawler)
 #---------------------------------------------------------------------------------------------------
 group(*ALL_DEVELOPMENT_ENVS) do
-  # gem 'ent-search-ci', '7.16.3'
   gem 'rubocop', '1.18.4'
   gem 'rubocop-performance', '1.11.5'
-  gem 'rubocop-rails', '2.11.3'
 
   gem 'ruby-debug-ide'
   gem 'pry-remote'

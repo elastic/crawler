@@ -1,6 +1,5 @@
 require:
   - rubocop-performance
-  - rubocop-rails
 
 AllCops:
   NewCops: disable
@@ -8,16 +7,9 @@ AllCops:
   TargetRubyVersion: 2.5
   Exclude:
     - 'Jarfile'
-    - 'dist/vendor/**/*'
     - 'vendor/**/*'
     - 'Gemfile'
-    - 'node_modules/**/*'
-    - 'testing/vendor/**/*'
-    - 'ci_state/**/*'
     - 'bin/**/*'
-
-Rails:
-  Enabled: true
 
 #
 # Specific settings for alignment indentation
@@ -84,17 +76,6 @@ Style/ClassVars:
     - 'shared_togo/config/initializers/active_record.rb'
     - 'connectors/config/initializers/salesforce_bulk_query.rb'
 
-Rails/Output:
-  Exclude:
-    - 'config/boot.rb'
-    - 'config/initializers/kernel.rb'
-    - '*/**/*.html.rb'
-
-Rails/RakeEnvironment:
-  Exclude:
-    - 'lib/tasks/**/*.rake'
-    - 'dist/lib/tasks/**/*.rake'
-
 Style/SignalException:
   Exclude:
     - 'shared_togo/config/initializers/devise.rb'
@@ -108,13 +89,6 @@ Style/GlobalVars:
     - '**/spec/*'
 
 #
-# `.present?` won't work on plain Ruby
-#
-Rails/Present:
-  Exclude:
-    - 'testing/acceptance-tests/spec_support/lib/http_client_helper.rb'
-
-#
 # Disabled Rules
 #
 # If you think one of this rule should be activated,
@@ -124,13 +98,6 @@ Lint/IneffectiveAccessModifier:
   Enabled: false
 
 Style/DoubleNegation:
-  Enabled: false
-
-#
-# Acastic does not support (yet) the `dependent` option for has_many
-#
-# see https://github.com/elastic/enterprise-search-team/issues/937
-Rails/HasManyOrHasOneDependent:
   Enabled: false
 
 #
@@ -170,15 +137,6 @@ Metrics/AbcSize:
   Enabled: false
 
 Metrics/ParameterLists:
-  Enabled: false
-
-#
-# Disabled Rails rules
-#
-Rails/ContentTag:
-  Enabled: false
-
-Rails/ApplicationController:
   Enabled: false
 
 Layout/EmptyLineAfterGuardClause:
@@ -230,24 +188,6 @@ Performance/RegexpMatch:
   Enabled: false
 
 Performance/TimesMap:
-  Enabled: false
-
-Rails/Delegate:
-  Enabled: false
-
-Rails/DynamicFindBy:
-  Enabled: false
-
-Rails/RedundantForeignKey:
-  Enabled: false
-
-Rails/SafeNavigation:
-  Enabled: false
-
-Rails/SkipsModelValidations:
-  Enabled: false
-
-Rails/TimeZone:
   Enabled: false
 
 Style/AccessorGrouping:

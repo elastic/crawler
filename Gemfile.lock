@@ -195,10 +195,6 @@ GEM
     rubocop-performance (1.11.5)
       rubocop (>= 1.7.0, < 2.0)
       rubocop-ast (>= 0.4.0)
-    rubocop-rails (2.11.3)
-      activesupport (>= 4.2.0)
-      rack (>= 1.1)
-      rubocop (>= 1.7.0, < 2.0)
     ruby-debug-base (0.11.0-java)
     ruby-debug-ide (0.7.3)
       rake (>= 0.8.1)
@@ -286,7 +282,6 @@ DEPENDENCIES
   rspec_junit_formatter
   rubocop (= 1.18.4)
   rubocop-performance (= 1.11.5)
-  rubocop-rails (= 2.11.3)
   ruby-debug-base (= 0.11.0)
   ruby-debug-ide
   ruby-maven
