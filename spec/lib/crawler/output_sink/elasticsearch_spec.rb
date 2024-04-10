@@ -87,8 +87,8 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
     let(:crawl_result) { FactoryBot.build(:html_crawl_result) }
 
     before(:each) do
-      # serialize is only required for adding ingested doc size to stats, any string is fine for these tests
-      allow(bulk_queue).to receive(:serialize).and_return('{ doc: arbitrarily serialized for test }')
+      # bytesize is only required for adding ingested doc size to stats, any value is fine for these tests
+      allow(bulk_queue).to receive(:bytesize).and_return(50)
     end
 
     context 'when bulk queue still has capacity' do
@@ -177,6 +177,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
     context 'when flush was not triggered' do
       let(:crawl_result) { FactoryBot.build(:html_crawl_result) }
       before(:each) do
+        allow(bulk_queue).to receive(:bytesize).and_return(10) # arbitrary
         15.times.each do |x|
           subject.write(FactoryBot.build(:html_crawl_result, url: "http://real.com/#{x}"))
         end
@@ -211,7 +212,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
         let(:serialized_object) { 'doesnt matter' }
 
         before(:each) do
-          allow(serializer).to receive(:dump).and_return(serialized_object)
+          allow(bulk_queue).to receive(:bytesize).and_return(serialized_object.bytesize)
 
           document_count.times.each do |x|
             subject.write(FactoryBot.build(:html_crawl_result, url: "http://real.com/#{x}"))

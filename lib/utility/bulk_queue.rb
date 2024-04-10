@@ -9,21 +9,22 @@ require('elasticsearch/api')
 module Utility
   class BulkQueue
     # Maximum number of operations in BULK Elasticsearch operation that will ingest the data
-    DEFAULT_MAX_QUEUE_SIZE = 500
+    DEFAULT_OP_COUNT_THRESHOLD = 100
     # Maximum size of either whole BULK Elasticsearch operation or one document in it
-    DEFAULT_MAX_QUEUE_BYTES = 5 * 1024 * 1024
+    DEFAULT_SIZE_THRESHOLD = 1 * 1024 * 1024 # 1 megabyte
 
     class QueueOverflowError < StandardError; end
 
     # 500 items or 5MB
-    def initialize(operation_count_threshold = DEFAULT_MAX_QUEUE_SIZE, size_threshold = DEFAULT_MAX_QUEUE_BYTES)
-      @operation_count_threshold = operation_count_threshold.freeze
-      @size_threshold = size_threshold.freeze
+    def initialize(op_count_threshold, size_threshold, system_logger)
+      @op_count_threshold = (op_count_threshold || DEFAULT_OP_COUNT_THRESHOLD).freeze
+      @size_threshold = (size_threshold || DEFAULT_SIZE_THRESHOLD).freeze
+
+      @system_logger = system_logger
+      @system_logger.debug("Initialized BulkQueue with op_count_threshold #{@op_count_threshold} and size_threshold #{@size_threshold}.")
 
       @buffer = []
-
-      @current_operation_count = 0
-
+      @current_op_count = 0
       @current_buffer_size = 0
       @current_data_size = 0
     end
@@ -42,7 +43,7 @@ module Utility
       operation_size = bytesize(operation)
       payload_size = bytesize(payload)
 
-      @current_operation_count += 1
+      @current_op_count += 1
       @current_buffer_size += operation_size
       @current_buffer_size += payload_size
       @current_data_size += payload_size
@@ -55,7 +56,7 @@ module Utility
     end
 
     def will_fit?(operation, payload = nil)
-      return false if @current_operation_count + 1 > @operation_count_threshold
+      return false if @current_op_count + 1 > @op_count_threshold
 
       operation_size = bytesize(operation)
       payload_size = bytesize(payload)
@@ -65,10 +66,17 @@ module Utility
 
     def current_stats
       {
-        :current_operation_count => @current_operation_count,
+        :current_op_count => @current_op_count,
         :current_buffer_size => @current_buffer_size
       }
     end
+
+    def bytesize(item)
+      return 0 unless item
+      serialize(item).bytesize
+    end
+
+    private
 
     def serialize(document)
       return '' unless document
@@ -76,15 +84,8 @@ module Utility
       Elasticsearch::API.serializer.dump(document)
     end
 
-    private
-
-    def bytesize(item)
-      return 0 unless item
-      serialize(item).bytesize
-    end
-
     def reset
-      @current_operation_count = 0
+      @current_op_count = 0
       @current_buffer_size = 0
       @current_data_size = 0
 

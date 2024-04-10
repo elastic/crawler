@@ -5,9 +5,14 @@
 #
 
 RSpec.describe(Utility::BulkQueue) do
-  let(:subject) { described_class.new(count_threshold, size_threshold) }
+  let(:subject) { described_class.new(count_threshold, size_threshold, system_logger) }
+  let(:system_logger) { double }
   let(:count_threshold) { 50 }
   let(:size_threshold) { 999999999 } # super high default
+
+  before(:each) do
+    allow(system_logger).to receive(:debug)
+  end
 
   describe '#add' do
     before(:each) do
@@ -133,7 +138,7 @@ RSpec.describe(Utility::BulkQueue) do
     end
 
     it 'returns expected number of operations' do
-      expect(subject.current_stats[:current_operation_count]).to eq(op_count)
+      expect(subject.current_stats[:current_op_count]).to eq(op_count)
     end
 
     it 'returns expected size of operations' do
@@ -146,7 +151,7 @@ RSpec.describe(Utility::BulkQueue) do
       end
 
       it 'returns expected number of operations' do
-        expect(subject.current_stats[:current_operation_count]).to eq(0)
+        expect(subject.current_stats[:current_op_count]).to eq(0)
       end
 
       it 'returns expected size of operations' do

@@ -1,10 +1,10 @@
 # Config files
 
 ## `elasticsearch.yml`
-This configuration file determines the base connection settings to an Elasticsearch instance. This is applied to all crawlers, unless the crawler specifies a different connection configuration.
+This configuration file determines the base connection settings to an Elasticsearch instance. These values can be overridden by crawl config values.
 
 ## `crawlers/{crawler-name}.yml`
-The files in the `crawlers` directory are for configuring crawlers. Each file can be run as a single crawler using the CLI.
+The files in the `crawlers` directory are for configuring crawls. Each config file can be run a crawl using the CLI.
 Elasticsearch connection settings are optional in these files. If they are present, they will override the `elasticsearch.yml` settings for that specific crawler only.
 
 ## Load order

@@ -15,9 +15,9 @@ You can also ensure all crawler commands use up-to-date dependencies by prependi
 
 ### Running a crawl
 
-To get started, you can either use the example crawler provided, or define your own. If defining your own, create a copy of the file `config/crawlers/parks-australia.yml.example` and save it to the same directory. You can name this whatever you like. Change any necessary configuration in the file.
+To get started, you can either use the example crawler provided, or define your own. If defining your own, create a copy of the file `config/crawls/parks-australia.yml.example` and save it to the same directory. You can name this whatever you like. Change any necessary configuration in the file.
 
 Next, run the crawler
-`./bin/crawl parks-australia.example.yml`
+`./bin/crawl --crawl-config config/crawls/parks-australia.yml`
 
 The crawl progress will be logged to your terminal, and results will gradually be added to the specified output directory.

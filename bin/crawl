@@ -19,16 +19,31 @@ def die(message, print_help = false)
 end
 
 #---------------------------------------------------------------------------------------------------
+def load_yaml(file_path)
+  die("Config file #{file_path} does not exist!") unless File.readable?(file_path)
+  config =
+    begin
+      YAML.load_file(file_path)
+    rescue StandardError => e
+      die("Failed to load config file #{file_path}: #{e}")
+    end
+  config
+end
+
+#---------------------------------------------------------------------------------------------------
 def print_usage_help
-  puts "Usage: #{$PROGRAM_NAME} [options] CONFIG_FILE"
-  puts
-  puts 'Where:'
-  puts ' --debug     Enable verbose mode (optional)'
-  puts ' --help      Shows this help.'
-  puts
-  puts 'Useful examples:'
-  puts " # #{$PROGRAM_NAME} crawler-name.yml"
-  puts
+  puts <<-EOF
+Usage: #{$PROGRAM_NAME} [options]
+
+Where:
+--crawl-config  Path to crawler config file (required)
+--es-config     Path to elasticsearch config file (optional)
+--debug         Enable verbose mode (optional)
+--help          Shows this help.
+
+Useful examples:
+# #{$PROGRAM_NAME} --es-config elasticsearch.yml --crawl-config crawler.yml
+  EOF
 end
 
 #---------------------------------------------------------------------------------------------------
@@ -38,18 +53,29 @@ verbose_logging = false
 # Parse options
 opts = GetoptLong.new(
   ['--debug', '-v', GetoptLong::NO_ARGUMENT],
-  ['--help',  '-h', GetoptLong::NO_ARGUMENT]
+  ['--help', '-h', GetoptLong::NO_ARGUMENT],
+  ['--es-config', GetoptLong::REQUIRED_ARGUMENT],
+  ['--crawl-config', GetoptLong::REQUIRED_ARGUMENT]
 )
+
+es_config = {}
+crawl_config = nil
 
 # Process options
 begin
-  opts.each do |opt, _arg|
+  opts.each do |opt, arg|
     case opt
     when '--debug'
       verbose_logging = true
     when '--help'
       print_usage_help
       exit(0)
+    when '--es-config'
+      es_config = load_yaml(arg)
+    when '--crawl-config'
+      crawl_config = load_yaml(arg)
+    else
+      die("#{opt} is not a supported option. Use #{$PROGRAM_NAME} --help to see supported options.")
     end
   end
 rescue GetoptLong::Error => e
@@ -57,34 +83,11 @@ rescue GetoptLong::Error => e
   die(e, true)
 end
 
-# ES config path is static
-es_config_file_path = "config/elasticsearch.yml"
-
-# Validate and load the ES config file
-die("ES config elasticsearch.yml does not exist!") unless File.readable?(es_config_file_path)
-es_config =
-  begin
-    YAML.load_file(es_config_file_path)
-  rescue StandardError => e
-    die("Failed to load config elasticsearch.yml: #{e}")
-  end
-
-# Get crawler config file name from command line (last argument)
-crawler_config_file = ARGV.shift
-crawler_config_file_path = "config/crawlers/#{crawler_config_file}"
-
-# Validate and load the crawler config file
-die('Please specify the crawler config file!') unless crawler_config_file
-die("Crawler config #{crawler_config_file.inspect} does not exist!") unless File.readable?(crawler_config_file_path)
-crawler_config =
-  begin
-    YAML.load_file(crawler_config_file_path)
-  rescue StandardError => e
-    die("Failed to load crawler config #{crawler_config_file.inspect}: #{e}")
-  end
+# Require a crawl config
+die('Please specify the crawler config file.') if crawl_config == nil
 
 # Combine configs and apply to crawler
-config = es_config.merge(crawler_config)
+config = es_config.merge(crawl_config)
 crawl_config = Crawler::API::Config.new(**config.deep_symbolize_keys)
 crawl = Crawler::API::Crawl.new(crawl_config)
 

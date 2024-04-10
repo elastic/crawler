@@ -62,4 +62,4 @@ output
 
 # Config files
 config/*.yml
-config/crawlers/*.yml
+config/crawls/*.yml

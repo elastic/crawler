@@ -18,8 +18,14 @@ module Crawler
       end
 
       @index_name = config.output_index
-      @client = Utility::EsClient.new(config.elasticsearch, system_logger)
-      @operation_queue = Utility::BulkQueue.new
+
+      es_config = config.elasticsearch
+      @client = Utility::EsClient.new(es_config, system_logger)
+      @operation_queue = Utility::BulkQueue.new(
+        es_config.dig(:bulk_api, :max_items),
+        es_config.dig(:bulk_api, :max_size_bytes),
+        system_logger
+      )
 
       @queued = {
         :indexed_document_count => 0,
@@ -45,7 +51,7 @@ module Crawler
       system_logger.debug("Added doc #{doc['id']} to bulk queue. Current stats: #{@operation_queue.current_stats}")
 
       @queued[:indexed_document_count] += 1
-      @queued[:indexed_document_volume] += @operation_queue.serialize(payload).bytesize
+      @queued[:indexed_document_volume] += @operation_queue.bytesize(payload)
 
       success
     end
@@ -67,8 +73,14 @@ module Crawler
       begin
         response = @client.bulk(:body => data) # TODO: add pipelines, parse response
       rescue Utility::EsClient::IndexingFailedError => e
+        system_logger.warn('####### DATA START #######')
+        system_logger.warn(data)
+        system_logger.warn('####### DATA END #######')
         system_logger.warn("Bulk index failed: #{e}")
       rescue StandardError => e
+        system_logger.warn('####### DATA START #######')
+        system_logger.warn(data)
+        system_logger.warn('####### DATA END #######')
         system_logger.warn("Bulk index failed for unexpected reason: #{e}")
         raise e
       end
