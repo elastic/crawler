@@ -36,7 +36,7 @@ def print_usage_help
 Usage: #{$PROGRAM_NAME} [options]
 
 Where:
---crawl-config  Path to crawler config file (required)
+--crawl-config  Path to crawl config file (required)
 --es-config     Path to elasticsearch config file (optional)
 --debug         Enable verbose mode (optional)
 --help          Shows this help.
@@ -84,7 +84,7 @@ rescue GetoptLong::Error => e
 end
 
 # Require a crawl config
-die('Please specify the crawler config file.') if crawl_config == nil
+die('Please specify the crawl config file.') if crawl_config == nil
 
 # Combine configs and apply to crawler
 config = es_config.merge(crawl_config)
