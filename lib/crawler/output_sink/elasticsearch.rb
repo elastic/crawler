@@ -73,14 +73,8 @@ module Crawler
       begin
         response = @client.bulk(:body => data) # TODO: add pipelines, parse response
       rescue Utility::EsClient::IndexingFailedError => e
-        system_logger.warn('####### DATA START #######')
-        system_logger.warn(data)
-        system_logger.warn('####### DATA END #######')
         system_logger.warn("Bulk index failed: #{e}")
       rescue StandardError => e
-        system_logger.warn('####### DATA START #######')
-        system_logger.warn(data)
-        system_logger.warn('####### DATA END #######')
         system_logger.warn("Bulk index failed for unexpected reason: #{e}")
         raise e
       end
