@@ -8,7 +8,7 @@ require_dependency(File.join(__dir__, 'success'))
 module Crawler
   module Data
     module CrawlResult
-      class Sitemap < CrawlResult::Success
+      class Sitemap < Success
         # Allow constructor to be called on concrete result classes
         public_class_method :new
 

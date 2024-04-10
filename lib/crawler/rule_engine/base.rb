@@ -29,9 +29,9 @@ module Crawler
       end
 
       def output_crawl_result_outcome(crawl_result)
-        unless crawl_result.is_a?(Crawler::Data::CrawlResult)
+        unless crawl_result.is_a?(Crawler::Data::CrawlResult::Base)
           raise ArgumentError,
-                'Needs a Crawler::Data::CrawlResult object'
+                'Needs a Crawler::Data::CrawlResult::Base object'
         end
 
         return denied_outcome(:content_type_denied, crawl_result.error) if crawl_result.unsupported_content_type?

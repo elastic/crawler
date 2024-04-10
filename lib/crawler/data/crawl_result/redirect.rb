@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-require_dependency(File.join(__dir__, '..', 'crawl_result'))
+require_dependency(File.join(__dir__, 'base'))
 
 module Crawler
   module Data
     module CrawlResult
-      class Redirect < CrawlResult
+      class Redirect < Base
         VALID_STATUS_CODES = (300..399).freeze
 
         attr_reader :redirect_chain, :location

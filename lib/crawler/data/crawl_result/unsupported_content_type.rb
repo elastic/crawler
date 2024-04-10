@@ -5,7 +5,7 @@ require_dependency(File.join(__dir__, 'error'))
 module Crawler
   module Data
     module CrawlResult
-      class UnsupportedContentType < CrawlResult::Error
+      class UnsupportedContentType < Error
         def initialize(content_type:, error: nil, **kwargs)
           suggestion = <<~EOF
             Check the URL content in your browser and make sure it is something

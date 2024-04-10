@@ -5,7 +5,7 @@ require_dependency(File.join(__dir__, 'error'))
 module Crawler
   module Data
     module CrawlResult
-      class RedirectError < CrawlResult::Error
+      class RedirectError < Error
         def initialize(**kwargs)
           suggestion = <<~EOF
             Check the URL content in your browser and make sure it is something

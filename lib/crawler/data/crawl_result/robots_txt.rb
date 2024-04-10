@@ -5,7 +5,7 @@ require_dependency(File.join(__dir__, 'success'))
 module Crawler
   module Data
     module CrawlResult
-      class RobotsTxt < CrawlResult::Success
+      class RobotsTxt < Success
         # Allow constructor to be called on concrete result classes
         public_class_method :new
       end

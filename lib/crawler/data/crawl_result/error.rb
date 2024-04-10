@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-require_dependency(File.join(__dir__, '..', 'crawl_result'))
+require_dependency(File.join(__dir__, 'base'))
 
 module Crawler
   module Data
     module CrawlResult
-      class Error < CrawlResult
+      class Error < Base
         # Fake status code to be used for fatal internal errors
         FATAL_ERROR_STATUS = 599
 

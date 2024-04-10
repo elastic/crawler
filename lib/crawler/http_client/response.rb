@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'active_support/core_ext/string/filters'
-require_dependency File.join(__dir__, '..', 'http_client')
+require_dependency File.join(__dir__, 'base')
 
 module Crawler
   module HttpClient

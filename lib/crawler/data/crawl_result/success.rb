@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
-require_dependency(File.join(__dir__, '..', 'crawl_result'))
+require_dependency(File.join(__dir__, 'base'))
 
 # The base class for all successful responses
 module Crawler
   module Data
     module CrawlResult
-      class Success < Crawler::Data::CrawlResult
+      class Success < Base
         VALID_STATUS_CODES = (200..299).freeze
 
         attr_reader :content

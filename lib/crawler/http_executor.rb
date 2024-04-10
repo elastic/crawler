@@ -127,7 +127,7 @@ module Crawler
     #-------------------------------------------------------------------------------------------------
     # Returns an HTTP client to be used for all requests
     def http_client
-      @http_client ||= Crawler::HttpClient.new(
+      @http_client ||= Crawler::HttpClient::Base.new(
         pool_max: 100,
         user_agent: config.user_agent,
         loopback_allowed: config.loopback_allowed,

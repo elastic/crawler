@@ -5,7 +5,7 @@ require_dependency(File.join(__dir__, 'error'))
 module Crawler
   module Data
     module CrawlResult
-      class HttpAuthDisallowedError < CrawlResult::Error
+      class HttpAuthDisallowedError < Error
         def initialize(error: nil, **kwargs)
           suggestion_message = <<~EOF
             Set `crawler.security.auth.allow_http: true` if you want to

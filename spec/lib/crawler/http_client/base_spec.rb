@@ -2,7 +2,7 @@
 
 require 'webrick/httpproxy'
 
-RSpec.describe(Crawler::HttpClient) do
+RSpec.describe(Crawler::HttpClient::Base) do
   let(:client_config) do
     {
       loopback_allowed: false,
@@ -10,7 +10,7 @@ RSpec.describe(Crawler::HttpClient) do
       logger: Logger.new($stdout)
     }
   end
-  let(:client) { Crawler::HttpClient.new(client_config) }
+  let(:client) { Crawler::HttpClient::Base.new(client_config) }
 
   #-------------------------------------------------------------------------------------------------
   let(:site_server_settings) do
@@ -250,7 +250,7 @@ RSpec.describe(Crawler::HttpClient) do
         with_mock_server do
           get('http://localhost:12347/')
           expect(mock_requests.first.accept_encoding.sort).to eq(
-            Crawler::HttpClient::CONTENT_DECODERS.keys.sort
+            Crawler::HttpClient::Base::CONTENT_DECODERS.keys.sort
           )
         end
       end
