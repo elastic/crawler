@@ -28,7 +28,7 @@ module Crawler
         allowed_outcome
       end
 
-      def output_crawl_result_outcome(crawl_result)
+      def output_crawl_result_outcome(crawl_result) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength, Metrics/CyclomaticComplexity
         unless crawl_result.is_a?(Crawler::Data::CrawlResult::Base)
           raise ArgumentError,
                 'Needs a Crawler::Data::CrawlResult::Base object'
@@ -39,7 +39,8 @@ module Crawler
         return denied_outcome(:noindex_meta_denied) if crawl_result.html? && crawl_result.meta_noindex?
 
         if crawl_result.redirect? && crawl_result.redirect_count > config.max_redirects
-          error = "Too many redirects (#{crawl_result.redirect_count}) while trying to download the page at #{crawl_result.original_url.inspect}"
+          error = "Too many redirects (#{crawl_result.redirect_count}) "\
+                  "while trying to download the page at #{crawl_result.original_url.inspect}"
           return denied_outcome(:too_many_redirects, error)
         end
 

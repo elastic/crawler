@@ -9,6 +9,7 @@ module Crawler
     class AllTrustingTrustManager
       include X509TrustManager
 
+      # rubocop:disable Naming/MethodName
       def checkClientTrusted(*)
         true
       end
@@ -20,6 +21,7 @@ module Crawler
       def getAcceptedIssuers
         []
       end
+      # rubocop:enable Naming/MethodName
     end
   end
 end

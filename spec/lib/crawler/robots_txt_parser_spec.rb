@@ -3,10 +3,10 @@
 RSpec.describe(Crawler::RobotsTxtParser) do
   let(:base_url) { 'http://example.com' }
   let(:robots_text) do
-    <<-EOL
+    <<-TXT
     User-agent: *
     Allow: /
-    EOL
+    TXT
   end
   let(:robot_parser) { described_class.new(robots_text, base_url: base_url) }
 
@@ -14,12 +14,12 @@ RSpec.describe(Crawler::RobotsTxtParser) do
     context 'when robots.txt points to absolute URL sitemap' do
       let(:custom_sitemap) { 'http://example.com/absolute-sitemap.xml' }
       let(:robots_text) do
-        <<-EOL
+        <<-TXT
         User-agent: *
         Disallow: /sso
 
         Sitemap: #{custom_sitemap}
-        EOL
+        TXT
       end
 
       it 'returns sitemap specified in robots.txt' do
@@ -31,12 +31,12 @@ RSpec.describe(Crawler::RobotsTxtParser) do
     context 'when robots.txt points to relative path sitemap' do
       let(:custom_sitemap) { '/relative-sitemap.xml' }
       let(:robots_text) do
-        <<-EOL
+        <<-TXT
         User-agent: *
         Disallow: /sso
 
         Sitemap: #{custom_sitemap}
-        EOL
+        TXT
       end
 
       it 'returns sitemap specified in robots.txt' do
@@ -50,10 +50,10 @@ RSpec.describe(Crawler::RobotsTxtParser) do
     context 'when crawl_delay is specified' do
       let(:crawl_delay) { 60 }
       let(:robots_text) do
-        <<-EOL
+        <<-TXT
         User-agent: *
         Crawl-delay: #{crawl_delay}
-        EOL
+        TXT
       end
 
       it 'returns the number to wait' do
@@ -71,7 +71,7 @@ RSpec.describe(Crawler::RobotsTxtParser) do
   context '#allowed?' do
     context 'when robots.txt has specific settings for our user agent' do
       let(:robots_text) do
-        <<~EOL
+        <<~TXT
           User-agent: *
           Disallow: /not-by-default
 
@@ -80,7 +80,7 @@ RSpec.describe(Crawler::RobotsTxtParser) do
 
           User-agent: Google-Bot
           Disallow: /not-for-google
-        EOL
+        TXT
       end
 
       it 'should use the crawler-specific directives block' do
@@ -95,10 +95,10 @@ RSpec.describe(Crawler::RobotsTxtParser) do
 
     context 'when robots.txt disallows the path' do
       let(:robots_text) do
-        <<-EOL
+        <<-TXT
         User-agent: *
         Disallow: /sso
-        EOL
+        TXT
       end
 
       it 'marks path as disallowed' do
@@ -110,11 +110,11 @@ RSpec.describe(Crawler::RobotsTxtParser) do
     context 'when robots.txt has non-USASCII bytes in it' do
       let(:robots_text) do
         bad_char = "\xE2"
-        (+<<-EOL).force_encoding('ASCII-8BIT')
+        (+<<-TXT).force_encoding('ASCII-8BIT')
           User-agent: *
           Disallow: /sso
           #{bad_char}
-        EOL
+        TXT
       end
 
       it 'marks path as allowed or disallowed as appropriate' do

@@ -30,26 +30,30 @@ module Crawler
         #-------------------------------------------------------------------------------------------
         # Checks the size of the queue before putting any more items on it
         # Raises an exception if the queue is full
-        def check_queue_size!
+        def check_queue_size! # rubocop:disable Metrics/MethodLength
           current_items = memory_queue.length
           if current_items >= memory_size_limit
-            maybe_threshold_alert(<<~EOF)
-              In-memory URL queue is full (#{current_items} items).
-              New URLs will not be added to it until there is more space available.
-              This may lead to missing pages in your search index.
-            EOF
+            maybe_threshold_alert(
+              <<~LOG
+                In-memory URL queue is full (#{current_items} items).
+                New URLs will not be added to it until there is more space available.
+                This may lead to missing pages in your search index.
+              LOG
+            )
             raise Crawler::Data::UrlQueue::QueueFullError,
                   "Too many items in URL queue: #{current_items} >= #{memory_size_limit}"
           end
 
-          if current_items >= warning_threshold(memory_size_limit)
-            maybe_threshold_alert(<<~EOF)
+          return unless current_items >= warning_threshold(memory_size_limit)
+
+          maybe_threshold_alert(
+            <<~LOG
               In-memory URL queue is #{WARN_THRESHOLD_PCT}% full (#{current_items} items).
               If we hit the limit of #{memory_size_limit} in-flight items,
               the crawler will be forced to start dropping new URLs,
               which may lead to missing pages in your search index.
-            EOF
-          end
+            LOG
+          )
         end
 
         #-------------------------------------------------------------------------------------------

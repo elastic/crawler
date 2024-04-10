@@ -32,7 +32,7 @@ module Crawler
         !!@private_networks_allowed
       end
 
-      def remove_private_addresses(host, resolved_addresses)
+      def remove_private_addresses(host, resolved_addresses) # rubocop:disable Metrics/MethodLength
         return resolved_addresses if resolved_addresses.blank?
 
         valid_addresses, invalid_addresses = resolved_addresses.partition do |a|
@@ -52,18 +52,18 @@ module Crawler
       end
 
       # Returns true if the given IP should be allowed during DNS resolution
-      def allowed_address?(a)
-        return false if a.is_loopback_address? && !loopback_allowed?
-        return false if local_address?(a) && !private_networks_allowed?
+      def allowed_address?(address)
+        return false if address.is_loopback_address? && !loopback_allowed?
+        return false if local_address?(address) && !private_networks_allowed?
 
         true
       end
 
       # Returns true if given IP address belongs to any of the networks considered private
-      def local_address?(a)
-        a.is_site_local_address?   || # RFC 1918 IP (10/8, 172.16/12, 192.168/16)
-          a.is_link_local_address? || # link-local unicast in IPv4 (169.254.0.0/16)
-          a.is_any_local_address?     # Wildcard IP address (0.0.0.0 in IPv4)
+      def local_address?(address)
+        address.is_site_local_address?   || # RFC 1918 IP (10/8, 172.16/12, 192.168/16)
+          address.is_link_local_address? || # link-local unicast in IPv4 (169.254.0.0/16)
+          address.is_any_local_address?     # Wildcard IP address (0.0.0.0 in IPv4)
       end
     end
   end

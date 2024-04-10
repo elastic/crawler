@@ -36,7 +36,7 @@ module Crawler
         end
 
         def to_s
-          "<CrawlResult::Redirect: id=#{id}, status_code=#{status_code}, original_url=#{original_url}, location=#{location}, redirect_count=#{redirect_count}>"
+          "<CrawlResult::Redirect: id=#{id}, status_code=#{status_code}, original_url=#{original_url}, location=#{location}, redirect_count=#{redirect_count}>" # rubocop:disable Layout/LineLength
         end
 
         def original_url

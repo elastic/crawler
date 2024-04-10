@@ -37,9 +37,10 @@ RSpec.describe(Crawler::RuleEngine::Base) do
       context 'with crawl delay' do
         before do
           @robots_txt_service = Crawler::RobotsTxtService.new(user_agent: 'Elastic Crawler')
-          @robots_txt_service.register_crawl_result(domain,
-                                                    double(status_code: 200,
-                                                           content: "User-agent: *\nDisallow: /wp-admin\nCrawl-delay: 600"))
+          @robots_txt_service.register_crawl_result(
+            domain,
+            double(status_code: 200, content: "User-agent: *\nDisallow: /wp-admin\nCrawl-delay: 600")
+          )
         end
 
         it 'allows' do

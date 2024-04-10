@@ -60,7 +60,7 @@ module Crawler
       @auth = auth
     end
 
-    def authorization_header_for_url(url)
+    def authorization_header_for_url(url) # rubocop:disable Metrics/CyclomaticComplexity, Metrics/MethodLength
       raise ArgumentError, 'Need a Crawler URL object!' unless url.is_a?(Crawler::Data::URL)
 
       match = auth&.find { |item| item.fetch('domain') == url.site }

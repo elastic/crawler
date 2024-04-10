@@ -61,7 +61,7 @@ module Crawler
     end
 
     class Failure < RobotsTxtParser
-      def initialize(base_url:, status_code:)
+      def initialize(base_url:, status_code:) # rubocop:disable Lint/MissingSuper
         @status_code = status_code
         @base_url = Crawler::Data::URL.parse(base_url)
         @robots_rules = Java::CrawlercommonsRobots::SimpleRobotRulesParser.new.failed_fetch(status_code)

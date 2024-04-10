@@ -7,10 +7,10 @@ module Crawler
     module CrawlResult
       class UnsupportedContentType < Error
         def initialize(content_type:, error: nil, **kwargs)
-          suggestion = <<~EOF
+          suggestion = <<~MSG
             Check the URL content in your browser and make sure it is something
             the crawler could understand.
-          EOF
+          MSG
 
           super(
             content_type: content_type,

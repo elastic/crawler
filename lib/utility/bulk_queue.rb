@@ -23,7 +23,9 @@ module Utility
       @size_threshold = (size_threshold || DEFAULT_SIZE_THRESHOLD).freeze
 
       @system_logger = system_logger
-      @system_logger.debug("Initialized BulkQueue with op_count_threshold #{@op_count_threshold} and size_threshold #{@size_threshold}.")
+      @system_logger.debug(
+        "Initialized BulkQueue with op_count_threshold #{@op_count_threshold} and size_threshold #{@size_threshold}."
+      )
 
       @buffer = []
       @current_op_count = 0

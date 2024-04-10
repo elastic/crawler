@@ -34,7 +34,7 @@ module Crawler
       store[domain.to_s]
     end
 
-    def url_disallowed_outcome(url)
+    def url_disallowed_outcome(url) # rubocop:disable Metrics/MethodLength
       domain = url.domain
 
       unless registered?(domain)
@@ -65,7 +65,7 @@ module Crawler
     attr_reader :store
 
     class AlwaysAllow < RobotsTxtService
-      def initialize(*); end
+      def initialize(*); end # rubocop:disable Lint/MissingSuper
 
       def registered?(*)
         true

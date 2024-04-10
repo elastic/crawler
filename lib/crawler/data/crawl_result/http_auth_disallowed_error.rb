@@ -7,10 +7,10 @@ module Crawler
     module CrawlResult
       class HttpAuthDisallowedError < Error
         def initialize(error: nil, **kwargs)
-          suggestion_message = <<~EOF
+          suggestion_message = <<~MSG
             Set `crawler.security.auth.allow_http: true` if you want to
             allow authenticated crawling of non-HTTPS URLs.
-          EOF
+          MSG
 
           super(
             error: error || 'Authenticated crawling of non-HTTPS URLs is not allowed',

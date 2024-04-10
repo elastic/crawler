@@ -29,7 +29,7 @@ module Crawler
       @config = config
     end
 
-    def document_fields(crawl_result)
+    def document_fields(crawl_result) # rubocop:disable Metrics/AbcSize
       remove_empty_values(
         'title' => crawl_result.document_title(limit: config.max_title_size),
         'body_content' => crawl_result.document_body(limit: config.max_body_size),
@@ -41,7 +41,7 @@ module Crawler
       )
     end
 
-    def url_components(url)
+    def url_components(url) # rubocop:disable Metrics/MethodLength
       url = Crawler::Data::URL.parse(url.to_s) unless url.is_a?(Crawler::Data::URL)
       path_components = url.path.split('/')
       remove_empty_values(

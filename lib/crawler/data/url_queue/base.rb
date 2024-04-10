@@ -45,10 +45,10 @@ module Crawler
         # Prints an alert about the queue size into the log, throttling it to make sure we do not
         # flood the logs with duplicate messages (logs once per WARN_THRESHOLD_PCT)
         def maybe_threshold_alert(message)
-          if time_since_last_threshold_alert >= WARN_THRESHOLD_PCT
-            system_logger.warn(message.squish.squeeze(' '))
-            @last_threshold_alert_timestamp = Time.now
-          end
+          return unless time_since_last_threshold_alert >= WARN_THRESHOLD_PCT
+
+          system_logger.warn(message.squish.squeeze(' '))
+          @last_threshold_alert_timestamp = Time.now
         end
 
         #-------------------------------------------------------------------------------------------

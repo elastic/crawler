@@ -24,7 +24,7 @@ module Utility
       super(connection_configs(es_config), &block)
     end
 
-    def connection_configs(es_config)
+    def connection_configs(es_config) # rubocop:disable Metrics/MethodLength
       configs = {}
 
       if es_config[:api_key]
@@ -48,7 +48,7 @@ module Utility
 
     private
 
-    def raise_if_necessary(response)
+    def raise_if_necessary(response) # rubocop:disable Metrics/MethodLength, Metrics/PerceivedComplexity
       if response['errors']
         first_error = nil
 

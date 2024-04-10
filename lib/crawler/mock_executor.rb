@@ -7,7 +7,7 @@ module Crawler
   class MockExecutor < Crawler::Executor
     attr_reader :mock_results
 
-    def initialize(mock_results = {})
+    def initialize(mock_results = {}) # rubocop:disable Lint/MissingSuper
       @mock_results = mock_results # Hash of normalized URL strings to CrawlResponse objects.
     end
 
@@ -15,7 +15,7 @@ module Crawler
       {}
     end
 
-    def run(crawl_task, follow_redirects: false)
+    def run(crawl_task, _follow_redirects: false)
       url = crawl_task.url
       mock_results.fetch(url.to_s, mock_404_result(url))
     end

@@ -14,7 +14,7 @@ module Crawler
       attr_reader :config, :crawl_queue, :seen_urls, :sink, :outcome, :outcome_message
       attr_accessor :executor
 
-      def initialize(config)
+      def initialize(config) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
         raise ArgumentError, 'Invalid config' unless config.is_a?(Config)
         raise ArgumentError, 'Missing domain allowlist' if config.domain_allowlist.empty?
         raise ArgumentError, 'Seed URLs need to be an enumerator' unless config.seed_urls.is_a?(Enumerator)
@@ -52,7 +52,9 @@ module Crawler
       end
 
       def start_shutdown!(reason:, allow_resume: false)
-        system_logger.info("Received a shutdown request (#{reason}), starting the shutdown (allow_resume: #{allow_resume})...")
+        system_logger.info(
+          "Received a shutdown request (#{reason}), starting the shutdown (allow_resume: #{allow_resume})..."
+        )
         @allow_resume = allow_resume
         @shutdown_started.make_true
       end
@@ -81,7 +83,7 @@ module Crawler
 
       #---------------------------------------------------------------------------------------------
       # Starts a new crawl described by the given config. The job is started immediately.
-      def start!
+      def start! # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
         events.crawl_start(
           url_queue_items: crawl_queue.length,
           seen_urls: seen_urls.count
@@ -116,7 +118,7 @@ module Crawler
       # Returns a hash with crawl-specific status information
       # Note: This is used by the `EventGenerator` class for crawl-status events and by the Crawler Status API.
       #       Please update OpenAPI specs if you add any new fields here.
-      def status
+      def status # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
         {
           queue_size: crawl_queue.length,
           pages_visited: stats.fetched_pages_count,

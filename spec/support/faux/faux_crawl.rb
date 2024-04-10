@@ -3,7 +3,7 @@
 require 'faux'
 require_relative 'results_collection'
 
-class FauxCrawl
+class FauxCraw # rubocop:disable Metrics/ClassLength
   module Settings
     def self.faux_url
       "http://#{faux_ip}:#{faux_port}/"
@@ -42,7 +42,7 @@ class FauxCrawl
 
   delegate :crawl, to: :results
 
-  def initialize(*sites)
+  def initialize(*sites) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
     @options = sites.extract_options!
     @sites = configure_sites(*sites)
 
@@ -84,7 +84,7 @@ class FauxCrawl
   end
 
   #-------------------------------------------------------------------------------------------------
-  def start_sites
+  def start_sites # rubocop:disable Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity, Metrics/AbcSize
     sites_to_start = sites.uniq(&:port)
     @site_containers = sites_to_start.collect do |site|
       site_options = { port: site.port, debug: true, start: false }
@@ -114,9 +114,9 @@ class FauxCrawl
       sleep 0.05
     end
 
-    if ports_remaining.any?
-      raise "Unable to start all Faux sites; these ports never were available: #{ports_remaining.inspect}"
-    end
+    return unless ports_remaining.any?
+
+    raise "Unable to start all Faux sites; these ports never were available: #{ports_remaining.inspect}"
   end
 
   #-------------------------------------------------------------------------------------------------
@@ -141,7 +141,7 @@ class FauxCrawl
   end
 
   #-------------------------------------------------------------------------------------------------
-  def configure_crawl
+  def configure_crawl # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
     # Prepare crawl config
     config = {
       crawl_id: crawl_id,

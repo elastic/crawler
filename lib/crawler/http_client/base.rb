@@ -21,10 +21,9 @@ class BrotliInputStreamFactory
   end
 end
 
-#---------------------------------------------------------------------------------------------------
 module Crawler
   module HttpClient
-    class Base
+    class Base # rubocop:disable Metrics/ClassLength
       #
       # Please note: We cannot have these java_import calls at the top level
       # because it causes conflicts with Manticore's imports of httpclient v4.5
@@ -76,7 +75,7 @@ module Crawler
       end
 
       #-------------------------------------------------------------------------------------------------
-      def head(url, headers: nil)
+      def head(url, headers: nil) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
         raise ArgumentError, 'Need a Crawler URL object!' unless url.is_a?(Crawler::Data::URL)
 
         # Check to make sure connection pool is healthy before adding more requests to it
@@ -114,7 +113,7 @@ module Crawler
       end
 
       #-------------------------------------------------------------------------------------------------
-      def get(url, headers: nil)
+      def get(url, headers: nil) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
         raise ArgumentError, 'Need a Crawler URL object!' unless url.is_a?(Crawler::Data::URL)
 
         # Check to make sure connection pool is healthy before adding more requests to it
@@ -173,7 +172,7 @@ module Crawler
 
       attr_reader :config, :client, :connection_manager, :logger, :finalizers
 
-      def new_http_client
+      def new_http_client # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
         builder = HttpClientBuilder.create
         builder.set_user_agent(config.user_agent)
         builder.disable_cookie_management
@@ -193,7 +192,7 @@ module Crawler
       end
 
       #-------------------------------------------------------------------------------------------------
-      def new_connection_manager
+      def new_connection_manager # rubocop:disable Metrics/AbcSize
         builder = PoolingHttpClientConnectionManagerBuilder.create
         builder.set_ssl_socket_factory(https_socket_factory)
         builder.set_dns_resolver(dns_resolver)
@@ -215,7 +214,7 @@ module Crawler
       end
 
       #-------------------------------------------------------------------------------------------------
-      def ssl_trust_managers
+      def ssl_trust_managers # rubocop:disable Metrics/MethodLength
         if config.ssl_verification_mode == 'none'
           [AllTrustingTrustManager.new]
         else
@@ -311,15 +310,15 @@ module Crawler
 
       #-------------------------------------------------------------------------------------------------
       # Returns a proxy host object to be used for all connections
-      def proxy_host
+      def proxy_host # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
         return nil unless config.http_proxy_host
 
-        logger.debug(<<~EOF.squish)
+        logger.debug(<<~LOG.squish)
           Proxy configuration:
           scheme=#{config.http_proxy_scheme},
           host=#{config.http_proxy_host},
           port=#{config.http_proxy_port}
-        EOF
+        LOG
 
         HttpHost.new(
           config.http_proxy_scheme,
@@ -333,44 +332,44 @@ module Crawler
       # By default, it will be empty and not have any credentials in it
       def credentials_provider
         BasicCredentialsProvider.new.tap do |provider|
-          if config.http_proxy_host && proxy_credentials
-            logger.debug('Enabling proxy auth!')
-            proxy_auth_scope = AuthScope.new(proxy_host)
-            provider.set_credentials(proxy_auth_scope, proxy_credentials)
-          end
+          next unless config.http_proxy_host && proxy_credentials
+
+          logger.debug('Enabling proxy auth!')
+          proxy_auth_scope = AuthScope.new(proxy_host)
+          provider.set_credentials(proxy_auth_scope, proxy_credentials)
         end
       end
 
       #-------------------------------------------------------------------------------------------------
       # Returns HTTP credentials to be used for proxy requests
       def proxy_credentials
-        if config.http_proxy_username && config.http_proxy_password
-          UsernamePasswordCredentials.new(
-            config.http_proxy_username,
-            config.http_proxy_password.to_java_string.to_char_array
-          )
-        end
+        return unless config.http_proxy_username && config.http_proxy_password
+
+        UsernamePasswordCredentials.new(
+          config.http_proxy_username,
+          config.http_proxy_password.to_java_string.to_char_array
+        )
       end
 
       #-------------------------------------------------------------------------------------------------
       # Checks the status of the connection pool and logs information about it
-      def check_connection_pool_stats!
+      def check_connection_pool_stats! # rubocop:disable Metrics/MethodLength
         stats = connection_pool_stats
         used_connections = stats.leased + stats.available
 
         if used_connections >= stats.max
-          logger.error(<<~EOF.squish)
+          logger.error(<<~LOG.squish)
             HTTP client connection pool is full!
             If the issue persists, it may be an indication of an issue with the remote server
             or a problem with the crawler. Current pool status: #{stats}
-          EOF
+          LOG
         elsif used_connections >= stats.max * 0.9
-          logger.warn(<<~EOF.squish)
+          logger.warn(<<~LOG.squish)
             HTTP client connection pool is 90% full!
             If we hit the 100% utilization, the crawler will not be able to request any more pages
             from the remote server. This may be an indication of an issue with the remote server
             or a problem with the crawler. Current pool status: #{stats}
-          EOF
+          LOG
         else
           logger.debug("Connection pool stats: #{stats}")
         end

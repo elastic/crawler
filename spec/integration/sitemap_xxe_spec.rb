@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# rubocop:disable Lint/ConstantDefinitionInBlock
 RSpec.describe 'Sitemap XXE vulnerability specs' do
   DO_NOT_VISIT_TXT_PATH = File.expand_path(File.join(FIXTURES_HOME, 'do-not-visit.txt'))
   SITEMAP_XML = <<~XML
@@ -81,3 +82,4 @@ RSpec.describe 'Sitemap XXE vulnerability specs' do
     end
   end
 end
+# rubocop:enable Lint/ConstantDefinitionInBlock

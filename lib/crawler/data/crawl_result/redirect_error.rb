@@ -7,10 +7,10 @@ module Crawler
     module CrawlResult
       class RedirectError < Error
         def initialize(**kwargs)
-          suggestion = <<~EOF
+          suggestion = <<~LOG
             Check the URL content in your browser and make sure it is something
             the crawler could understand.
-          EOF
+          LOG
 
           super(suggestion_message: suggestion, **kwargs)
         end

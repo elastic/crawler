@@ -2,8 +2,9 @@
 
 require_dependency File.join(__dir__, 'executor')
 
+# rubocop:disable Metrics/MethodLength, Metrics/AbcSize
 module Crawler
-  class HttpExecutor < Crawler::Executor
+  class HttpExecutor < Crawler::Executor # rubocop:disable Metrics/ClassLength
     class ResponseTooLarge < StandardError; end
 
     SUPPORTED_MIME_TYPES = {
@@ -14,7 +15,7 @@ module Crawler
     #-------------------------------------------------------------------------------------------------
     attr_reader :config, :logger
 
-    def initialize(config)
+    def initialize(config) # rubocop:disable Lint/MissingSuper
       @config = config
       @logger = config.system_logger.tagged(:http)
     end
@@ -31,7 +32,8 @@ module Crawler
     #-------------------------------------------------------------------------------------------------
     # Make sure response.release_connection is called to return unused connection back to the pool
     # see more https://frameworks.readthedocs.io/en/latest/network/http/httpClientConnectionManagement.html#connection-persistence-re-use
-    def run(crawl_task, follow_redirects: false)
+    def run(crawl_task, follow_redirects: false) # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+      # rubocop:disable Metrics/BlockLength
       handling_http_errors(crawl_task) do
         loop do
           if crawl_task.http_url_with_auth? && !config.http_auth_allowed
@@ -49,11 +51,11 @@ module Crawler
 
             redirect_count = crawl_task.redirect_chain.size + 1
             if redirect_count > config.max_redirects
-              error = <<~EOF.squish
+              error = <<~LOG.squish
                 Not following the HTTP redirect from #{crawl_task.url}
                 to #{response.redirect_location} because the redirect chain
                 is too long (#{redirect_count} pages).
-              EOF
+              LOG
               logger.warn(error)
 
               return Crawler::Data::CrawlResult::RedirectError.new(
@@ -90,6 +92,7 @@ module Crawler
           )
         end
       end
+      # rubocop:enable Metrics/BlockLength
     end
 
     #-------------------------------------------------------------------------------------------------
@@ -329,3 +332,4 @@ module Crawler
     end
   end
 end
+# rubocop:enable Metrics/MethodLength, Metrics/AbcSize

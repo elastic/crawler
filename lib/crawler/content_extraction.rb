@@ -13,18 +13,15 @@ module Crawler
     def self.transform!(doc)
       loop do
         node = doc.has_attribute?(EXCLUDE_ATTR) ? doc : doc.at_css(EXCLUDE_ATTR_SELECTOR)
+        break unless node
 
-        if node
-          traverse!(node, mode: :exclude)
-        else
-          break
-        end
+        traverse!(node, mode: :exclude)
       end
 
       doc
     end
 
-    def self.traverse!(node, mode:)
+    def self.traverse!(node, mode:) # rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
       # The exclusion attribute is used to determine what to traverse next in the parent loop,
       # so we should remove the attribute while traversing to avoid an infinite loop.
       node.remove_attribute(EXCLUDE_ATTR) if node.has_attribute?(EXCLUDE_ATTR)

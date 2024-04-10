@@ -5,7 +5,7 @@ require_dependency File.join(__dir__, 'base')
 
 module Crawler
   module HttpClient
-    class Response
+    class Response # rubocop:disable Metrics/ClassLength
       java_import org.apache.hc.core5.util.ByteArrayBuffer
       java_import org.apache.hc.core5.http.ContentType
       java_import org.apache.hc.core5.http.message.StatusLine
@@ -31,7 +31,11 @@ module Crawler
         apache_response.close
       end
 
-      def body(max_response_size: DEFAULT_MAX_RESPONSE_SIZE, request_timeout: nil, default_encoding: Encoding.default_external)
+      def body(
+        max_response_size: DEFAULT_MAX_RESPONSE_SIZE,
+        request_timeout: nil,
+        default_encoding: Encoding.default_external
+      )
         return @body if defined?(@body)
 
         return unless http_entity.content
@@ -62,7 +66,7 @@ module Crawler
         v.is_a?(Array) ? v.first : v
       end
 
-      def headers
+      def headers # rubocop:disable Metrics/AbcSize
         @headers ||= apache_response.headers.each_with_object({}) do |h, o|
           key = h.get_name.downcase
 
@@ -131,7 +135,7 @@ module Crawler
 
       #-------------------------------------------------------------------------------------------------
       # Load data from the input http entity into a byte buffer, controlling for response size limits
-      def consume_http_entity(max_response_size:, request_timeout:)
+      def consume_http_entity(max_response_size:, request_timeout:) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
         stream = http_entity.content
 
         # Make sure we understand the encoding used by the server
@@ -150,11 +154,11 @@ module Crawler
 
           total_downloaded = response_buffer.length + received_bytes
           if max_response_size && total_downloaded >= max_response_size
-            raise Crawler::HttpClient::ResponseTooLarge, <<~EOM.squish
+            raise Crawler::HttpClient::ResponseTooLarge, <<~ERROR.squish
               Failed to fetch the response from #{url.inspect} after downloading
               #{total_downloaded} bytes (hit the response size limit of
               #{max_response_size})
-            EOM
+            ERROR
           end
 
           response_buffer.append(chunk, 0, received_bytes)

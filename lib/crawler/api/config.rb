@@ -15,7 +15,7 @@ java_import java.security.cert.X509Certificate
 #
 module Crawler
   module API
-    class Config
+    class Config # rubocop:disable Metrics/ClassLength
       CONFIG_FIELDS = [
         :crawl_id,             # Unique identifier of the crawl (used in logs, etc)
         :crawl_stage,          # Stage name for multi-stage crawls
@@ -54,9 +54,10 @@ module Crawler
         :http_proxy_username,   # Proxy auth user (default: no auth)
         :http_proxy_password,   # Proxy auth password (default: no auth)
 
-        # URL queue configuration
-        :url_queue,            # The type of URL queue to be used
-        :url_queue_size_limit, # The maximum number of in-flight URLs we can hold. Specific semantics of this setting depend on the queue implementation
+        # The type of URL queue to be used
+        :url_queue,
+        # The max number of in-flight URLs we can hold. Specific semantics of this depend on the queue implementation
+        :url_queue_size_limit,
 
         # Crawl-level limits
         :max_duration,         # Maximum duration of a single crawl, in seconds
@@ -171,7 +172,7 @@ module Crawler
       attr_reader :system_logger # for free-text logging
       attr_reader :event_logger  # for structured logs
 
-      def initialize(params = {})
+      def initialize(params = {}) # rubocop:disable Metrics/MethodLength
         params = DEFAULTS.merge(params.symbolize_keys)
 
         # Make sure we don't have any unexpected parameters
@@ -220,7 +221,7 @@ module Crawler
       #---------------------------------------------------------------------------------------------
       # Generate a new crawl id if needed
       def configure_crawl_id!
-        @crawl_id ||= BSON::ObjectId.new.to_s
+        @crawl_id ||= BSON::ObjectId.new.to_s # rubocop:disable Naming/MemoizedInstanceVariableName
       end
 
       #---------------------------------------------------------------------------------------------
@@ -289,12 +290,12 @@ module Crawler
 
       #---------------------------------------------------------------------------------------------
       def configure_robots_txt_service!
-        @robots_txt_service ||= Crawler::RobotsTxtService.new(user_agent: user_agent)
+        @robots_txt_service ||= Crawler::RobotsTxtService.new(user_agent: user_agent) # rubocop:disable Naming/MemoizedInstanceVariableName
       end
 
       #---------------------------------------------------------------------------------------------
       def configure_http_header_service!
-        @http_header_service ||= Crawler::HttpHeaderService.new(auth: auth)
+        @http_header_service ||= Crawler::HttpHeaderService.new(auth: auth) # rubocop:disable Naming/MemoizedInstanceVariableName
       end
 
       #---------------------------------------------------------------------------------------------

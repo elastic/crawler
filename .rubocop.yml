@@ -8,3 +8,11 @@ AllCops:
     - 'vendor/**/*'
     - 'Gemfile'
     - 'bin/**/*'
+
+Style/Documentation:
+  Enabled: false
+
+# Disable for specs
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*'

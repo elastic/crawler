@@ -34,11 +34,11 @@ module Crawler
       end
 
       def suggestion_message
-        <<~EOF
+        <<~MSG
           The crawler understands the following encodings: #{supported_encodings.join(', ')}.
           Try disabling HTTP content compression in the crawler configuration
           before running your crawl.
-        EOF
+        MSG
       end
     end
 
@@ -47,8 +47,8 @@ module Crawler
       attr_reader :java_exception, :root_cause
 
       # Returns the root cause of a series of Java exceptions
-      def self.exception_root_cause(e)
-        e.cause ? exception_root_cause(e.cause) : e
+      def self.exception_root_cause(exception)
+        exception.cause ? exception_root_cause(exception.cause) : exception
       end
 
       def initialize(java_exception)
@@ -93,7 +93,7 @@ module Crawler
     class SslException < BaseErrorFromJava
       DISABLE_SSL = 'disable SSL certificate validation (non-production environments only)'
 
-      def self.for_java_error(error)
+      def self.for_java_error(error) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
         root_cause = exception_root_cause(error)
         error_class =
           case root_cause
@@ -107,7 +107,8 @@ module Crawler
             SslHostNameError
           when javax.net.ssl.SSLHandshakeException
             SslHandshakeError
-          when Java::SunSecurityProviderCertpath::SunCertPathBuilderException # java.sun.security.provider.certpath.SunCertPathBuilderException
+          when Java::SunSecurityProviderCertpath::SunCertPathBuilderException
+            # java.sun.security.provider.certpath.SunCertPathBuilderException
             SslCertificateChainError
           else
             self

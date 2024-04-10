@@ -4,8 +4,9 @@ require 'bson'
 require 'socket'
 require 'logger'
 
+# rubocop:disable Metrics/MethodLength, Metrics/ParameterLists
 module Crawler
-  class EventGenerator
+  class EventGenerator # rubocop:disable Metrics/ClassLength
     attr_reader :config
 
     delegate :system_logger, to: :config
@@ -33,13 +34,13 @@ module Crawler
     end
 
     #-----------------------------------------------------------------------------------------------
-    def log_error(e, message)
-      full_message = "#{message}: #{e.class}: #{e.message}"
+    def log_error(error, message)
+      full_message = "#{message}: #{error.class}: #{error.message}"
       system_logger.error("Crawl Error: #{full_message}")
       log_event(
         'event.type' => 'error',
         'error.message' => full_message,
-        'error.stack_trace' => e.backtrace&.join("\n")
+        'error.stack_trace' => error.backtrace&.join("\n")
       )
     end
 
@@ -113,14 +114,16 @@ module Crawler
 
     # Formats a crawl_status event for free text logging
     def crawl_status_for_system_log(status)
-      'Crawl status: ' + status.map { |kv| kv.join('=') }.join(', ')
+      "Crawl status: #{status.map { |kv| kv.join('=') }.join(', ')}"
     end
 
     #-----------------------------------------------------------------------------------------------
     # URL Life-cycle Events
     #-----------------------------------------------------------------------------------------------
     def url_seed(url:, source_url:, type:, crawl_depth:, source_type:)
-      system_logger.info("Added a new URL to the crawl queue: '#{url}' (type: #{type}, source: #{source_type}, depth: #{crawl_depth})")
+      system_logger.info(
+        "Added a new URL to the crawl queue: '#{url}' (type: #{type}, source: #{source_type}, depth: #{crawl_depth})"
+      )
       log_url_event(
         url,
         'event.type' => 'start',
@@ -134,7 +137,7 @@ module Crawler
     end
 
     #-----------------------------------------------------------------------------------------------
-    def url_fetch(url:, crawl_result:, auth_type: nil)
+    def url_fetch(url:, crawl_result:, auth_type: nil) # rubocop:disable Metrics/AbcSize
       status_code = crawl_result.status_code
       outcome = outcome_from_status_code(status_code)
       system_logger.info("Fetched a page '#{url}' with a status code #{status_code} and an outcome of '#{outcome}'")
@@ -210,8 +213,11 @@ module Crawler
     #-----------------------------------------------------------------------------------------------
     def url_output(url:, sink_name:, outcome:, start_time:, end_time:, duration:, message:, output: nil)
       system_logger_severity = outcome.to_s == 'success' ? Logger::INFO : Logger::WARN
-      system_logger.add(system_logger_severity,
-                        "Processed crawl results from the page '#{url}' via the #{sink_name} output. Outcome: #{outcome}. Message: #{message}.")
+      system_logger.add(
+        system_logger_severity,
+        "Processed crawl results from the page '#{url}' via the #{sink_name} output. "\
+        "Outcome: #{outcome}. Message: #{message}."
+      )
 
       event = {
         'event.type' => 'info',
@@ -316,7 +322,7 @@ module Crawler
     end
 
     #-----------------------------------------------------------------------------------------------
-    def log(event_info)
+    def log(event_info) # rubocop:disable Metrics/AbcSize
       final_event = ecs_common_fields.merge(event_info).compact
 
       # event.start and event.end can be passed as Time objects, but need to be UTC ISO 8601 strings.
@@ -340,3 +346,4 @@ module Crawler
     end
   end
 end
+# rubocop:enable Metrics/MethodLength, Metrics/ParameterLists

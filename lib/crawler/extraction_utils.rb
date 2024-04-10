@@ -25,7 +25,7 @@ module Crawler
 
     #-------------------------------------------------------------------------------------------------
     # Expects a Nokogiri HTML node, returns textual content from the node and all of its children
-    def self.node_descendant_text(node, ignore_tags = NON_CONTENT_TAGS)
+    def self.node_descendant_text(node, ignore_tags = NON_CONTENT_TAGS) # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity
       return '' unless node&.present?
 
       unless node.respond_to?(:children) && node.respond_to?(:name) && node.respond_to?(:text?)
@@ -46,7 +46,8 @@ module Crawler
           next
         end
 
-        # Remove tags that do not contain any text (and which sometimes are treated as CDATA, generating garbage text in jruby)
+        # Remove tags that do not contain any text
+        # (and which sometimes are treated as CDATA, generating garbage text in jruby)
         next if ignore_tags.include?(node.name)
 
         # Tags, that need to be replaced by spaces according to the standards
@@ -85,7 +86,7 @@ module Crawler
     #-------------------------------------------------------------------------------------------------
     # Limits the size of a given string value down to a given limit (in bytes)
     # This is heavily inspired by https://github.com/rails/rails/pull/27319/files
-    def self.limit_bytesize(string, limit)
+    def self.limit_bytesize(string, limit) # rubocop:disable Metrics/MethodLength
       return string if string.nil? || string.bytesize <= limit
 
       real_limit = limit - OMISSION.bytesize

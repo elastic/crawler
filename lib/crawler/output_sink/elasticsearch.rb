@@ -7,7 +7,7 @@ require_dependency File.join(__dir__, '..', '..', 'utility', 'bulk_queue')
 module Crawler
   module OutputSink
     class Elasticsearch < OutputSink::Base
-      def initialize(config)
+      def initialize(config) # rubocop:disable Metrics/MethodLength
         super
 
         raise ArgumentError, 'Missing output index' unless config.output_index
@@ -34,7 +34,7 @@ module Crawler
         }
       end
 
-      def write(crawl_result)
+      def write(crawl_result) # rubocop:disable Metrics/MethodLength
         doc = to_doc(crawl_result)
         payload = { doc: doc }
         index_op = { 'index' => { '_index' => @index_name, '_id' => doc['id'] } }
@@ -58,7 +58,7 @@ module Crawler
         system_logger.info(ingestion_stats)
       end
 
-      def flush
+      def flush # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
         data = @operation_queue.pop_all
         if data.empty?
           system_logger.debug('Queue was empty when attempting to flush.')
@@ -68,7 +68,7 @@ module Crawler
         system_logger.debug("Sending bulk request with #{data.size} items and flushing queue...")
 
         begin
-          response = @client.bulk(body: data) # TODO: add pipelines, parse response
+          @client.bulk(body: data) # TODO: add pipelines, parse response
         rescue Utility::EsClient::IndexingFailedError => e
           system_logger.warn("Bulk index failed: #{e}")
         rescue StandardError => e

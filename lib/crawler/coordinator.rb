@@ -4,9 +4,11 @@ require 'set'
 require 'benchmark'
 require 'concurrent/set'
 
+# There are too many lint issues here to individually disable
+# rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity
 module Crawler
   # The Coordinator is responsible for running an entire crawl from start to finish.
-  class Coordinator
+  class Coordinator # rubocop:disable Metrics/ClassLength
     SEED_LIST = 'seed-list'
 
     # How long to wait before retrying ingestion after a retryable error (like a r/o mode write)
@@ -112,7 +114,9 @@ module Crawler
 
       # Handle redirect errors as 404s
       if crawl_result.is_a?(Crawler::Data::CrawlResult::RedirectError)
-        system_logger.warn("Treating a robots.txt redirect error for #{domain} as a 404 response: #{crawl_result.error}")
+        system_logger.warn(
+          "Treating a robots.txt redirect error for #{domain} as a 404 response: #{crawl_result.error}"
+        )
         crawl_result = Crawler::Data::CrawlResult::Error.new(
           url: crawl_result.url,
           error: crawl_result.error,
@@ -155,15 +159,18 @@ module Crawler
       return if config.sitemap_discovery_disabled
 
       valid_auto_discovered_sitemap_urls = fetch_valid_auto_discovered_sitemap_urls!
-      if valid_auto_discovered_sitemap_urls.any?
-        system_logger.info("Seeding the crawl with #{valid_auto_discovered_sitemap_urls.count} auto-discovered (via robots.txt) Sitemap URLs...")
-        add_urls_to_backlog(
-          urls: valid_auto_discovered_sitemap_urls,
-          type: :sitemap,
-          source_type: SEED_LIST,
-          crawl_depth: 1
-        )
-      end
+      return unless valid_auto_discovered_sitemap_urls.any?
+
+      system_logger.info(
+        "Seeding the crawl with #{valid_auto_discovered_sitemap_urls.count} "\
+        'auto-discovered (via robots.txt) Sitemap URLs...'
+      )
+      add_urls_to_backlog(
+        urls: valid_auto_discovered_sitemap_urls,
+        type: :sitemap,
+        source_type: SEED_LIST,
+        crawl_depth: 1
+      )
     end
 
     def fetch_valid_auto_discovered_sitemap_urls!
@@ -205,18 +212,21 @@ module Crawler
       end
 
       if shutdown_started?
-        set_outcome(:shutdown,
-                    "Terminated the crawl with #{crawl_queue.length} unprocessed URLs due to a crawler shutdown (allow_resume=#{allow_resume?})")
+        set_outcome(
+          :shutdown,
+          "Terminated the crawl with #{crawl_queue.length} unprocessed URLs "\
+            "due to a crawler shutdown (allow_resume=#{allow_resume?})"
+        )
         system_logger.warn("Shutting down the crawl with #{crawl_queue.length} unprocessed URLs...")
         return true
       end
 
       if crawl_duration > config.max_duration
-        outcome_message = <<~EOF.squish
+        outcome_message = <<~OUTCOME.squish
           The crawl is taking too long (elapsed: #{crawl_duration.to_i} sec, limit: #{config.max_duration} sec).
           Shutting down with #{crawl_queue.length} unprocessed URLs.
           If you would like to increase the limit, change the max_duration setting.
-        EOF
+        OUTCOME
         set_outcome(:warning, outcome_message)
         system_logger.warn(outcome_message)
         return true
@@ -351,21 +361,23 @@ module Crawler
             crawl_depth: crawl_task.depth
           )
         else
-          system_logger.warn("Failed to parse canonical URL '#{canonical_link.link}' on '#{crawl_result.url}': #{canonical_link.error}")
+          system_logger.warn(
+            "Failed to parse canonical URL '#{canonical_link.link}' on '#{crawl_result.url}': #{canonical_link.error}"
+          )
         end
       end
 
       # Extract all links, analyze them and create crawl tasks for those we want to follow
       links = extract_links(crawl_result, crawl_depth: crawl_task.depth + 1)
-      if links.any?
-        add_urls_to_backlog(
-          urls: links,
-          type: :content,
-          source_type: :organic,
-          source_url: crawl_task.url,
-          crawl_depth: crawl_task.depth + 1
-        )
-      end
+      return unless links.any?
+
+      add_urls_to_backlog(
+        urls: links,
+        type: :content,
+        source_type: :organic,
+        source_url: crawl_task.url,
+        crawl_depth: crawl_task.depth + 1
+      )
     end
 
     #-----------------------------------------------------------------------------------------------
@@ -379,7 +391,9 @@ module Crawler
         good_links = Set.new
         extracted_links.each do |link|
           unless link.valid?
-            system_logger.warn("Failed to parse a #{link_type} link '#{link.link}' from sitemap '#{crawl_result.url}': #{link.error}")
+            system_logger.warn(
+              "Failed to parse a #{link_type} link '#{link.link}' from sitemap '#{crawl_result.url}': #{link.error}"
+            )
             next
           end
           good_links << link.to_url
@@ -445,14 +459,14 @@ module Crawler
 
     #-----------------------------------------------------------------------------------------------
     # Adds a set of URLs to the backlog for processing (if they are OK to follow)
-    def add_urls_to_backlog(urls:, type:, source_type:, crawl_depth:, source_url: nil, redirect_chain: [])
+    def add_urls_to_backlog(urls:, type:, source_type:, crawl_depth:, source_url: nil, redirect_chain: []) # rubocop:disable Metrics/ParameterLists
       return unless urls.any?
 
       allowed_urls = Set.new
       added_urls_count = 0
 
       # Check all URLs and filter out the ones we should actually crawl
-      urls.each do |url|
+      urls.each do |url| # rubocop:disable Metrics/BlockLength
         if shutdown_started?
           system_logger.warn(<<~LOG.squish)
             Received shutdown request while adding #{urls.count} URL(s) to the crawl queue.
@@ -488,16 +502,16 @@ module Crawler
       end
 
       # Seeding complete, log about it
-      if added_urls_count.positive?
-        system_logger.info("Added #{added_urls_count} URLs from a #{source_type} source to the queue...")
-        events.crawl_seed(added_urls_count, type: :content) if source_type == SEED_LIST
-      end
+      return unless added_urls_count.positive?
+
+      system_logger.info("Added #{added_urls_count} URLs from a #{source_type} source to the queue...")
+      events.crawl_seed(added_urls_count, type: :content) if source_type == SEED_LIST
     end
 
     #-----------------------------------------------------------------------------------------------
     # Adds a single url to the backlog for processing and logs an event associated with it
     # If the queue is full, drops the item on the floor and logs about it.
-    def add_url_to_backlog(url:, type:, source_type:, crawl_depth:, source_url:, redirect_chain: [])
+    def add_url_to_backlog(url:, type:, source_type:, crawl_depth:, source_url:, redirect_chain: []) # rubocop:disable Metrics/ParameterLists
       crawl_queue.push(
         Crawler::Data::CrawlTask.new(
           url: url,
@@ -532,7 +546,7 @@ module Crawler
     #-----------------------------------------------------------------------------------------------
     # Receives a newly-discovered url, makes a decision on what to do with it and records it in the log
     # FIXME: Feels like we need a generic way of encoding URL decisions, probably in the rules engine
-    def check_discovered_url(url:, type:, source_url:, crawl_depth:)
+    def check_discovered_url(url:, type:, source_url:, crawl_depth:) # rubocop:disable Metrics/PerceivedComplexity
       discover_event = {
         url: url,
         source_url: source_url,
@@ -611,3 +625,4 @@ module Crawler
     end
   end
 end
+# rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity

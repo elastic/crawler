@@ -7,8 +7,10 @@ module Crawler
     class CrawlTask
       AUTHORIZATION_HEADER_KEY = 'Authorization'
 
-      attr_reader :url, :depth, :type, :redirect_chain # URL object representing the target to fetch. # Positive integer. The number of ancestors including itself.  # An URL type value (content, sitemap, feed, etc) # A list of URLs we have visited before being redirected here
-      attr_accessor :authorization_header # This value contains sensitive data so it will not be stored in ES but instead set at runtime.
+      attr_reader :url, :depth, :type, :redirect_chain
+
+      # This value contains sensitive data so it will not be stored in ES but instead set at runtime.
+      attr_accessor :authorization_header
 
       def initialize(url:, type:, depth:, redirect_chain: [])
         @url = url
@@ -18,7 +20,7 @@ module Crawler
       end
 
       def inspect
-        "<CrawlTask: url=#{url}, type=#{type}, depth=#{depth}, redirect_count=#{redirect_chain.length}, auth=#{auth_type || 'none'}>"
+        "<CrawlTask: url=#{url}, type=#{type}, depth=#{depth}, redirect_count=#{redirect_chain.length}, auth=#{auth_type || 'none'}>" # rubocop:disable Layout/LineLength
       end
 
       def auth_type

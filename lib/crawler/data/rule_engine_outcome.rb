@@ -60,7 +60,7 @@ module Crawler
         def crawl_rule_timeout(options)
           DeniedOutcome.new(
             :rule_engine_denied,
-            message: format('Timeout while applying crawl rule: %{source}', options)
+            message: format('Timeout while applying crawl rule: %<source>s', options)
           )
         end
 
@@ -86,7 +86,7 @@ module Crawler
     class DeniedOutcome < RuleEngineOutcome
       attr_reader :deny_reason
 
-      def initialize(deny_reason, message:, details: {})
+      def initialize(deny_reason, message:, details: {}) # rubocop:disable Lint/MissingSuper
         @deny_reason = deny_reason
         @message = message
         @details = details
@@ -102,7 +102,7 @@ module Crawler
     end
 
     class AllowedOutcome < RuleEngineOutcome
-      def initialize(message: nil, details: {})
+      def initialize(message: nil, details: {}) # rubocop:disable Lint/MissingSuper
         @message = message
         @details = details
       end

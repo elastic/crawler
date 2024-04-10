@@ -80,7 +80,8 @@ RSpec.describe(Crawler::EventGenerator) do
     let(:message) { 'Something went wrong' }
     let(:system_logger_io) { StringIO.new }
     let(:expected_message) do
-      "Processed crawl results from the page '#{url}' via the #{sink_name} output. Outcome: #{outcome}. Message: #{message}."
+      "Processed crawl results from the page '#{url}' via the #{sink_name} output. "\
+      "Outcome: #{outcome}. Message: #{message}."
     end
 
     before do

@@ -70,7 +70,7 @@ RSpec.describe(Crawler::Coordinator) do
       )
     end
 
-    def process_crawl_result
+    def process_crawl_result # rubocop:disable Metrics/AbcSize
       allow(events).to receive(:url_output)
       allow(events).to receive(:url_discover)
       allow(events).to receive(:url_seed)
@@ -290,7 +290,7 @@ RSpec.describe(Crawler::Coordinator) do
             deny_reason: :too_many_unique_links
           )
         )
-        expect { add_urls_to_backlog([url]) }.to_not change { seen_urls.count }
+        expect { add_urls_to_backlog([url]) }.to_not change { seen_urls.count } # rubocop:disable Lint/AmbiguousBlockAssociation
       end
     end
 

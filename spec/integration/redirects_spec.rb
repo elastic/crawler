@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.describe 'Redirect handling' do
-  NUM_REDIRECTS = 20
+  let(:num_redirects) { 20 }
 
   let(:results) do
     FauxCrawl.crawl_site do
@@ -37,14 +37,14 @@ RSpec.describe 'Redirect handling' do
       end
 
       # Create a chain of redirects that are longer than max_redirects
-      NUM_REDIRECTS.times do |i|
+      num_redirects.times do |i|
         page "/redirect-#{i}" do
           redirect "/redirect-#{i + 1}"
         end
       end
 
       # Should not be indexed since it is referenced via a redirect chain that is too long
-      page "/redirect-#{NUM_REDIRECTS}"
+      page "/redirect-#{num_redirects}"
     end
   end
 

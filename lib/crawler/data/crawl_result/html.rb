@@ -5,7 +5,7 @@ require_dependency(File.join(__dir__, 'success'))
 module Crawler
   module Data
     module CrawlResult
-      class HTML < Success
+      class HTML < Success # rubocop:disable Metrics/ClassLength
         # Allow constructor to be called on concrete result classes
         public_class_method :new
 
@@ -29,7 +29,7 @@ module Crawler
 
         #---------------------------------------------------------------------------------------------
         # Returns the base URL that should be used for all relative links
-        def base_url
+        def base_url # rubocop:disable Metrics/MethodLength
           @base_url ||= begin
             # Check if there is a <base> tag with a href attribute we should be using
             base_href = extract_attribute_value('base[href]', 'href').to_s.strip
@@ -51,7 +51,7 @@ module Crawler
 
         #---------------------------------------------------------------------------------------------
         # Returns all links from the document as a set of URL objects
-        def extract_links(limit: nil, skip_invalid: false)
+        def extract_links(limit: nil, skip_invalid: false) # rubocop:disable Metrics/MethodLength
           links = Set.new
           limit_reached = false
 

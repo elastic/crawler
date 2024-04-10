@@ -9,7 +9,8 @@ module Crawler
         puts "# #{crawl_result.id}, #{crawl_result.url}, #{crawl_result.status_code}"
 
         if crawl_result.content_extractable_file?
-          puts "** [Content extractable file (content type: #{crawl_result.content_type}, content length: #{crawl_result.content.bytesize})] **"
+          puts "** [Content extractable file (content type: #{crawl_result.content_type}, "\
+               "content length: #{crawl_result.content.bytesize})] **"
         else
           puts crawl_result.content
         end
