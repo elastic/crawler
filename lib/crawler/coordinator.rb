@@ -215,7 +215,7 @@ module Crawler
         set_outcome(
           :shutdown,
           "Terminated the crawl with #{crawl_queue.length} unprocessed URLs "\
-            "due to a crawler shutdown (allow_resume=#{allow_resume?})"
+          "due to a crawler shutdown (allow_resume=#{allow_resume?})"
         )
         system_logger.warn("Shutting down the crawl with #{crawl_queue.length} unprocessed URLs...")
         return true

@@ -10,7 +10,7 @@ RSpec.describe 'Sitemap specs from Swiftype.com' do
         sitemap '/sitemap.xml'
       end
 
-      instance_eval(&block) if block_given?
+      instance_eval(&block) if block
     end
   end
 

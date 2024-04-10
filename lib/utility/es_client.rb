@@ -51,9 +51,10 @@ module Utility
     def raise_if_necessary(response) # rubocop:disable Metrics/MethodLength, Metrics/PerceivedComplexity
       if response['errors']
         first_error = nil
+        ops = %w[index delete]
 
         response['items'].each do |item|
-          %w[index delete].each do |op|
+          ops.each do |op|
             next unless item.key?(op) && item[op].key?('error')
 
             first_error = item

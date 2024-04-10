@@ -23,7 +23,7 @@ module Crawler
       end
 
       def to_doc(crawl_result)
-        doc = { 'id': crawl_result.url_hash }
+        doc = { id: crawl_result.url_hash }
         doc.merge!(document_mapper.document_fields(crawl_result))
         doc.merge!(document_mapper.url_components(crawl_result.url))
         doc.deep_stringify_keys!

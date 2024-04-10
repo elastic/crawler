@@ -20,7 +20,7 @@ class StaticallyTaggedLogger
   # as a new logger with the tags applied to all subsequent logging calls.
   #
   def tagged(*tags, &block)
-    return StaticallyTaggedLogger.new(self, *tags) unless block_given?
+    return StaticallyTaggedLogger.new(self, *tags) unless block
 
     parent_logger.tagged(*tags, &block)
   end

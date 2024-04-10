@@ -34,7 +34,7 @@ module Crawler
       # Make it possible to compare links and use them as keys in hashes and sets
       #---------------------------------------------------------------------------------------------
       def hash
-        @hash ||= [base_url, link, node].map(&:to_s).map(&:hash).sum
+        @hash ||= [base_url, link, node].map(&:to_s).map(&:hash).sum # rubocop:disable Performance/Sum
       end
 
       def ==(other)
@@ -85,7 +85,7 @@ module Crawler
       # Returns an array with all the values of the rel attribute for the link
       # See https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel for details
       def rel
-        node ? node['rel'].to_s.squish.downcase.split(' ') : []
+        node ? node['rel'].to_s.squish.downcase.split : []
       end
 
       # Returns +true+ if the link contains a rel=nofollow attribute

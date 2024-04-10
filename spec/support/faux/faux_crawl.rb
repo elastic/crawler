@@ -24,7 +24,7 @@ class FauxCraw # rubocop:disable Metrics/ClassLength
   end
 
   def self.crawl_site(&block)
-    raise ArgumentError, 'Need a block defining a site' unless block_given?
+    raise ArgumentError, 'Need a block defining a site' unless block
 
     run(Faux.site(&block))
   end
@@ -192,7 +192,7 @@ class FauxCraw # rubocop:disable Metrics/ClassLength
   #-------------------------------------------------------------------------------------------------
   def coerce_to_absolute_urls(links)
     links.map do |link|
-      if !/^http/.match?(link)
+      if /^http/.match?(link)
         base_url = ::Crawler::Data::URL.parse(Settings.faux_url)
         base_url.join(link).to_s
       else
