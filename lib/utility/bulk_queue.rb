@@ -39,8 +39,8 @@ module Utility
     def add(operation, payload = nil)
       raise QueueOverflowError unless will_fit?(operation, payload)
 
-      operation_size = get_size(serialize(operation))
-      payload_size = get_size(serialize(payload))
+      operation_size = bytesize(operation)
+      payload_size = bytesize(payload)
 
       @current_operation_count += 1
       @current_buffer_size += operation_size
@@ -57,8 +57,8 @@ module Utility
     def will_fit?(operation, payload = nil)
       return false if @current_operation_count + 1 > @operation_count_threshold
 
-      operation_size = get_size(serialize(operation))
-      payload_size = get_size(serialize(payload))
+      operation_size = bytesize(operation)
+      payload_size = bytesize(payload)
 
       @current_buffer_size + operation_size + payload_size < @size_threshold
     end
@@ -71,14 +71,16 @@ module Utility
     end
 
     def serialize(document)
+      return '' unless document
+
       Elasticsearch::API.serializer.dump(document)
     end
 
     private
 
-    def get_size(str)
-      return 0 unless str
-      str.bytesize
+    def bytesize(item)
+      return 0 unless item
+      serialize(item).bytesize
     end
 
     def reset
