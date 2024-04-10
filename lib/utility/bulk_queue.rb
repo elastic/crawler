@@ -4,12 +4,14 @@
 # you may not use this file except in compliance with the Elastic License.
 #
 
+require('elasticsearch/api')
+
 module Utility
   class BulkQueue
     # Maximum number of operations in BULK Elasticsearch operation that will ingest the data
     DEFAULT_MAX_QUEUE_SIZE = 500
     # Maximum size of either whole BULK Elasticsearch operation or one document in it
-    DEFAULT_MAX_QUEUE_BYTES = 1 * 1024 * 1024
+    DEFAULT_MAX_QUEUE_BYTES = 5 * 1024 * 1024
 
     class QueueOverflowError < StandardError; end
 
@@ -37,8 +39,8 @@ module Utility
     def add(operation, payload = nil)
       raise QueueOverflowError unless will_fit?(operation, payload)
 
-      operation_size = get_size(operation)
-      payload_size = get_size(payload)
+      operation_size = get_size(serialize(operation))
+      payload_size = get_size(serialize(payload))
 
       @current_operation_count += 1
       @current_buffer_size += operation_size
@@ -55,8 +57,8 @@ module Utility
     def will_fit?(operation, payload = nil)
       return false if @current_operation_count + 1 > @operation_count_threshold
 
-      operation_size = get_size(operation)
-      payload_size = get_size(payload)
+      operation_size = get_size(serialize(operation))
+      payload_size = get_size(serialize(payload))
 
       @current_buffer_size + operation_size + payload_size < @size_threshold
     end
@@ -66,6 +68,10 @@ module Utility
         :current_operation_count => @current_operation_count,
         :current_buffer_size => @current_buffer_size
       }
+    end
+
+    def serialize(document)
+      Elasticsearch::API.serializer.dump(document)
     end
 
     private

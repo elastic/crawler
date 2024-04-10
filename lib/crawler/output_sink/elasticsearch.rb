@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require('elasticsearch/api')
-
 require_dependency File.join(__dir__, 'base')
 require_dependency File.join(__dir__, '..', '..', 'utility', 'es_client')
 require_dependency File.join(__dir__, '..', '..', 'utility', 'bulk_queue')
@@ -20,7 +18,7 @@ module Crawler
       end
 
       @index_name = config.output_index
-      @client = Utility::EsClient.new(config.elasticsearch)
+      @client = Utility::EsClient.new(config.elasticsearch, system_logger)
       @operation_queue = Utility::BulkQueue.new
 
       @queued = {
@@ -35,21 +33,19 @@ module Crawler
 
     def write(crawl_result)
       doc = to_doc(crawl_result)
-      serialized_doc = serialize({ 'doc': doc })
-      serialized_doc_size = serialized_doc.bytesize
+      payload = { doc: doc }
+      index_op = { 'index' => { '_index' => @index_name, '_id' => doc['id'] } }
 
-      index_op = serialize({ 'index' => { '_index' => @index_name, '_id' => doc['id'] } })
-
-      flush unless @operation_queue.will_fit?(index_op, serialized_doc)
+      flush unless @operation_queue.will_fit?(index_op, payload)
 
       @operation_queue.add(
         index_op,
-        serialized_doc
+        payload
       )
       system_logger.debug("Added doc #{doc['id']} to bulk queue. Current stats: #{@operation_queue.current_stats}")
 
       @queued[:indexed_document_count] += 1
-      @queued[:indexed_document_volume] += serialized_doc_size
+      @queued[:indexed_document_volume] += @operation_queue.serialize(payload).bytesize
 
       success
     end
@@ -69,13 +65,11 @@ module Crawler
       system_logger.debug("Sending bulk request with #{data.size} items and flushing queue...")
 
       begin
-        response = @client.bulk(:body => data) # TODO: add pipelines
+        response = @client.bulk(:body => data) # TODO: add pipelines, parse response
       rescue Utility::EsClient::IndexingFailedError => e
         system_logger.warn("Bulk index failed: #{e}")
       rescue StandardError => e
         system_logger.warn("Bulk index failed for unexpected reason: #{e}")
-        system_logger.debug("Bulk API request body: #{data}")
-        system_logger.debug("Response: #{response}")
         raise e
       end
 
@@ -91,12 +85,6 @@ module Crawler
 
     def ingestion_stats
       @completed.dup
-    end
-
-    private
-
-    def serialize(document)
-      Elasticsearch::API.serializer.dump(document)
     end
   end
 end

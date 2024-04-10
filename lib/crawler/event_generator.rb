@@ -301,6 +301,8 @@ module Crawler
       log_metric(static_crawl_fields.merge(fields))
     end
 
+    # TODO: log ingestion event
+
     #-----------------------------------------------------------------------------------------------
     def log_event(event_info)
       log(event_info.merge('event.kind' => 'event'))

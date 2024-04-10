@@ -150,7 +150,7 @@ module Crawler
         :default_encoding => 'UTF-8',
         :compression_enabled => true,
         :sitemap_discovery_disabled => false,
-        :head_requests_enabled => true,
+        :head_requests_enabled => false,
 
         :domains_extraction_rules => {}
       }

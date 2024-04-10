@@ -39,6 +39,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
     allow(bulk_queue).to receive(:add)
     allow(bulk_queue).to receive(:pop_all)
     allow(bulk_queue).to receive(:current_stats)
+    allow(bulk_queue).to receive(:serialize)
 
     allow(Elasticsearch::API).to receive(:serializer).and_return(serializer)
     allow(serializer).to receive(:dump).and_return('')
@@ -85,6 +86,11 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
   describe '#write' do
     let(:crawl_result) { FactoryBot.build(:html_crawl_result) }
 
+    before(:each) do
+      # serialize is only required for adding ingested doc size to stats, any string is fine for these tests
+      allow(bulk_queue).to receive(:serialize).and_return('{ doc: arbitrarily serialized for test }')
+    end
+
     context 'when bulk queue still has capacity' do
       it 'does not immediately send the document into elasticsearch' do
         expect(es_client).to_not receive(:bulk)
@@ -93,19 +99,46 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       end
     end
 
+    context 'when bulk queue is empty but first doc is too big for queue' do
+      let(:big_crawl_result) { FactoryBot.build(:html_crawl_result, url: 'http://example.com/big', content: 'pretend this string is big') }
+      let(:big_doc) { { id: big_crawl_result.url_hash, body_content: 'pretend this string is big' } }
+      let(:big_payload_doc) { { doc: big_doc } }
+
+      before(:each) do
+        allow(bulk_queue).to receive(:will_fit?).and_return(false)
+        allow(bulk_queue).to receive(:pop_all).and_return([])
+
+        allow(subject).to receive(:to_doc).with(big_crawl_result).and_return(big_doc)
+      end
+
+      it 'does not immediately send the document into elasticsearch' do
+        # emulated behaviour is:
+        # Empty queue will be popped before adding large doc
+        expect(bulk_queue).to receive(:pop_all).ordered
+        expect(bulk_queue).to receive(:add).with(anything, big_payload_doc).ordered
+
+        subject.write(big_crawl_result)
+      end
+    end
+
     context 'when bulk queue reports that it is full' do
       let(:crawl_result_one) { FactoryBot.build(:html_crawl_result, url: 'http://example.com/one', content: 'hoho, haha!') }
       let(:crawl_result_two) { FactoryBot.build(:html_crawl_result, url: 'http://example.com/two', content: 'work work!') }
-      let(:serialized_document_one) { "doc: { id: #{crawl_result_one.url_hash}, body_content: hoho, haha! }" }
-      let(:serialized_document_two) { "doc: { id: #{crawl_result_one.url_hash}, body_content: work work! }" }
+      let(:doc_one) { { id: crawl_result_one.url_hash, body_content: 'hoho, haha!' } }
+      let(:doc_two) { { id: crawl_result_two.url_hash, body_content: 'work work!' } }
+      let(:payload_doc_one) { { doc: doc_one } }
+      let(:payload_doc_two) { { doc: doc_two } }
 
       before(:each) do
         # emulated behaviour is:
         # Queue will be full once first item is added to it
         allow(bulk_queue).to receive(:will_fit?).and_return(true, false)
-        allow(bulk_queue).to receive(:pop_all).and_return([serialized_document_one])
+        allow(bulk_queue).to receive(:pop_all).and_return([payload_doc_one])
 
-        allow(serializer).to receive(:dump).and_return(serialized_document_one, serialized_document_two)
+        allow(subject).to receive(:to_doc).with(crawl_result_one).and_return(doc_one)
+        allow(subject).to receive(:to_doc).with(crawl_result_two).and_return(doc_two)
+
+        allow(serializer).to receive(:dump).and_return(payload_doc_one, payload_doc_two)
       end
 
       it 'sends a bulk request with data returned from bulk queue' do
@@ -116,9 +149,9 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       end
 
       it 'pops existing documents before adding a new one' do
-        expect(bulk_queue).to receive(:add).with(anything, serialized_document_one).ordered
+        expect(bulk_queue).to receive(:add).with(anything, payload_doc_one).ordered
         expect(bulk_queue).to receive(:pop_all).ordered
-        expect(bulk_queue).to receive(:add).with(anything, serialized_document_two).ordered
+        expect(bulk_queue).to receive(:add).with(anything, payload_doc_two).ordered
 
         subject.write(crawl_result_one)
         subject.write(crawl_result_two)
