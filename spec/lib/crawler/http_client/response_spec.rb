@@ -4,17 +4,17 @@ RSpec.describe(Crawler::HttpClient::Response) do
   let(:url) { Crawler::Data::URL.parse('http://example.org/') }
   let(:response) do
     Crawler::HttpClient::Response.new(
-      :apache_response => apache_response,
-      :url => url,
-      :request_start_time => 1.second.ago,
-      :request_end_time => Time.now
+      apache_response: apache_response,
+      url: url,
+      request_start_time: 1.second.ago,
+      request_end_time: Time.now
     )
   end
 
   #-------------------------------------------------------------------------------------------------
   describe '#check_content_encoding' do
-    let(:response_entity) { double(:response_entity, :content_encoding => encoding) }
-    let(:apache_response) { double(:apache_response, :entity => response_entity) }
+    let(:response_entity) { double(:response_entity, content_encoding: encoding) }
+    let(:apache_response) { double(:apache_response, entity: response_entity) }
 
     def check_content_encoding
       response.send(:check_content_encoding)

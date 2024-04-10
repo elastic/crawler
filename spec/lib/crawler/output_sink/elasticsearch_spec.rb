@@ -25,7 +25,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
   let(:bulk_queue) { double }
   let(:serializer) { double }
 
-  let(:document) { { :id => 15 } }
+  let(:document) { { id: 15 } }
   let(:serialized_document) { "id: #{document[:id]}, text: 'hoho, haha!'" }
   let(:deleted_id) { 25 }
 
@@ -100,7 +100,9 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
     end
 
     context 'when bulk queue is empty but first doc is too big for queue' do
-      let(:big_crawl_result) { FactoryBot.build(:html_crawl_result, url: 'http://example.com/big', content: 'pretend this string is big') }
+      let(:big_crawl_result) do
+        FactoryBot.build(:html_crawl_result, url: 'http://example.com/big', content: 'pretend this string is big')
+      end
       let(:big_doc) { { id: big_crawl_result.url_hash, body_content: 'pretend this string is big' } }
       let(:big_payload_doc) { { doc: big_doc } }
 
@@ -122,8 +124,12 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
     end
 
     context 'when bulk queue reports that it is full' do
-      let(:crawl_result_one) { FactoryBot.build(:html_crawl_result, url: 'http://example.com/one', content: 'hoho, haha!') }
-      let(:crawl_result_two) { FactoryBot.build(:html_crawl_result, url: 'http://example.com/two', content: 'work work!') }
+      let(:crawl_result_one) do
+        FactoryBot.build(:html_crawl_result, url: 'http://example.com/one', content: 'hoho, haha!')
+      end
+      let(:crawl_result_two) do
+        FactoryBot.build(:html_crawl_result, url: 'http://example.com/two', content: 'work work!')
+      end
       let(:doc_one) { { id: crawl_result_one.url_hash, body_content: 'hoho, haha!' } }
       let(:doc_two) { { id: crawl_result_two.url_hash, body_content: 'work work!' } }
       let(:payload_doc_one) { { doc: doc_one } }
@@ -167,7 +173,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
     end
 
     it 'sends data from bulk queue to elasticsearch' do
-      expect(es_client).to receive(:bulk).with(hash_including(:body => operation))
+      expect(es_client).to receive(:bulk).with(hash_including(body: operation))
 
       subject.flush
     end

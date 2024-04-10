@@ -2,7 +2,7 @@
 
 RSpec.describe Crawler::Data::CrawlTask do
   let(:url) { Crawler::Data::URL.parse('https://example.com/') }
-  let(:task) { Crawler::Data::CrawlTask.new(:url => url, :type => :content, :depth => 1) }
+  let(:task) { Crawler::Data::CrawlTask.new(url: url, type: :content, depth: 1) }
 
   describe '#inspect' do
     it 'should return a nice representation of the object for logging' do

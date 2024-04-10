@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 #
 # Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
 # or more contributor license agreements. Licensed under the Elastic License;
@@ -8,7 +10,7 @@ RSpec.describe(Utility::BulkQueue) do
   let(:subject) { described_class.new(count_threshold, size_threshold, system_logger) }
   let(:system_logger) { double }
   let(:count_threshold) { 50 }
-  let(:size_threshold) { 999999999 } # super high default
+  let(:size_threshold) { 999_999_999 } # super high default
 
   before(:each) do
     allow(system_logger).to receive(:debug)

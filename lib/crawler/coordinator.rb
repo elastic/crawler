@@ -12,25 +12,23 @@ module Crawler
     # How long to wait before retrying ingestion after a retryable error (like a r/o mode write)
     RETRY_INTERVAL = 10.seconds
 
-    attr_reader :crawl, :seen_urls
-    attr_reader :crawl_outcome, :outcome_message, :started_at
-    attr_reader :task_executors
+    attr_reader :crawl, :seen_urls, :crawl_outcome, :outcome_message, :started_at, :task_executors
 
     delegate :events, :system_logger, :config, :executor, :sink, :rule_engine,
              :interruptible_sleep, :shutdown_started?, :allow_resume?,
-             :crawl_queue, :seen_urls, :stats, :to => :crawl
+             :crawl_queue, :seen_urls, :stats, to: :crawl
 
     def initialize(crawl)
       @crawl = crawl
 
       # The thread pool for executing crawl tasks (downloading, extraction, output)
       @task_executors = Concurrent::ThreadPoolExecutor.new(
-        :name => "crawler-tasks-#{config.crawl_id}",
-        :max_threads => config.threads_per_crawl,
-        :idletime => 0,             # Remove finished threads immediately, so that we could detect free capacity
-        :max_queue => 0,            # Don't allow tasks to wait in the queue if there are not enough workers
-        :synchronous => true,       # max_queue=0 does not mean 'unbounded'
-        :fallback_policy => :abort, # Raise an error if we try to push too much work into the pool
+        name: "crawler-tasks-#{config.crawl_id}",
+        max_threads: config.threads_per_crawl,
+        idletime: 0,             # Remove finished threads immediately, so that we could detect free capacity
+        max_queue: 0,            # Don't allow tasks to wait in the queue if there are not enough workers
+        synchronous: true,       # max_queue=0 does not mean 'unbounded'
+        fallback_policy: :abort # Raise an error if we try to push too much work into the pool
       )
 
       # Setup crawl internal state
@@ -75,7 +73,7 @@ module Crawler
       sink.close
 
       # Final dump of crawl stats
-      events.log_crawl_status(crawl, :force => true)
+      events.log_crawl_status(crawl, force: true)
       system_logger.info('Crawl shutdown complete')
     end
 
@@ -94,6 +92,7 @@ module Crawler
     def load_robots_txts
       config.domain_allowlist.each do |domain|
         next if config.robots_txt_service.registered?(domain)
+
         crawl_result = load_robots_txt(domain)
         system_logger.debug("Registering robots.txt result for #{domain}: #{crawl_result}")
         config.robots_txt_service.register_crawl_result(domain, crawl_result)
@@ -104,20 +103,20 @@ module Crawler
     # Fetches robots.txt for a given domain and returns it as a crawl result
     def load_robots_txt(domain)
       crawl_task = Crawler::Data::CrawlTask.new(
-        :url => domain.robots_txt_url,
-        :type => :robots_txt,
-        :depth => 1
+        url: domain.robots_txt_url,
+        type: :robots_txt,
+        depth: 1
       )
       crawl_task.authorization_header = config.http_header_service.authorization_header_for_url(crawl_task.url)
-      crawl_result = execute_task(crawl_task, :follow_redirects => true)
+      crawl_result = execute_task(crawl_task, follow_redirects: true)
 
       # Handle redirect errors as 404s
-      if crawl_result.kind_of?(Crawler::Data::CrawlResult::RedirectError)
+      if crawl_result.is_a?(Crawler::Data::CrawlResult::RedirectError)
         system_logger.warn("Treating a robots.txt redirect error for #{domain} as a 404 response: #{crawl_result.error}")
         crawl_result = Crawler::Data::CrawlResult::Error.new(
-          :url => crawl_result.url,
-          :error => crawl_result.error,
-          :status_code => 404
+          url: crawl_result.url,
+          error: crawl_result.error,
+          status_code: 404
         )
       elsif crawl_result.error?
         system_logger.warn("Error while fetching robots.txt for #{domain}: #{crawl_result.error}")
@@ -133,10 +132,10 @@ module Crawler
     def enqueue_seed_urls
       system_logger.info("Seeding the crawl with #{config.seed_urls.size} URLs...")
       add_urls_to_backlog(
-        :urls => config.seed_urls,
-        :type => :content,
-        :source_type => SEED_LIST,
-        :crawl_depth => 1
+        urls: config.seed_urls,
+        type: :content,
+        source_type: SEED_LIST,
+        crawl_depth: 1
       )
     end
 
@@ -146,10 +145,10 @@ module Crawler
       if config.sitemap_urls.any?
         system_logger.info("Seeding the crawl with #{config.sitemap_urls.count} Sitemap URLs...")
         add_urls_to_backlog(
-          :urls => config.sitemap_urls,
-          :type => :sitemap,
-          :source_type => SEED_LIST,
-          :crawl_depth => 1
+          urls: config.sitemap_urls,
+          type: :sitemap,
+          source_type: SEED_LIST,
+          crawl_depth: 1
         )
       end
 
@@ -159,10 +158,10 @@ module Crawler
       if valid_auto_discovered_sitemap_urls.any?
         system_logger.info("Seeding the crawl with #{valid_auto_discovered_sitemap_urls.count} auto-discovered (via robots.txt) Sitemap URLs...")
         add_urls_to_backlog(
-          :urls => valid_auto_discovered_sitemap_urls,
-          :type => :sitemap,
-          :source_type => SEED_LIST,
-          :crawl_depth => 1
+          urls: valid_auto_discovered_sitemap_urls,
+          type: :sitemap,
+          source_type: SEED_LIST,
+          crawl_depth: 1
         )
       end
     end
@@ -197,7 +196,7 @@ module Crawler
       return true if crawl_outcome
 
       # Check if there are any active tasks still being processed
-      return false if task_executors.length > 0 # rubocop:disable Style/ZeroLengthPredicate
+      return false if task_executors.length.positive?
 
       if crawl_queue.empty? && !shutdown_started?
         system_logger.info('Crawl queue is empty, finishing the crawl')
@@ -206,7 +205,8 @@ module Crawler
       end
 
       if shutdown_started?
-        set_outcome(:shutdown, "Terminated the crawl with #{crawl_queue.length} unprocessed URLs due to a crawler shutdown (allow_resume=#{allow_resume?})")
+        set_outcome(:shutdown,
+                    "Terminated the crawl with #{crawl_queue.length} unprocessed URLs due to a crawler shutdown (allow_resume=#{allow_resume?})")
         system_logger.warn("Shutting down the crawl with #{crawl_queue.length} unprocessed URLs...")
         return true
       end
@@ -265,8 +265,8 @@ module Crawler
     # Fetches a URL and logs info about the HTTP request/response.
     def execute_task(crawl_task, follow_redirects: false)
       crawl_task_progress(crawl_task, 'HTTP execution')
-      executor.run(crawl_task, :follow_redirects => follow_redirects).tap do |crawl_result|
-        events.url_fetch(:url => crawl_task.url, :crawl_result => crawl_result, :auth_type => crawl_task.auth_type)
+      executor.run(crawl_task, follow_redirects: follow_redirects).tap do |crawl_result|
+        events.url_fetch(url: crawl_task.url, crawl_result: crawl_result, auth_type: crawl_task.auth_type)
       end
     end
 
@@ -286,20 +286,20 @@ module Crawler
       # Check page against rule engine before sending to an output sink
       output_crawl_result_outcome = rule_engine.output_crawl_result_outcome(crawl_result)
       extracted_event = {
-        :url => crawl_result.url,
-        :type => :allowed,
-        :start_time => start_time,
-        :end_time => end_time,
-        :duration => duration,
-        :outcome => :success
+        url: crawl_result.url,
+        type: :allowed,
+        start_time: start_time,
+        end_time: end_time,
+        duration: duration,
+        outcome: :success
       }
 
       # Send the results to the output configured for this crawl unless it is denied by a rule
       if output_crawl_result_outcome.denied?
         extracted_event.merge!(
-          :type => :denied,
-          :deny_reason => output_crawl_result_outcome.deny_reason,
-          :message => output_crawl_result_outcome.message
+          type: :denied,
+          deny_reason: output_crawl_result_outcome.deny_reason,
+          message: output_crawl_result_outcome.message
         )
       elsif crawl_task.content?
         crawl_task_progress(crawl_task, 'ingesting the result')
@@ -325,12 +325,12 @@ module Crawler
     #-----------------------------------------------------------------------------------------------
     def enqueue_redirect_link(crawl_task, crawl_result)
       add_urls_to_backlog(
-        :urls => [crawl_result.location],
-        :type => crawl_task.type,
-        :source_type => :redirect,
-        :source_url => crawl_task.url,
-        :crawl_depth => crawl_task.depth,
-        :redirect_chain => crawl_result.redirect_chain + [crawl_task.url]
+        urls: [crawl_result.location],
+        type: crawl_task.type,
+        source_type: :redirect,
+        source_url: crawl_task.url,
+        crawl_depth: crawl_task.depth,
+        redirect_chain: crawl_result.redirect_chain + [crawl_task.url]
       )
     end
 
@@ -344,11 +344,11 @@ module Crawler
         # We do not increment the depth, because we want to be sure that the canonical URL is visited.
         if canonical_link.valid?
           add_urls_to_backlog(
-            :urls => [canonical_link.to_url],
-            :type => :content,
-            :source_type => :canonical_url,
-            :source_url => crawl_task.url,
-            :crawl_depth => crawl_task.depth
+            urls: [canonical_link.to_url],
+            type: :content,
+            source_type: :canonical_url,
+            source_url: crawl_task.url,
+            crawl_depth: crawl_task.depth
           )
         else
           system_logger.warn("Failed to parse canonical URL '#{canonical_link.link}' on '#{crawl_result.url}': #{canonical_link.error}")
@@ -356,23 +356,23 @@ module Crawler
       end
 
       # Extract all links, analyze them and create crawl tasks for those we want to follow
-      links = extract_links(crawl_result, :crawl_depth => crawl_task.depth + 1)
-      add_urls_to_backlog(
-        :urls => links,
-        :type => :content,
-        :source_type => :organic,
-        :source_url => crawl_task.url,
-        :crawl_depth => crawl_task.depth + 1
-      ) if links.any?
+      links = extract_links(crawl_result, crawl_depth: crawl_task.depth + 1)
+      if links.any?
+        add_urls_to_backlog(
+          urls: links,
+          type: :content,
+          source_type: :organic,
+          source_url: crawl_task.url,
+          crawl_depth: crawl_task.depth + 1
+        )
+      end
     end
 
     #-----------------------------------------------------------------------------------------------
     def extract_and_enqueue_sitemap_links(crawl_task, crawl_result)
       result = crawl_result.extract_links
       limit_reached, error = result.values_at(:limit_reached, :error)
-      if limit_reached
-        system_logger.warn("Too many links in a sitemap '#{crawl_result.url}': #{error}")
-      end
+      system_logger.warn("Too many links in a sitemap '#{crawl_result.url}': #{error}") if limit_reached
 
       %i[sitemap content].each do |link_type|
         extracted_links = result.fetch(:links).fetch(link_type)
@@ -386,22 +386,20 @@ module Crawler
         end
 
         add_urls_to_backlog(
-          :urls => good_links,
-          :type => link_type,
-          :source_type => :sitemap,
-          :source_url => crawl_task.url,
-          :crawl_depth => crawl_task.depth # Do not increase depth since sitemaps are not treated as pages
+          urls: good_links,
+          type: link_type,
+          source_type: :sitemap,
+          source_url: crawl_task.url,
+          crawl_depth: crawl_task.depth # Do not increase depth since sitemaps are not treated as pages
         )
       end
     end
 
     #-----------------------------------------------------------------------------------------------
     def extract_links(crawl_result, crawl_depth:)
-      extracted_links = crawl_result.extract_links(:limit => config.max_extracted_links_count)
+      extracted_links = crawl_result.extract_links(limit: config.max_extracted_links_count)
       links, limit_reached = extracted_links.values_at(:links, :limit_reached)
-      if limit_reached
-        system_logger.warn("Too many links on the page '#{crawl_result.url}'")
-      end
+      system_logger.warn("Too many links on the page '#{crawl_result.url}'") if limit_reached
 
       Set.new.tap do |good_links|
         links.each do |link|
@@ -412,10 +410,10 @@ module Crawler
 
           if link.rel_nofollow? || crawl_result.meta_nofollow?
             events.url_discover_denied(
-              :url => link.to_url,
-              :source_url => crawl_result.url,
-              :crawl_depth => crawl_depth,
-              :deny_reason => :nofollow
+              url: link.to_url,
+              source_url: crawl_result.url,
+              crawl_depth: crawl_depth,
+              deny_reason: :nofollow
             )
             next
           end
@@ -430,7 +428,7 @@ module Crawler
     def output_crawl_result(crawl_result)
       sink.write(crawl_result).tap do |outcome|
         # Make sure we have an outcome of the right type (helps troubleshoot sink implementations)
-        unless outcome.kind_of?(Hash)
+        unless outcome.is_a?(Hash)
           error = "Expected to return an outcome object from the sink, returned #{outcome.inspect} instead"
           raise ArgumentError, error
         end
@@ -449,6 +447,7 @@ module Crawler
     # Adds a set of URLs to the backlog for processing (if they are OK to follow)
     def add_urls_to_backlog(urls:, type:, source_type:, crawl_depth:, source_url: nil, redirect_chain: [])
       return unless urls.any?
+
       allowed_urls = Set.new
       added_urls_count = 0
 
@@ -468,10 +467,10 @@ module Crawler
 
         # Skip unless this URL is allowed
         discover_outcome = check_discovered_url(
-          :url => url,
-          :type => type,
-          :source_url => source_url,
-          :crawl_depth => crawl_depth
+          url: url,
+          type: type,
+          source_url: source_url,
+          crawl_depth: crawl_depth
         )
         next unless discover_outcome == :allow
 
@@ -479,19 +478,19 @@ module Crawler
         added_urls_count += 1
 
         add_url_to_backlog(
-          :url => url,
-          :type => type,
-          :source_type => source_type,
-          :crawl_depth => crawl_depth,
-          :source_url => source_url,
-          :redirect_chain => redirect_chain
+          url: url,
+          type: type,
+          source_type: source_type,
+          crawl_depth: crawl_depth,
+          source_url: source_url,
+          redirect_chain: redirect_chain
         )
       end
 
       # Seeding complete, log about it
-      if added_urls_count > 0
+      if added_urls_count.positive?
         system_logger.info("Added #{added_urls_count} URLs from a #{source_type} source to the queue...")
-        events.crawl_seed(added_urls_count, :type => :content) if source_type == SEED_LIST
+        events.crawl_seed(added_urls_count, type: :content) if source_type == SEED_LIST
       end
     end
 
@@ -501,19 +500,19 @@ module Crawler
     def add_url_to_backlog(url:, type:, source_type:, crawl_depth:, source_url:, redirect_chain: [])
       crawl_queue.push(
         Crawler::Data::CrawlTask.new(
-          :url => url,
-          :type => type,
-          :depth => crawl_depth,
-          :redirect_chain => redirect_chain
+          url: url,
+          type: type,
+          depth: crawl_depth,
+          redirect_chain: redirect_chain
         )
       )
 
       events.url_seed(
-        :url => url,
-        :source_url => source_url,
-        :type => type,
-        :source_type => source_type,
-        :crawl_depth => crawl_depth
+        url: url,
+        source_url: source_url,
+        type: type,
+        source_type: source_type,
+        crawl_depth: crawl_depth
       )
     rescue Crawler::Data::UrlQueue::TransientError => e
       # We couldn't visit the URL, so let's remove it from the seen URLs list
@@ -523,10 +522,10 @@ module Crawler
       # The queue itself will log about its state on the warning log level
       system_logger.debug("Failed to add a crawler task into the processing queue: #{e}")
       events.url_discover_denied(
-        :url => url,
-        :source_url => source_url,
-        :crawl_depth => crawl_depth,
-        :deny_reason => :queue_full
+        url: url,
+        source_url: source_url,
+        crawl_depth: crawl_depth,
+        deny_reason: :queue_full
       )
     end
 
@@ -535,36 +534,36 @@ module Crawler
     # FIXME: Feels like we need a generic way of encoding URL decisions, probably in the rules engine
     def check_discovered_url(url:, type:, source_url:, crawl_depth:)
       discover_event = {
-        :url => url,
-        :source_url => source_url,
-        :crawl_depth => crawl_depth
+        url: url,
+        source_url: source_url,
+        crawl_depth: crawl_depth
       }
 
       # Make sure it is an HTTP(S) link
       # FIXME: Feels like this should be a rules engine rule (which protocols to allow)
       unless url.supported_scheme?
-        events.url_discover_denied(discover_event.merge(:deny_reason => :incorrect_protocol))
+        events.url_discover_denied(discover_event.merge(deny_reason: :incorrect_protocol))
         return :deny
       end
 
       # Check URL length
       # FIXME: Feels like this should be a rules engine rule
       if url.request_uri.length > config.max_url_length
-        events.url_discover_denied(discover_event.merge(:deny_reason => :link_too_long))
+        events.url_discover_denied(discover_event.merge(deny_reason: :link_too_long))
         return :deny
       end
 
       # Check URL segments limit
       # FIXME: Feels like this should be a rules engine rule
       if url.path_segments_count > config.max_url_segments
-        events.url_discover_denied(discover_event.merge(:deny_reason => :link_with_too_many_segments))
+        events.url_discover_denied(discover_event.merge(deny_reason: :link_with_too_many_segments))
         return :deny
       end
 
       # Check URL query parameters limit
       # FIXME: Feels like this should be a rules engine rule
       if url.params_count > config.max_url_params
-        events.url_discover_denied(discover_event.merge(:deny_reason => :link_with_too_many_params))
+        events.url_discover_denied(discover_event.merge(deny_reason: :link_with_too_many_params))
         return :deny
       end
 
@@ -578,8 +577,8 @@ module Crawler
       if discover_url_outcome&.denied?
         events.url_discover_denied(
           discover_event.merge(
-            :deny_reason => discover_url_outcome.deny_reason,
-            :message => discover_url_outcome.message
+            deny_reason: discover_url_outcome.deny_reason,
+            message: discover_url_outcome.message
           )
         )
         return :deny
@@ -587,13 +586,13 @@ module Crawler
 
       # Check if we went deep enough and should stop here
       if crawl_depth > config.max_crawl_depth
-        events.url_discover_denied(discover_event.merge(:deny_reason => :link_too_deep))
+        events.url_discover_denied(discover_event.merge(deny_reason: :link_too_deep))
         return :deny
       end
 
       # Check if we have reached the limit on the number of unique URLs we have seen
       if seen_urls.count >= config.max_unique_url_count
-        events.url_discover_denied(discover_event.merge(:deny_reason => :too_many_unique_links))
+        events.url_discover_denied(discover_event.merge(deny_reason: :too_many_unique_links))
         return :deny
       end
 
@@ -601,12 +600,12 @@ module Crawler
       # Warning: This should be the last check since it adds the URL to the seen_urls and
       #          we don't want to add a URL as seen if we could deny it afterwards
       unless seen_urls.add?(url)
-        events.url_discover_denied(discover_event.merge(:deny_reason => :already_seen))
+        events.url_discover_denied(discover_event.merge(deny_reason: :already_seen))
         return :deny
       end
 
       # Finally, if the URL is considered OK to crawl, record it as allowed
-      events.url_discover(discover_event.merge(:type => :allowed))
+      events.url_discover(discover_event.merge(type: :allowed))
 
       :allow
     end

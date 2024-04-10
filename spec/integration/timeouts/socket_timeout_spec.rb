@@ -20,10 +20,10 @@ RSpec.describe 'Request to a site that is very slow to send us any data' do
   end
 
   it 'times out' do
-    results = FauxCrawl.run(site, :timeouts => { :socket_timeout => 2 })
+    results = FauxCrawl.run(site, timeouts: { socket_timeout: 2 })
 
     expect(results).to have_only_these_results [
-      mock_response(:url => 'http://127.0.0.1:9393/', :status_code => 200)
+      mock_response(url: 'http://127.0.0.1:9393/', status_code: 200)
     ]
   end
 end

@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-#
+
 RSpec.describe 'Sitemap specs from Swiftype.com' do
   let(:results) { FauxCrawl.run(site) }
 
@@ -29,8 +29,8 @@ RSpec.describe 'Sitemap specs from Swiftype.com' do
 
     it 'extracts links from sitemap' do
       expect(results).to have_only_these_results [
-        mock_response(:url => 'http://127.0.0.1:9393/', :status_code => 404),
-        mock_response(:url => 'http://127.0.0.1:9393/bar', :status_code => 200)
+        mock_response(url: 'http://127.0.0.1:9393/', status_code: 404),
+        mock_response(url: 'http://127.0.0.1:9393/bar', status_code: 200)
       ]
     end
   end
@@ -59,9 +59,9 @@ RSpec.describe 'Sitemap specs from Swiftype.com' do
 
     it 'discovers links in the sitemap' do
       expect(results).to have_only_these_results [
-        mock_response(:url => 'http://127.0.0.1:9393/', :status_code => 404),
-        mock_response(:url => 'http://127.0.0.1:9393/foo', :status_code => 200),
-        mock_response(:url => 'http://127.0.0.1:9393/bar', :status_code => 200)
+        mock_response(url: 'http://127.0.0.1:9393/', status_code: 404),
+        mock_response(url: 'http://127.0.0.1:9393/foo', status_code: 200),
+        mock_response(url: 'http://127.0.0.1:9393/bar', status_code: 200)
       ]
     end
   end
@@ -81,8 +81,8 @@ RSpec.describe 'Sitemap specs from Swiftype.com' do
 
     it 'extracts links from sitemap' do
       expect(results).to have_only_these_results [
-        mock_response(:url => 'http://127.0.0.1:9393/', :status_code => 200),
-        mock_response(:url => 'http://127.0.0.1:9393/bar', :status_code => 200)
+        mock_response(url: 'http://127.0.0.1:9393/', status_code: 200),
+        mock_response(url: 'http://127.0.0.1:9393/bar', status_code: 200)
       ]
     end
   end

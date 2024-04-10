@@ -5,8 +5,8 @@ RSpec.describe(Crawler::EventGenerator) do
   let(:seed_urls) { ['http://example.com/'] }
   let(:config) do
     Crawler::API::Config.new(
-      :domain_allowlist => domains,
-      :seed_urls => seed_urls
+      domain_allowlist: domains,
+      seed_urls: seed_urls
     )
   end
 
@@ -33,7 +33,7 @@ RSpec.describe(Crawler::EventGenerator) do
     it 'should ignore the stats dump interval if called with force: true' do
       expect(events).to receive(:crawl_status).exactly(2).times
       events.log_crawl_status(crawl)
-      events.log_crawl_status(crawl, :force => true)
+      events.log_crawl_status(crawl, force: true)
     end
   end
 
@@ -79,7 +79,9 @@ RSpec.describe(Crawler::EventGenerator) do
     let(:outcome) { 'success' }
     let(:message) { 'Something went wrong' }
     let(:system_logger_io) { StringIO.new }
-    let(:expected_message) { "Processed crawl results from the page '#{url}' via the #{sink_name} output. Outcome: #{outcome}. Message: #{message}." }
+    let(:expected_message) do
+      "Processed crawl results from the page '#{url}' via the #{sink_name} output. Outcome: #{outcome}. Message: #{message}."
+    end
 
     before do
       allow(events).to receive(:system_logger).and_return(Logger.new(system_logger_io))
@@ -87,16 +89,16 @@ RSpec.describe(Crawler::EventGenerator) do
 
     it 'should write helpful message to system logger' do
       events.url_output(
-        :url => url,
-        :sink_name => sink_name,
-        :outcome => outcome,
-        :start_time => Time.now,
-        :end_time => Time.now,
-        :duration => 0,
-        :message => message
+        url: url,
+        sink_name: sink_name,
+        outcome: outcome,
+        start_time: Time.now,
+        end_time: Time.now,
+        duration: 0,
+        message: message
       )
 
-      expect(system_logger_io.string).to match(%r{INFO -- : #{Regexp.escape(expected_message)}})
+      expect(system_logger_io.string).to match(/INFO -- : #{Regexp.escape(expected_message)}/)
     end
 
     context 'failure outcome' do
@@ -104,16 +106,16 @@ RSpec.describe(Crawler::EventGenerator) do
 
       it 'should write helpful message to system logger with WARN severity' do
         events.url_output(
-          :url => url,
-          :sink_name => sink_name,
-          :outcome => outcome,
-          :start_time => Time.now,
-          :end_time => Time.now,
-          :duration => 0,
-          :message => message
+          url: url,
+          sink_name: sink_name,
+          outcome: outcome,
+          start_time: Time.now,
+          end_time: Time.now,
+          duration: 0,
+          message: message
         )
 
-        expect(system_logger_io.string).to match(%r{WARN -- : #{Regexp.escape(expected_message)}})
+        expect(system_logger_io.string).to match(/WARN -- : #{Regexp.escape(expected_message)}/)
       end
     end
   end
@@ -121,25 +123,25 @@ RSpec.describe(Crawler::EventGenerator) do
   describe '#crawl_status' do
     let(:crawl_status) do
       {
-        :queue_size => 1,
-        :pages_visited => 2,
-        :urls_seen => 3,
-        :crawl_duration_msec => 3.123,
-        :crawling_time_msec => 2.123,
-        :avg_response_time_msec => 1.001,
-        :active_threads => 4,
-        :http_client => {
-          :max_connections => 10,
-          :used_connections => 1
+        queue_size: 1,
+        pages_visited: 2,
+        urls_seen: 3,
+        crawl_duration_msec: 3.123,
+        crawling_time_msec: 2.123,
+        avg_response_time_msec: 1.001,
+        active_threads: 4,
+        http_client: {
+          max_connections: 10,
+          used_connections: 1
         },
-        :status_codes => {
+        status_codes: {
           '200' => 1,
           '500' => 2
         }
       }
     end
 
-    let(:crawl) { double(:crawl, :status => crawl_status) }
+    let(:crawl) { double(:crawl, status: crawl_status) }
 
     it 'should emit a crawl-status event' do
       expect(config).to receive(:output_event).with(

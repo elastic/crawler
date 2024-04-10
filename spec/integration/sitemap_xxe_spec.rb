@@ -49,8 +49,8 @@ RSpec.describe 'Sitemap XXE vulnerability specs' do
 
     it 'extracts links but does not look up files' do
       expect(results).to have_only_these_results [
-        mock_response(:url => 'http://127.0.0.1:9393/', :status_code => 404),
-        mock_response(:url => 'http://127.0.0.1:9393/visit-here', :status_code => 200)
+        mock_response(url: 'http://127.0.0.1:9393/', status_code: 404),
+        mock_response(url: 'http://127.0.0.1:9393/visit-here', status_code: 200)
       ]
     end
   end
@@ -75,8 +75,8 @@ RSpec.describe 'Sitemap XXE vulnerability specs' do
 
     it 'extracts links but does not look up files' do
       expect(results).to have_only_these_results [
-        mock_response(:url => 'http://127.0.0.1:9393/', :status_code => 404),
-        mock_response(:url => 'http://127.0.0.1:9393/visit-here', :status_code => 200)
+        mock_response(url: 'http://127.0.0.1:9393/', status_code: 404),
+        mock_response(url: 'http://127.0.0.1:9393/visit-here', status_code: 200)
       ]
     end
   end

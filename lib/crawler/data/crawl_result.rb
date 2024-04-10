@@ -8,14 +8,12 @@ module Crawler
   module Data
     # A CrawlResult contains the fetched and extracted content for some CrawlTask.
     class CrawlResult
-      attr_reader :id
-      attr_reader :url, :status_code, :content_type
-      attr_reader :start_time, :end_time, :duration
+      attr_reader :id, :url, :status_code, :content_type, :start_time, :end_time, :duration
 
-      delegate :normalized_url, :normalized_hash, :to => :url
+      delegate :normalized_url, :normalized_hash, to: :url
 
       def initialize(url:, status_code:, start_time: Time.now, end_time: Time.now, content_type: 'unknown')
-        raise ArgumentError, 'Need a Crawler URL object!' unless url.kind_of?(Crawler::Data::URL)
+        raise ArgumentError, 'Need a Crawler URL object!' unless url.is_a?(Crawler::Data::URL)
 
         @id = BSON::ObjectId.new.to_s
         @url = url
@@ -41,11 +39,11 @@ module Crawler
 
       def to_h
         {
-          :id => id.to_s,
-          :url_hash => url_hash,
-          :url => url.to_s,
-          :status_code => status_code,
-          :content_type => content_type
+          id: id.to_s,
+          url_hash: url_hash,
+          url: url.to_s,
+          status_code: status_code,
+          content_type: content_type
         }
       end
 
@@ -63,7 +61,7 @@ module Crawler
 
       #---------------------------------------------------------------------------------------------
       def error?
-        kind_of?(Error)
+        is_a?(Error)
       end
 
       def fatal_error?
@@ -71,27 +69,27 @@ module Crawler
       end
 
       def unsupported_content_type?
-        kind_of?(UnsupportedContentType)
+        is_a?(UnsupportedContentType)
       end
 
       def success?
-        kind_of?(Success)
+        is_a?(Success)
       end
 
       def sitemap?
-        kind_of?(Sitemap)
+        is_a?(Sitemap)
       end
 
       def html?
-        kind_of?(HTML)
+        is_a?(HTML)
       end
 
       def content_extractable_file?
-        kind_of?(ContentExtractableFile)
+        is_a?(ContentExtractableFile)
       end
 
       def redirect?
-        kind_of?(Redirect)
+        is_a?(Redirect)
       end
     end
   end

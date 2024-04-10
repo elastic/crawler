@@ -11,14 +11,13 @@ module Crawler
     class Crawl
       INTERRUPTIBLE_SLEEP_INTERVAL = 0.5
 
-      attr_reader :config, :crawl_queue, :seen_urls, :sink
-      attr_reader :outcome, :outcome_message
+      attr_reader :config, :crawl_queue, :seen_urls, :sink, :outcome, :outcome_message
       attr_accessor :executor
 
       def initialize(config)
         raise ArgumentError, 'Invalid config' unless config.is_a?(Config)
         raise ArgumentError, 'Missing domain allowlist' if config.domain_allowlist.empty?
-        raise ArgumentError, 'Seed URLs need to be an enumerator' unless config.seed_urls.kind_of?(Enumerator)
+        raise ArgumentError, 'Seed URLs need to be an enumerator' unless config.seed_urls.is_a?(Enumerator)
         raise ArgumentError, 'Need at least one Seed URL' unless config.seed_urls.any?
 
         @config = config
@@ -39,8 +38,8 @@ module Crawler
         @allow_resume = false
       end
 
-      delegate :system_logger, :events, :stats, :to => :config
-      delegate :rule_engine, :to => :sink
+      delegate :system_logger, :events, :stats, to: :config
+      delegate :rule_engine, to: :sink
 
       #---------------------------------------------------------------------------------------------
       def shutdown_started?
@@ -65,6 +64,7 @@ module Crawler
         loop do
           break if shutdown_started?
           break if Time.now - start_time > period
+
           sleep(INTERRUPTIBLE_SLEEP_INTERVAL)
         end
       end
@@ -83,20 +83,20 @@ module Crawler
       # Starts a new crawl described by the given config. The job is started immediately.
       def start!
         events.crawl_start(
-          :url_queue_items => crawl_queue.length,
-          :seen_urls => seen_urls.count
+          url_queue_items: crawl_queue.length,
+          seen_urls: seen_urls.count
         )
         coordinator.run_crawl!
 
         record_outcome(
-          :outcome => coordinator.crawl_outcome,
-          :message => coordinator.outcome_message
+          outcome: coordinator.crawl_outcome,
+          message: coordinator.outcome_message
         )
       rescue StandardError => e
         log_exception(e, 'Unexpected error while running the crawl')
         record_outcome(
-          :outcome => :failure,
-          :message => 'Unexpected error while running the crawl, check system logs for details'
+          outcome: :failure,
+          message: 'Unexpected error while running the crawl, check system logs for details'
         )
       ensure
         # Execute hooks to either save the state or clean up after the crawl.
@@ -118,16 +118,16 @@ module Crawler
       #       Please update OpenAPI specs if you add any new fields here.
       def status
         {
-          :queue_size => crawl_queue.length,
-          :pages_visited => stats.fetched_pages_count,
-          :urls_allowed => stats.urls_allowed_count,
-          :urls_denied => stats.urls_denied_counts,
-          :crawl_duration_msec => stats.crawl_duration_msec,
-          :crawling_time_msec => stats.time_spent_crawling_msec,
-          :avg_response_time_msec => stats.average_response_time_msec,
-          :active_threads => coordinator.active_threads,
-          :http_client => executor.http_client_status,
-          :status_codes => stats.status_code_counts
+          queue_size: crawl_queue.length,
+          pages_visited: stats.fetched_pages_count,
+          urls_allowed: stats.urls_allowed_count,
+          urls_denied: stats.urls_denied_counts,
+          crawl_duration_msec: stats.crawl_duration_msec,
+          crawling_time_msec: stats.time_spent_crawling_msec,
+          avg_response_time_msec: stats.average_response_time_msec,
+          active_threads: coordinator.active_threads,
+          http_client: executor.http_client_status,
+          status_codes: stats.status_code_counts
         }
       end
 
@@ -138,9 +138,9 @@ module Crawler
         @outcome_message = message
 
         events.crawl_end(
-          :outcome => outcome,
-          :message => message,
-          :resume_possible => allow_resume?
+          outcome: outcome,
+          message: message,
+          resume_possible: allow_resume?
         )
       end
 

@@ -27,7 +27,7 @@ module Crawler
 
     def crawl_delay
       delay_ms = robots_rules.crawl_delay
-      delay_ms < 0 ? nil : delay_ms / 1000
+      delay_ms.negative? ? nil : delay_ms / 1000
     end
 
     def sitemaps

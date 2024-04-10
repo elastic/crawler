@@ -10,22 +10,22 @@ RSpec.describe(Crawler::Coordinator) do
   let(:results_collection) { ResultsCollection.new }
   let(:crawl_configuration) do
     {
-      :domain_allowlist => [domain],
-      :seed_urls => seed_urls,
-      :sitemap_urls => sitemap_urls,
-      :results_collection => results_collection
+      domain_allowlist: [domain],
+      seed_urls: seed_urls,
+      sitemap_urls: sitemap_urls,
+      results_collection: results_collection
     }
   end
 
   let(:crawl_config) { Crawler::API::Config.new(crawl_configuration) }
 
   let(:events) { double(:events) }
-  let(:system_logger) { Logger.new(STDOUT, :level => :debug) }
+  let(:system_logger) { Logger.new($stdout, level: :debug) }
   let(:rule_engine) do
     double(
       :rule_engine,
-      :discover_url_outcome => double(:discover_url_outcome, :denied? => false),
-      :output_crawl_result_outcome => double(:output_crawl_result_outcome, :denied? => false)
+      discover_url_outcome: double(:discover_url_outcome, denied?: false),
+      output_crawl_result_outcome: double(:output_crawl_result_outcome, denied?: false)
     )
   end
 
@@ -36,15 +36,15 @@ RSpec.describe(Crawler::Coordinator) do
   let(:crawl) do
     double(
       :crawl,
-      :config => crawl_config,
-      :events => events,
-      :system_logger => system_logger,
-      :rule_engine => rule_engine,
-      :sink => sink,
-      :shutdown_started? => false,
-      :crawl_queue => crawl_queue,
-      :seen_urls => seen_urls,
-      :allow_resume? => false,
+      config: crawl_config,
+      events: events,
+      system_logger: system_logger,
+      rule_engine: rule_engine,
+      sink: sink,
+      shutdown_started?: false,
+      crawl_queue: crawl_queue,
+      seen_urls: seen_urls,
+      allow_resume?: false
     )
   end
   let(:coordinator) { Crawler::Coordinator.new(crawl) }
@@ -54,19 +54,19 @@ RSpec.describe(Crawler::Coordinator) do
     let(:url) { Crawler::Data::URL.parse('http://example.com') }
     let(:canonical_link) { nil }
     let(:links) { [] }
-    let(:crawl_task) { Crawler::Data::CrawlTask.new(:url => url, :depth => 1, :type => :content) }
+    let(:crawl_task) { Crawler::Data::CrawlTask.new(url: url, depth: 1, type: :content) }
     let(:meta_nofollow) { false }
     let(:crawl_result) do
       double(
         :crawl_result,
-        :url => url,
-        :canonical_link => canonical_link,
-        :extract_links => { :links => Set.new(links), :limit_reached => false },
-        :meta_nofollow? => meta_nofollow,
-        :error? => false,
-        :fatal_error? => false,
-        :html? => true,
-        :redirect? => false,
+        url: url,
+        canonical_link: canonical_link,
+        extract_links: { links: Set.new(links), limit_reached: false },
+        meta_nofollow?: meta_nofollow,
+        error?: false,
+        fatal_error?: false,
+        html?: true,
+        redirect?: false
       )
     end
 
@@ -87,13 +87,13 @@ RSpec.describe(Crawler::Coordinator) do
     it 'should generate an url-extracted event' do
       expect(events).to receive(:url_extracted).with(
         hash_including(
-          :url => crawl_result.url,
-          :type => :allowed,
-          :start_time => kind_of(Time),
-          :end_time => kind_of(Time),
-          :duration => kind_of(Benchmark::Tms),
-          :outcome => :success,
-          :message => 'Successfully ingested crawl result'
+          url: crawl_result.url,
+          type: :allowed,
+          start_time: kind_of(Time),
+          end_time: kind_of(Time),
+          duration: kind_of(Benchmark::Tms),
+          outcome: :success,
+          message: 'Successfully ingested crawl result'
         )
       )
       coordinator.send(:process_crawl_result, crawl_task, crawl_result)
@@ -104,13 +104,13 @@ RSpec.describe(Crawler::Coordinator) do
         expect(crawl.sink).to receive(:write).and_return(crawl.sink.failure('BOOM'))
         expect(events).to receive(:url_extracted).with(
           hash_including(
-            :url => crawl_result.url,
-            :type => :allowed,
-            :start_time => kind_of(Time),
-            :end_time => kind_of(Time),
-            :duration => kind_of(Benchmark::Tms),
-            :outcome => :failure,
-            :message => 'BOOM'
+            url: crawl_result.url,
+            type: :allowed,
+            start_time: kind_of(Time),
+            end_time: kind_of(Time),
+            duration: kind_of(Benchmark::Tms),
+            outcome: :failure,
+            message: 'BOOM'
           )
         )
         coordinator.send(:process_crawl_result, crawl_task, crawl_result)
@@ -122,13 +122,13 @@ RSpec.describe(Crawler::Coordinator) do
         expect(crawl).to receive(:retryable_error?).with(error).and_return(false)
         expect(events).to receive(:url_extracted).with(
           hash_including(
-            :url => crawl_result.url,
-            :type => :allowed,
-            :start_time => kind_of(Time),
-            :end_time => kind_of(Time),
-            :duration => kind_of(Benchmark::Tms),
-            :outcome => :failure,
-            :message => /BOOM/
+            url: crawl_result.url,
+            type: :allowed,
+            start_time: kind_of(Time),
+            end_time: kind_of(Time),
+            duration: kind_of(Benchmark::Tms),
+            outcome: :failure,
+            message: /BOOM/
           )
         )
         coordinator.send(:process_crawl_result, crawl_task, crawl_result)
@@ -149,13 +149,13 @@ RSpec.describe(Crawler::Coordinator) do
 
         expect(events).to receive(:url_extracted).with(
           hash_including(
-            :url => crawl_result.url,
-            :type => :allowed,
-            :start_time => kind_of(Time),
-            :end_time => kind_of(Time),
-            :duration => kind_of(Benchmark::Tms),
-            :outcome => :success,
-            :message => 'Successfully ingested crawl result'
+            url: crawl_result.url,
+            type: :allowed,
+            start_time: kind_of(Time),
+            end_time: kind_of(Time),
+            duration: kind_of(Benchmark::Tms),
+            outcome: :success,
+            message: 'Successfully ingested crawl result'
           )
         )
         coordinator.send(:process_crawl_result, crawl_task, crawl_result)
@@ -170,7 +170,7 @@ RSpec.describe(Crawler::Coordinator) do
     end
 
     context 'when canonical URL is invalid' do
-      let(:canonical_link) { Crawler::Data::Link.new(:base_url => url, :link => 'foo%:') }
+      let(:canonical_link) { Crawler::Data::Link.new(base_url: url, link: 'foo%:') }
       it 'should not use it' do
         expect(coordinator).to_not receive(:add_urls_to_backlog)
         process_crawl_result
@@ -185,15 +185,15 @@ RSpec.describe(Crawler::Coordinator) do
     end
 
     context 'when canonical_link is present' do
-      let(:canonical_link) { Crawler::Data::Link.new(:base_url => url, :link => 'http://example.com/canonical') }
+      let(:canonical_link) { Crawler::Data::Link.new(base_url: url, link: 'http://example.com/canonical') }
 
       it 'should add the canonical url to the backlog' do
         expect(coordinator).to receive(:add_urls_to_backlog).with(
-          :urls => [canonical_link.to_url],
-          :type => :content,
-          :source_type => :canonical_url,
-          :source_url => url,
-          :crawl_depth => crawl_task.depth
+          urls: [canonical_link.to_url],
+          type: :content,
+          source_type: :canonical_url,
+          source_url: url,
+          crawl_depth: crawl_task.depth
         )
         process_crawl_result
       end
@@ -202,18 +202,18 @@ RSpec.describe(Crawler::Coordinator) do
     context 'when extracted links array is not empty' do
       let(:links) do
         [
-          Crawler::Data::Link.new(:base_url => url, :link => 'http://example.com/1'),
-          Crawler::Data::Link.new(:base_url => url, :link => 'http://example.com/2')
+          Crawler::Data::Link.new(base_url: url, link: 'http://example.com/1'),
+          Crawler::Data::Link.new(base_url: url, link: 'http://example.com/2')
         ]
       end
 
       it 'should add the extracted links to the backlog' do
         expect(coordinator).to receive(:add_urls_to_backlog).with(
-          :urls => links.map(&:to_url),
-          :type => :content,
-          :source_type => :organic,
-          :source_url => url,
-          :crawl_depth => crawl_task.depth + 1
+          urls: links.map(&:to_url),
+          type: :content,
+          source_type: :organic,
+          source_url: url,
+          crawl_depth: crawl_task.depth + 1
         )
         process_crawl_result
       end
@@ -229,7 +229,7 @@ RSpec.describe(Crawler::Coordinator) do
 
         it 'should log url_discover events for all the links we are not going to crawl' do
           expect(events).to receive(:url_discover_denied).with(
-            hash_including(:deny_reason => :nofollow)
+            hash_including(deny_reason: :nofollow)
           ).exactly(links.count).times
           process_crawl_result
         end
@@ -243,10 +243,10 @@ RSpec.describe(Crawler::Coordinator) do
       coordinator.send(
         :add_urls_to_backlog,
         {
-          :urls => urls,
-          :type => :content,
-          :source_type => :organic,
-          :crawl_depth => 2
+          urls: urls,
+          type: :content,
+          source_type: :organic,
+          crawl_depth: 2
         }.merge(params)
       )
     end
@@ -254,7 +254,7 @@ RSpec.describe(Crawler::Coordinator) do
     context 'with a unique URLs limit' do
       let(:limit) { 5 }
       let(:crawl_configuration) do
-        super().merge(:max_unique_url_count => limit)
+        super().merge(max_unique_url_count: limit)
       end
 
       it 'should enforce the limit and not add more URLs into the backlog than allowed' do
@@ -265,8 +265,8 @@ RSpec.describe(Crawler::Coordinator) do
         expect(events).to receive(:url_discover).exactly(limit).times
         expect(events).to receive(:url_discover_denied).with(
           hash_including(
-            :url => kind_of(Crawler::Data::URL),
-            :deny_reason => :too_many_unique_links
+            url: kind_of(Crawler::Data::URL),
+            deny_reason: :too_many_unique_links
           )
         ).exactly(urls_count - limit).times
 
@@ -286,8 +286,8 @@ RSpec.describe(Crawler::Coordinator) do
         url = Crawler::Data::URL.parse(seed_url).join('/hello')
         expect(events).to receive(:url_discover_denied).with(
           hash_including(
-            :url => url,
-            :deny_reason => :too_many_unique_links
+            url: url,
+            deny_reason: :too_many_unique_links
           )
         )
         expect { add_urls_to_backlog([url]) }.to_not change { seen_urls.count }
@@ -301,7 +301,7 @@ RSpec.describe(Crawler::Coordinator) do
         Crawler::Data::URL.parse(seed_url).join('/foo'),
         Crawler::Data::URL.parse(seed_url).join('/foo?'),
         Crawler::Data::URL.parse(seed_url).join('/bar'),
-        Crawler::Data::URL.parse(seed_url).join('/../../bar'),
+        Crawler::Data::URL.parse(seed_url).join('/../../bar')
       ]
 
       expect(events).to receive(:url_seed).exactly(2).times
@@ -317,11 +317,11 @@ RSpec.describe(Crawler::Coordinator) do
 
     def add_url_to_backlog(params = {})
       params = {
-        :url => url,
-        :type => :content,
-        :source_type => :organic,
-        :crawl_depth => 1,
-        :source_url => nil
+        url: url,
+        type: :content,
+        source_type: :organic,
+        crawl_depth: 1,
+        source_url: nil
       }.merge(params)
       coordinator.send(:add_url_to_backlog, params)
     end
@@ -329,11 +329,11 @@ RSpec.describe(Crawler::Coordinator) do
     context 'when the queue is not full' do
       it 'should record the url-seed event for the the URL' do
         expect(events).to receive(:url_seed).with(
-          :url => url,
-          :source_url => nil,
-          :type => :content,
-          :crawl_depth => 1,
-          :source_type => :organic
+          url: url,
+          source_url: nil,
+          type: :content,
+          crawl_depth: 1,
+          source_type: :organic
         )
         add_url_to_backlog
       end
@@ -351,10 +351,10 @@ RSpec.describe(Crawler::Coordinator) do
 
       it 'should not blow up and record the event in the event log instead' do
         expect(events).to receive(:url_discover_denied).with(
-          :url => url,
-          :source_url => nil,
-          :crawl_depth => 1,
-          :deny_reason => :queue_full
+          url: url,
+          source_url: nil,
+          crawl_depth: 1,
+          deny_reason: :queue_full
         )
         expect(system_logger).to receive(:debug).with(/Failed to add a crawler task into the processing queue/)
         expect { add_url_to_backlog }.to_not raise_error
@@ -434,10 +434,10 @@ RSpec.describe(Crawler::Coordinator) do
     def check_discovered_url(url, type: nil, source_url: nil, crawl_depth: 1)
       coordinator.send(
         :check_discovered_url,
-        :url => url,
-        :type => type,
-        :source_url => source_url,
-        :crawl_depth => crawl_depth
+        url: url,
+        type: type,
+        source_url: source_url,
+        crawl_depth: crawl_depth
       )
     end
 
@@ -448,9 +448,9 @@ RSpec.describe(Crawler::Coordinator) do
     def expect_denied_with_reason(url, reason)
       expect(events).to receive(:url_discover_denied).with(
         hash_including(
-          :url => url,
-          :crawl_depth => 1,
-          :deny_reason => reason
+          url: url,
+          crawl_depth: 1,
+          deny_reason: reason
         )
       )
       expect(check_discovered_url(url)).to eq(:deny)
@@ -484,22 +484,22 @@ RSpec.describe(Crawler::Coordinator) do
     #-----------------------------------------------------------------------------------------------
     it 'should allow URLs that are at maximum crawl depth' do
       expect(events).to receive(:url_discover).with(
-        :url => example_url,
-        :source_url => nil,
-        :crawl_depth => coordinator.config.max_crawl_depth,
-        :type => :allowed
+        url: example_url,
+        source_url: nil,
+        crawl_depth: coordinator.config.max_crawl_depth,
+        type: :allowed
       )
-      expect(check_discovered_url(example_url, :crawl_depth => coordinator.config.max_crawl_depth)).to eq(:allow)
+      expect(check_discovered_url(example_url, crawl_depth: coordinator.config.max_crawl_depth)).to eq(:allow)
     end
 
     it 'should deny URLs that lead too deep' do
       expect(events).to receive(:url_discover_denied).with(
-        :url => example_url,
-        :source_url => nil,
-        :crawl_depth => 1000,
-        :deny_reason => :link_too_deep
+        url: example_url,
+        source_url: nil,
+        crawl_depth: 1000,
+        deny_reason: :link_too_deep
       )
-      expect(check_discovered_url(example_url, :crawl_depth => 1000)).to eq(:deny)
+      expect(check_discovered_url(example_url, crawl_depth: 1000)).to eq(:deny)
     end
 
     it 'should deny URLs we have already seen' do
@@ -508,16 +508,16 @@ RSpec.describe(Crawler::Coordinator) do
     end
 
     it 'should deny URLs that the rules engine considers denied' do
-      url_outcome = Crawler::Data::DeniedOutcome.new(:rule_engine_denied, :message => 'testing')
+      url_outcome = Crawler::Data::DeniedOutcome.new(:rule_engine_denied, message: 'testing')
       expect(coordinator.rule_engine).to receive(:discover_url_outcome).with(example_url).and_return(url_outcome)
       expect(events).to receive(:url_discover_denied).with(
-        :url => example_url,
-        :source_url => nil,
-        :crawl_depth => 1000,
-        :deny_reason => :rule_engine_denied,
-        :message => 'testing'
+        url: example_url,
+        source_url: nil,
+        crawl_depth: 1000,
+        deny_reason: :rule_engine_denied,
+        message: 'testing'
       )
-      expect(check_discovered_url(example_url, :crawl_depth => 1000)).to eq(:deny)
+      expect(check_discovered_url(example_url, crawl_depth: 1000)).to eq(:deny)
     end
 
     it 'should blank-deny URLs after we reach a limit on the number of unique URLs we have seen' do
@@ -546,13 +546,13 @@ RSpec.describe(Crawler::Coordinator) do
 
     let(:crawl_result) do
       Crawler::Data::CrawlResult::HTML.new(
-        :url => url,
-        :content => html
+        url: url,
+        content: html
       )
     end
 
     def extract_links(crawl_result, crawl_depth: 1)
-      coordinator.send(:extract_links, crawl_result, :crawl_depth => crawl_depth)
+      coordinator.send(:extract_links, crawl_result, crawl_depth: crawl_depth)
     end
 
     it 'should extract valid links' do
@@ -572,7 +572,7 @@ RSpec.describe(Crawler::Coordinator) do
     it 'should emit correct crawl events' do
       expect(events).to receive(:url_discover).exactly(seed_urls.count).times
       expect(events).to receive(:url_seed).exactly(seed_urls.count).times
-      expect(events).to receive(:crawl_seed).with(seed_urls.count, :type => :content)
+      expect(events).to receive(:crawl_seed).with(seed_urls.count, type: :content)
       coordinator.send(:enqueue_seed_urls)
     end
 
@@ -594,9 +594,9 @@ RSpec.describe(Crawler::Coordinator) do
     let(:robots_txt_content) { "User-agent: *\nAllow: *\n\n#{robots_sitemaps.join("\n\n")}" }
     let(:crawl_result) do
       Crawler::Data::CrawlResult::RobotsTxt.new(
-        :url => Crawler::Data::URL.parse("#{domain}/robots.txt"),
-        :status_code => 200,
-        :content => robots_txt_content
+        url: Crawler::Data::URL.parse("#{domain}/robots.txt"),
+        status_code: 200,
+        content: robots_txt_content
       )
     end
 
@@ -610,18 +610,18 @@ RSpec.describe(Crawler::Coordinator) do
 
         expect(events).to receive(:url_discover).exactly(sitemaps_count).times
         expect(events).to receive(:url_seed).exactly(sitemaps_count).times
-        expect(events).to receive(:crawl_seed).with(1, :type => :content).exactly(2).times
+        expect(events).to receive(:crawl_seed).with(1, type: :content).exactly(2).times
         coordinator.send(:enqueue_sitemaps)
       end
     end
 
     context 'disable sitemap discovery' do
-      let(:crawl_config) { Crawler::API::Config.new(crawl_configuration.merge(:sitemap_discovery_disabled => true)) }
+      let(:crawl_config) { Crawler::API::Config.new(crawl_configuration.merge(sitemap_discovery_disabled: true)) }
 
       it 'should ignore sitemaps from robots.txt' do
         expect(events).to receive(:url_discover).exactly(sitemap_urls.count).times
         expect(events).to receive(:url_seed).exactly(sitemap_urls.count).times
-        expect(events).to receive(:crawl_seed).with(1, :type => :content).exactly(1).times
+        expect(events).to receive(:crawl_seed).with(1, type: :content).exactly(1).times
         coordinator.send(:enqueue_sitemaps)
       end
     end

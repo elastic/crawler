@@ -6,9 +6,9 @@ RSpec.describe(Crawler::HttpClient::FilteringDnsResolver) do
 
   subject(:resolver) do
     described_class.new(
-      :loopback_allowed => loopback_allowed,
-      :private_networks_allowed => private_networks_allowed,
-      :logger => Logger.new(STDOUT)
+      loopback_allowed: loopback_allowed,
+      private_networks_allowed: private_networks_allowed,
+      logger: Logger.new($stdout)
     )
   end
 

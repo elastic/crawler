@@ -9,65 +9,65 @@ module Crawler
         end
 
         def fatal_error_denied(error)
-          DeniedOutcome.new(:fatal_error_denied, :message => "Error: #{error}")
+          DeniedOutcome.new(:fatal_error_denied, message: "Error: #{error}")
         end
 
         def too_many_redirects(error)
-          DeniedOutcome.new(:too_many_redirects, :message => error)
+          DeniedOutcome.new(:too_many_redirects, message: error)
         end
 
         def content_type_denied(error)
-          DeniedOutcome.new(:content_type_denied, :message => error)
+          DeniedOutcome.new(:content_type_denied, message: error)
         end
 
         def purge_crawl_allowed
-          AllowedOutcome.new(:message => 'Always allowing for purge crawls')
+          AllowedOutcome.new(message: 'Always allowing for purge crawls')
         end
 
         def noindex_meta_denied
           DeniedOutcome.new(
             :rule_engine_denied,
-            :message => 'Page contains <meta name="robots" content="noindex">'
+            message: 'Page contains <meta name="robots" content="noindex">'
           )
         end
 
         def domain_filter_denied(domains:)
           DeniedOutcome.new(
             :domain_filter_denied,
-            :message => "Does not match allowed domains: #{domains.join(', ')}"
+            message: "Does not match allowed domains: #{domains.join(', ')}"
           )
         end
 
         def robots_txt_disallowed(message)
-          DeniedOutcome.new(:robots_txt_disallowed, :message => message)
+          DeniedOutcome.new(:robots_txt_disallowed, message: message)
         end
 
         def crawl_rule_denied(rule)
           DeniedOutcome.new(
             :rule_engine_denied,
-            :message => "Denied by crawl rule: #{rule.source}",
-            :details => { :rule => rule }
+            message: "Denied by crawl rule: #{rule.source}",
+            details: { rule: rule }
           )
         end
 
         def crawl_rule_allowed(rule)
           AllowedOutcome.new(
-            :message => "Allowed by crawl rule: #{rule.source}",
-            :details => { :rule => rule }
+            message: "Allowed by crawl rule: #{rule.source}",
+            details: { rule: rule }
           )
         end
 
         def crawl_rule_timeout(options)
           DeniedOutcome.new(
             :rule_engine_denied,
-            :message => format('Timeout while applying crawl rule: %{source}', options)
+            message: format('Timeout while applying crawl rule: %{source}', options)
           )
         end
 
         def no_crawl_rule_match_denied(url)
           DeniedOutcome.new(
             :rule_engine_denied,
-            :message => "Denying discovery of URL #{url}, could not find matching crawl rule"
+            message: "Denying discovery of URL #{url}, could not find matching crawl rule"
           )
         end
       end

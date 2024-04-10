@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # String colorization extensions
 class String
   def colorize(color_code)

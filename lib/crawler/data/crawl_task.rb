@@ -7,10 +7,7 @@ module Crawler
     class CrawlTask
       AUTHORIZATION_HEADER_KEY = 'Authorization'
 
-      attr_reader :url   # URL object representing the target to fetch.
-      attr_reader :depth # Positive integer. The number of ancestors including itself.
-      attr_reader :type  # An URL type value (content, sitemap, feed, etc)
-      attr_reader :redirect_chain # A list of URLs we have visited before being redirected here
+      attr_reader :url, :depth, :type, :redirect_chain # URL object representing the target to fetch. # Positive integer. The number of ancestors including itself.  # An URL type value (content, sitemap, feed, etc) # A list of URLs we have visited before being redirected here
       attr_accessor :authorization_header # This value contains sensitive data so it will not be stored in ES but instead set at runtime.
 
       def initialize(url:, type:, depth:, redirect_chain: [])
@@ -56,20 +53,20 @@ module Crawler
       # Returns a hash representation of a task ready to be persisted into Elasticsearch
       def to_h
         {
-          :url => url.to_s,
-          :type => type.to_s,
-          :depth => depth.to_i,
-          :redirect_chain => redirect_chain.map(&:to_s)
+          url: url.to_s,
+          type: type.to_s,
+          depth: depth.to_i,
+          redirect_chain: redirect_chain.map(&:to_s)
         }
       end
 
       # Returns a CrawlTask object based on a hash loaded from Elasticsearch
       def self.load(data)
         CrawlTask.new(
-          :url => URL.parse(data.fetch('url')),
-          :type => data.fetch('type'),
-          :depth => data.fetch('depth'),
-          :redirect_chain => data['redirect_chain']
+          url: URL.parse(data.fetch('url')),
+          type: data.fetch('type'),
+          depth: data.fetch('depth'),
+          redirect_chain: data['redirect_chain']
         )
       end
 

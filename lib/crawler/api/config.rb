@@ -97,63 +97,63 @@ module Crawler
         :sitemap_discovery_disabled, # Enable/disable crawling of sitemaps defined in robots.txt
         :head_requests_enabled, # Fetching HEAD requests before GET requests enabled
 
-        :domains_extraction_rules, # Contains domains extraction rules
-      ]
+        :domains_extraction_rules # Contains domains extraction rules
+      ].freeze
 
       # Please note: These defaults are used in Enterprise Search config parser
       # and in the `Crawler::HttpClient::Config` class.
       # Make sure to check those before renaming or removing any defaults.
       DEFAULTS = {
-        :crawl_stage => :primary,
+        crawl_stage: :primary,
 
-        :sitemap_urls => [],
-        :user_agent => "Elastic-Crawler (#{Crawler.version})",
-        :stats_dump_interval => 10.seconds,
+        sitemap_urls: [],
+        user_agent: "Elastic-Crawler (#{Crawler.version})",
+        stats_dump_interval: 10.seconds,
 
-        :max_duration => 24.hours,
-        :max_crawl_depth => 10,
-        :max_unique_url_count => 100_000,
+        max_duration: 24.hours,
+        max_crawl_depth: 10,
+        max_unique_url_count: 100_000,
 
-        :max_url_length => 2048,
-        :max_url_segments => 16,
-        :max_url_params => 32,
+        max_url_length: 2048,
+        max_url_segments: 16,
+        max_url_params: 32,
 
-        :max_redirects => 10,
-        :max_response_size => 10.megabytes,
+        max_redirects: 10,
+        max_response_size: 10.megabytes,
 
-        :ssl_ca_certificates => [],
-        :ssl_verification_mode => 'full',
+        ssl_ca_certificates: [],
+        ssl_verification_mode: 'full',
 
-        :http_proxy_port => 8080,
-        :http_proxy_protocol => 'http',
+        http_proxy_port: 8080,
+        http_proxy_protocol: 'http',
 
-        :connect_timeout => 10,
-        :socket_timeout => 10,
-        :request_timeout => 60,
+        connect_timeout: 10,
+        socket_timeout: 10,
+        request_timeout: 60,
 
-        :max_title_size => 1.kilobyte,
-        :max_body_size => 5.megabytes,
-        :max_keywords_size => 512.bytes,
-        :max_description_size => 1.kilobyte,
+        max_title_size: 1.kilobyte,
+        max_body_size: 5.megabytes,
+        max_keywords_size: 512.bytes,
+        max_description_size: 1.kilobyte,
 
-        :max_extracted_links_count => 1000,
-        :max_indexed_links_count => 25,
-        :max_headings_count => 25,
+        max_extracted_links_count: 1000,
+        max_indexed_links_count: 25,
+        max_headings_count: 25,
 
-        :content_extraction_enabled => false,
-        :content_extraction_mime_types => [],
+        content_extraction_enabled: false,
+        content_extraction_mime_types: [],
 
-        :output_sink => :console,
-        :url_queue => :memory_only,
-        :threads_per_crawl => 10,
+        output_sink: :console,
+        url_queue: :memory_only,
+        threads_per_crawl: 10,
 
-        :default_encoding => 'UTF-8',
-        :compression_enabled => true,
-        :sitemap_discovery_disabled => false,
-        :head_requests_enabled => false,
+        default_encoding: 'UTF-8',
+        compression_enabled: true,
+        sitemap_discovery_disabled: false,
+        head_requests_enabled: false,
 
-        :domains_extraction_rules => {}
-      }
+        domains_extraction_rules: {}
+      }.freeze
 
       # Settings we are not allowed to log due to their sensitive nature
       SENSITIVE_FIELDS = %i[
@@ -162,7 +162,7 @@ module Crawler
         http_proxy_username
         http_proxy_password
         elasticsearch
-      ]
+      ].freeze
 
       # Specific processed configuration options
       attr_reader(*CONFIG_FIELDS)
@@ -208,9 +208,7 @@ module Crawler
       #---------------------------------------------------------------------------------------------
       def validate_param_names!(params)
         extra_params = params.keys - CONFIG_FIELDS
-        if extra_params.any?
-          raise ArgumentError, "Unexpected configuration options: #{extra_params.inspect}"
-        end
+        raise ArgumentError, "Unexpected configuration options: #{extra_params.inspect}" if extra_params.any?
       end
 
       def assign_config_params(params)
@@ -228,7 +226,7 @@ module Crawler
       #---------------------------------------------------------------------------------------------
       def confugure_ssl_ca_certificates!
         ssl_ca_certificates.map! do |cert|
-          if cert =~ /BEGIN CERTIFICATE/
+          if /BEGIN CERTIFICATE/.match?(cert)
             parse_certificate_string(cert)
           else
             load_certificate_from_file(cert)
@@ -259,6 +257,7 @@ module Crawler
       #---------------------------------------------------------------------------------------------
       def configure_domain_allowlist!
         raise ArgumentError, 'Needs at least one domain' unless domain_allowlist&.any?
+
         domain_allowlist.map! do |domain|
           validate_domain!(domain)
           Crawler::Data::Domain.new(domain)
@@ -270,7 +269,7 @@ module Crawler
         url = URI.parse(domain)
         raise ArgumentError, "Domain #{domain.inspect} does not have a URL scheme" unless url.scheme
         raise ArgumentError, "Domain #{domain.inspect} cannot have a path" unless url.path == ''
-        raise ArgumentError, "Domain #{domain.inspect} is not an HTTP(S) site" unless url.kind_of?(URI::HTTP)
+        raise ArgumentError, "Domain #{domain.inspect} is not an HTTP(S) site" unless url.is_a?(URI::HTTP)
       end
 
       #---------------------------------------------------------------------------------------------
@@ -278,26 +277,24 @@ module Crawler
         raise ArgumentError, 'Need at least one seed URL' unless seed_urls&.any?
 
         # Convert seed URLs into an enumerator if needed
-        @seed_urls = seed_urls.each unless seed_urls.kind_of?(Enumerator)
+        @seed_urls = seed_urls.each unless seed_urls.is_a?(Enumerator)
 
         # Parse and validate all URLs as we access them
         @seed_urls = seed_urls.lazy.map do |seed_url|
           Crawler::Data::URL.parse(seed_url).tap do |url|
-            unless url.supported_scheme?
-              raise ArgumentError, "Unsupported scheme for a seed URL: #{url}"
-            end
+            raise ArgumentError, "Unsupported scheme for a seed URL: #{url}" unless url.supported_scheme?
           end
         end
       end
 
       #---------------------------------------------------------------------------------------------
       def configure_robots_txt_service!
-        @robots_txt_service ||= Crawler::RobotsTxtService.new(:user_agent => user_agent)
+        @robots_txt_service ||= Crawler::RobotsTxtService.new(user_agent: user_agent)
       end
 
       #---------------------------------------------------------------------------------------------
       def configure_http_header_service!
-        @http_header_service ||= Crawler::HttpHeaderService.new(:auth => auth)
+        @http_header_service ||= Crawler::HttpHeaderService.new(auth: auth)
       end
 
       #---------------------------------------------------------------------------------------------
@@ -305,19 +302,17 @@ module Crawler
         # Parse and validate all URLs
         sitemap_urls.map! do |sitemap_url|
           Crawler::Data::URL.parse(sitemap_url).tap do |url|
-            unless url.supported_scheme?
-              raise ArgumentError, "Unsupported scheme for a sitemap URL: #{url}"
-            end
+            raise ArgumentError, "Unsupported scheme for a sitemap URL: #{url}" unless url.supported_scheme?
           end
         end
       end
 
       #---------------------------------------------------------------------------------------------
       def configure_logging!
-        @event_logger = Logger.new(STDOUT)
+        @event_logger = Logger.new($stdout)
 
         # Add crawl id and stage to all logging events produced by this crawl
-        base_system_logger = StaticallyTaggedLogger.new(Logger.new(STDOUT))
+        base_system_logger = StaticallyTaggedLogger.new(Logger.new($stdout))
         @system_logger = base_system_logger.tagged("crawl:#{crawl_id}", crawl_stage)
       end
 
@@ -342,7 +337,7 @@ module Crawler
       # Receives a crawler event object and outputs it into relevant systems
       def output_event(event)
         # Log the event
-        event_logger << event.to_json + "\n"
+        event_logger << "#{event.to_json}\n"
 
         # Count stats for the crawl
         stats.update_from_event(event)

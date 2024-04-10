@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 #
 # Compares an Array of Crawler::Data::CrawlResult with expected results (Array of MockResponse)
 # Each field specified in the expected results MockResponse is going to be compared

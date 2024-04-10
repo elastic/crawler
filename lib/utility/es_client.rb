@@ -33,7 +33,7 @@ module Utility
         @system_logger.info('Initializing ES client with API key...')
       else
         # create a URL with pattern http(s)://<username>:<password>@host.com
-        configs[:url] = es_config[:host].sub(/^https?:\/\//) do|match|
+        configs[:url] = es_config[:host].sub(%r{^https?://}) do |match|
           "#{match}#{es_config[:username]}:#{es_config[:password]}@"
         end
         @system_logger.info('Initializing ES client with username and password...')
@@ -54,11 +54,11 @@ module Utility
 
         response['items'].each do |item|
           %w[index delete].each do |op|
-            if item.has_key?(op) && item[op].has_key?('error')
-              first_error = item
+            next unless item.key?(op) && item[op].key?('error')
 
-              break
-            end
+            first_error = item
+
+            break
           end
         end
 
@@ -66,9 +66,11 @@ module Utility
         if first_error
           # TODO: add trace logging
           # TODO: consider logging all errors instead of just first
-          raise IndexingFailedError.new("Failed to index documents into Elasticsearch with an error '#{first_error.to_json}'.")
+          raise IndexingFailedError,
+                "Failed to index documents into Elasticsearch with an error '#{first_error.to_json}'."
         else
-          raise IndexingFailedError.new("Failed to index documents into Elasticsearch due to unknown error. Full response: #{response}")
+          raise IndexingFailedError,
+                "Failed to index documents into Elasticsearch due to unknown error. Full response: #{response}"
         end
       else
         @system_logger.debug('No errors found in bulk response.')

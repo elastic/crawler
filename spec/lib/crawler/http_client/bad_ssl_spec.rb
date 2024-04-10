@@ -1,16 +1,17 @@
 # frozen_string_literal: true
+
 #
 # Since these specs run against an external 3rd party service, we don't want to
 # run them by default, potentially introducing flakiness into our CI jobs.
 #
 skip = ENV['BAD_SSL'] ? false : 'Set BAD_SSL=1 to run SSL tests!'
 
-RSpec.describe(Crawler::HttpClient, 'vs bad SSL:', :skip => skip) do
+RSpec.describe(Crawler::HttpClient, 'vs bad SSL:', skip: skip) do
   let(:client_config) do
     {
-      :loopback_allowed => false,
-      :private_networks_allowed => false,
-      :logger => Logger.new(STDOUT)
+      loopback_allowed: false,
+      private_networks_allowed: false,
+      logger: Logger.new($stdout)
     }
   end
   let(:client) { Crawler::HttpClient.new(client_config) }
@@ -80,7 +81,7 @@ RSpec.describe(Crawler::HttpClient, 'vs bad SSL:', :skip => skip) do
   end
 
   #-----------------------------------------------------------------------------
-  context 'Revoked SSL certificate', :skip => 'We do not support CRL or OCSP yet' do
+  context 'Revoked SSL certificate', skip: 'We do not support CRL or OCSP yet' do
     let(:url) { 'https://revoked.badssl.com/' }
 
     it 'should provide a nice specific message' do
@@ -107,7 +108,7 @@ RSpec.describe(Crawler::HttpClient, 'vs bad SSL:', :skip => skip) do
   end
 
   #-----------------------------------------------------------------------------
-  context 'SSL servers with DH1024 only', :pending => 'DH1024 is still supported by our Java' do
+  context 'SSL servers with DH1024 only', pending: 'DH1024 is still supported by our Java' do
     let(:url) { 'https://dh1024.badssl.com/' }
 
     it 'should provide a nice specific message' do
@@ -116,7 +117,7 @@ RSpec.describe(Crawler::HttpClient, 'vs bad SSL:', :skip => skip) do
   end
 
   #-----------------------------------------------------------------------------
-  context 'SSL servers with DH2048 only', :pending => 'DH2048 is still supported by our Java' do
+  context 'SSL servers with DH2048 only', pending: 'DH2048 is still supported by our Java' do
     let(:url) { 'https://dh2048.badssl.com/' }
 
     it 'should provide a nice specific message' do

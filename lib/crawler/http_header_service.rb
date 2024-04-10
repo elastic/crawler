@@ -12,7 +12,7 @@ module Crawler
 
     BASIC_AUTH_SCHEMA = {
       'type' => 'object',
-      'required' => ['domain', 'type', 'username', 'password'],
+      'required' => %w[domain type username password],
       'additionalProperties' => false,
       'properties' => {
         'domain' => {
@@ -32,7 +32,7 @@ module Crawler
 
     RAW_HEADER_SCHEMA = {
       'type' => 'object',
-      'required' => ['domain', 'type', 'header'],
+      'required' => %w[domain type header],
       'additionalProperties' => false,
       'properties' => {
         'domain' => {
@@ -55,15 +55,13 @@ module Crawler
     }.freeze
 
     def initialize(auth: nil)
-      if auth
-        JSON::Validator.validate!(AUTH_SCHEMA, auth, :validate_schema => true)
-      end
+      JSON::Validator.validate!(AUTH_SCHEMA, auth, validate_schema: true) if auth
 
       @auth = auth
     end
 
     def authorization_header_for_url(url)
-      raise ArgumentError, 'Need a Crawler URL object!' unless url.kind_of?(Crawler::Data::URL)
+      raise ArgumentError, 'Need a Crawler URL object!' unless url.is_a?(Crawler::Data::URL)
 
       match = auth&.find { |item| item.fetch('domain') == url.site }
 
@@ -78,8 +76,8 @@ module Crawler
       return unless value
 
       {
-        :type => match&.fetch('type'),
-        :value => value
+        type: match&.fetch('type'),
+        value: value
       }
     end
 

@@ -5,9 +5,9 @@ require 'webrick/httpproxy'
 RSpec.describe(Crawler::HttpClient) do
   let(:client_config) do
     {
-      :loopback_allowed => false,
-      :private_networks_allowed => false,
-      :logger => Logger.new(STDOUT)
+      loopback_allowed: false,
+      private_networks_allowed: false,
+      logger: Logger.new($stdout)
     }
   end
   let(:client) { Crawler::HttpClient.new(client_config) }
@@ -15,8 +15,8 @@ RSpec.describe(Crawler::HttpClient) do
   #-------------------------------------------------------------------------------------------------
   let(:site_server_settings) do
     {
-      :port => 12345,
-      :debug => true
+      port: 12_345,
+      debug: true
     }
   end
   let(:site) { Faux.site { page '/' } }
@@ -82,8 +82,8 @@ RSpec.describe(Crawler::HttpClient) do
     context 'with a configured timeout' do
       let(:client_config) do
         super().merge(
-          :loopback_allowed => true,
-          :connection_request_timeout => 10
+          loopback_allowed: true,
+          connection_request_timeout: 10
         )
       end
 
@@ -112,12 +112,12 @@ RSpec.describe(Crawler::HttpClient) do
 
     #-----------------------------------------------------------------------------------------------
     context 'with a proxy server configuration' do
-      let(:proxy_port) { 12346 }
+      let(:proxy_port) { 12_346 }
       let(:client_config) do
         super().merge(
-          :loopback_allowed => true,
-          :http_proxy_host => 'localhost',
-          :http_proxy_port => proxy_port
+          loopback_allowed: true,
+          http_proxy_host: 'localhost',
+          http_proxy_port: proxy_port
         )
       end
 
@@ -132,13 +132,13 @@ RSpec.describe(Crawler::HttpClient) do
       let(:proxy_auth_proc) { nil }
       let(:proxy) do
         WEBrick::HTTPProxyServer.new(
-          :Port => proxy_port,
-          :AccessLog => [
+          Port: proxy_port,
+          AccessLog: [
             [$stderr, WEBrick::AccessLog::COMMON_LOG_FORMAT],
-            [$stderr, WEBrick::AccessLog::REFERER_LOG_FORMAT],
+            [$stderr, WEBrick::AccessLog::REFERER_LOG_FORMAT]
           ],
-          :ProxyContentHandler => proxy_handler,
-          :ProxyAuthProc => proxy_auth_proc
+          ProxyContentHandler: proxy_handler,
+          ProxyAuthProc: proxy_auth_proc
         )
       end
 
@@ -167,8 +167,8 @@ RSpec.describe(Crawler::HttpClient) do
 
         let(:client_config) do
           super().merge(
-            :http_proxy_username => proxy_user,
-            :http_proxy_password => proxy_pass,
+            http_proxy_username: proxy_user,
+            http_proxy_password: proxy_pass
           )
         end
 
@@ -185,9 +185,7 @@ RSpec.describe(Crawler::HttpClient) do
 
             _auth_type, auth_string = auth.split(' ', 2)
             user, password = Base64.strict_decode64(auth_string).split(':', 2)
-            unless user == proxy_user && password == proxy_pass
-              raise WEBrick::HTTPStatus::ProxyAuthenticationRequired
-            end
+            raise WEBrick::HTTPStatus::ProxyAuthenticationRequired unless user == proxy_user && password == proxy_pass
           end
         end
 
@@ -204,7 +202,7 @@ RSpec.describe(Crawler::HttpClient) do
 
         context 'with invalid proxy credentials' do
           let(:client_config) do
-            super().merge(:http_proxy_password => 'banana')
+            super().merge(http_proxy_password: 'banana')
           end
 
           it 'should fail properly' do
@@ -222,7 +220,7 @@ RSpec.describe(Crawler::HttpClient) do
     #-----------------------------------------------------------------------------------------------
     context 'content encoding' do
       let(:client_config) do
-        super().merge(:loopback_allowed => true)
+        super().merge(loopback_allowed: true)
       end
 
       let(:mock_requests) { [] }
@@ -235,8 +233,8 @@ RSpec.describe(Crawler::HttpClient) do
 
       let(:mock_server) do
         WEBrick::HTTPServer.new(
-          :Port => 12347,
-          :RequestCallback => mock_handler
+          Port: 12_347,
+          RequestCallback: mock_handler
         )
       end
 
@@ -259,7 +257,7 @@ RSpec.describe(Crawler::HttpClient) do
 
       context 'with compression disabled' do
         let(:client_config) do
-          super().merge(:compression_enabled => false)
+          super().merge(compression_enabled: false)
         end
 
         it 'should not set the Accept-Encoding header' do
@@ -278,27 +276,27 @@ RSpec.describe(Crawler::HttpClient) do
 
       let(:crawler_config) do
         Crawler::API::Config.new(
-          :domain_allowlist => [url],
-          :seed_urls => [url],
-          :ssl_ca_certificates => ca_certs,
-          :ssl_verification_mode => ssl_mode
+          domain_allowlist: [url],
+          seed_urls: [url],
+          ssl_ca_certificates: ca_certs,
+          ssl_verification_mode: ssl_mode
         )
       end
 
       let(:client_config) do
         super().merge(
-          :loopback_allowed => true,
-          :ssl_ca_certificates => crawler_config.ssl_ca_certificates,
-          :ssl_verification_mode => crawler_config.ssl_verification_mode
+          loopback_allowed: true,
+          ssl_ca_certificates: crawler_config.ssl_ca_certificates,
+          ssl_verification_mode: crawler_config.ssl_verification_mode
         )
       end
 
       let(:ssl_fixture) { 'self-signed' }
       let(:site_server_settings) do
         super().merge(
-          :ssl => true,
-          :ssl_certificate => fixture_file('ssl', ssl_fixture, 'example.crt'),
-          :ssl_key => fixture_file('ssl', ssl_fixture, 'example.key')
+          ssl: true,
+          ssl_certificate: fixture_file('ssl', ssl_fixture, 'example.crt'),
+          ssl_key: fixture_file('ssl', ssl_fixture, 'example.key')
         )
       end
 

@@ -6,9 +6,9 @@ RSpec.describe(Crawler::Data::UrlQueue::MemoryOnly) do
 
   let(:config) do
     Crawler::API::Config.new(
-      :domain_allowlist => domains,
-      :seed_urls => seed_urls,
-      :url_queue => :memory_only
+      domain_allowlist: domains,
+      seed_urls: seed_urls,
+      url_queue: :memory_only
     )
   end
 
@@ -40,7 +40,7 @@ RSpec.describe(Crawler::Data::UrlQueue::MemoryOnly) do
     it 'should alert the operator when the queue is getting full' do
       expect(config).to receive(:url_queue_size_limit).and_return(11)
 
-      system_logger = Logger.new(STDOUT)
+      system_logger = Logger.new($stdout)
       allow(queue).to receive(:system_logger).and_return(system_logger)
       expect(system_logger).to receive(:warn).with(/In-memory URL queue is \d+.*full/)
 

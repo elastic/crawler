@@ -5,8 +5,8 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
 
   let(:crawl_result) do
     described_class.new(
-      :url => url,
-      :content => html
+      url: url,
+      content: html
     )
   end
 
@@ -158,7 +158,7 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
     end
 
     it 'should support limiting the number of links extracted' do
-      links, limit_reached = crawl_result.extract_links(:limit => 2).values_at(:links, :limit_reached)
+      links, limit_reached = crawl_result.extract_links(limit: 2).values_at(:links, :limit_reached)
       expect(links).to be_kind_of(Set)
       expect(links.count).to eq(2)
       expect(limit_reached).to be(true)
@@ -231,7 +231,7 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
     end
 
     it 'should limit the number of links down to a given value' do
-      expect(crawl_result.links(:limit => 5).count).to eq(5)
+      expect(crawl_result.links(limit: 5).count).to eq(5)
     end
   end
 
@@ -286,7 +286,7 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
     end
 
     it 'should truncate the value to a given length' do
-      expect(crawl_result.document_title(:limit => 10).bytesize).to eq(10)
+      expect(crawl_result.document_title(limit: 10).bytesize).to eq(10)
     end
   end
 
@@ -331,7 +331,7 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
     end
 
     it 'should truncate the value to a given length' do
-      expect(crawl_result.document_body(:limit => 10).bytesize).to eq(10)
+      expect(crawl_result.document_body(limit: 10).bytesize).to eq(10)
     end
 
     it 'should remove elements with data-elastic-exclude' do
@@ -346,7 +346,7 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
     end
 
     it 'should truncate the value to a given length' do
-      expect(crawl_result.meta_keywords(:limit => 10).bytesize).to eq(10)
+      expect(crawl_result.meta_keywords(limit: 10).bytesize).to eq(10)
     end
   end
 
@@ -357,7 +357,7 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
     end
 
     it 'should truncate the value to a given length' do
-      expect(crawl_result.meta_description(:limit => 10).bytesize).to eq(10)
+      expect(crawl_result.meta_description(limit: 10).bytesize).to eq(10)
     end
   end
 
@@ -370,7 +370,7 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
     end
 
     it 'should cap the results based on the given limit' do
-      expect(crawl_result.headings(:limit => 1)).to eq ['Page header']
+      expect(crawl_result.headings(limit: 1)).to eq ['Page header']
     end
   end
 
@@ -388,7 +388,10 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
     context 'when selector finds multiple HTML nodes' do
       let(:selector) { 'body a' }
 
-      it { is_expected.to eq(['google', 'LinkedIn', 'Instagram', 'Twitter', 'Facebook', 'Swiftype', 'View product details']) }
+      it {
+        is_expected.to eq(['google', 'LinkedIn', 'Instagram', 'Twitter', 'Facebook', 'Swiftype',
+                           'View product details'])
+      }
     end
 
     context 'when selector does not find any HTML nodes' do
@@ -402,7 +405,10 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
       let(:selector) { '//a/text()' }
 
       it { is_expected.to be_kind_of(Array) }
-      it { is_expected.to eq(['google', 'LinkedIn', 'Instagram', 'Twitter', 'Facebook', 'Swiftype', 'View product details']) }
+      it {
+        is_expected.to eq(['google', 'LinkedIn', 'Instagram', 'Twitter', 'Facebook', 'Swiftype',
+                           'View product details'])
+      }
     end
   end
 
