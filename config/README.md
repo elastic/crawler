@@ -13,7 +13,7 @@ Elasticsearch connection settings are optional in these files. If they are prese
 Usage example: `./bin/crawl --crawler-config crawler.yml` (can be used without Elasticsearch config).
 
 ## Load order
-The config files are loaded in the following order:
+The config file arguments are loaded in the following order:
 
-1. `config/elasticsearch.yml`
-2. `config/crawls/{crawler-name}.yml`
+1. `--es-config`
+2. `--crawler-config`
