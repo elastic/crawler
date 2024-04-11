@@ -1,12 +1,10 @@
-## This is a sample config file for crawling the parksaustralia.gov.au website writing output to a directory
-#
 ## Domains allowed for the crawl
 #domain_allowlist:
-#  - https://parksaustralia.gov.au
+#  - http://localhost:8000
 #
 ## URLs used to seed the crawl
 #seed_urls:
-#  - https://parksaustralia.gov.au
+#  - http://localhost:8000
 #
 ## Where to send the results. Possible values are console, file, or elasticsearch
 #output_sink: elasticsearch
@@ -15,7 +13,7 @@
 #output_index: my-index
 #
 ## Local directory to output crawl results. Required if output_sink is file
-#output_dir: output/parks-australia
+#output_dir: output/local-site
 #
 ## Crawl tuning
 #max_crawl_depth: 2
