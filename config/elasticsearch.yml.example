@@ -1,0 +1,11 @@
+## Elasticsearch connection settings. These can be defined individually for crawlers in `config/crawlers/{crawler-name}.yml`.
+##  If `api_key` is provided it will be used over `username` and `password`.
+#
+#elasticsearch:
+#  host: http://localhost:9200
+#  username: elastic
+#  password: changeme
+#  api_key: 1234
+#  bulk_api:
+#    max_items: 10
+#    max_size_bytes: 1_048_576

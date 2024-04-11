@@ -65,9 +65,6 @@ GEM
     execjs (2.9.1)
     factory_bot (6.2.1)
       activesupport (>= 5.0.0)
-    factory_bot_rails (6.2.0)
-      factory_bot (~> 6.2.0)
-      railties (>= 5.0.0)
     faraday (2.8.1)
       base64
       faraday-net_http (>= 2.0, < 3.1)
@@ -264,7 +261,7 @@ DEPENDENCIES
   ejson
   elasticsearch (~> 8.13.0)
   execjs
-  factory_bot_rails (~> 6.2.0)
+  factory_bot (~> 6.2.0)
   faux!
   ffaker
   ipaddr (~> 1.2.4)

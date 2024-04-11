@@ -2,6 +2,8 @@
 
 require 'nokogiri' # https://github.com/sparklemotion/nokogiri/issues/2550
 
+require 'factory_bot'
+
 # Enable coverage information collection
 require 'simplecov'
 require 'simplecov-material'
@@ -21,7 +23,7 @@ WebMock.disable_net_connect!(:allow_localhost => true)
 WebMock.enable!
 
 # Load the standalone crawler environment
-require_relative '../environment'
+require_relative '../lib/environment'
 
 # Load the crawler itself
 require 'crawler'
@@ -44,6 +46,11 @@ RSpec.configure do |config|
     # ...rather than:
     #     # => "be bigger than 2"
     expectations.include_chain_clauses_in_custom_matcher_descriptions = true
+  end
+
+  config.include FactoryBot::Syntax::Methods
+  config.before(:suite) do
+    FactoryBot.find_definitions
   end
 
   config.mock_with :rspec do |mocks|

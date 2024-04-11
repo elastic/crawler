@@ -24,11 +24,15 @@ module Crawler
         :seed_urls,            # An array or an enumerator of initial URLs to crawl
         :sitemap_urls,         # Array of sitemap URLs to be used for content discovery
         :robots_txt_service,   # Service to fetch robots.txt
-        :output_sink,          # The type of output, either :console or :file
+        :output_sink,          # The type of output, either :console | :file | :elasticsearch
         :output_dir,           # If writing to the filesystem, the directory to write to
+        :output_index,         # If writing to Elasticsearch, the index to write to
         :results_collection,   # An Enumerable collection for storing mock crawl results
         :user_agent,           # The User-Agent used for requests made from the crawler.
         :stats_dump_interval,  # How often should we output stats in the logs during a crawl
+
+        # Elasticsearch settings
+        :elasticsearch, # Elasticsearch connection settings
 
         # HTTP header settings
         :http_header_service,  # Service to determine the HTTP headers used for requests made from the crawler.
@@ -157,6 +161,7 @@ module Crawler
         http_header_service
         http_proxy_username
         http_proxy_password
+        elasticsearch
       ]
 
       # Specific processed configuration options
