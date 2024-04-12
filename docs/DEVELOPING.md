@@ -43,8 +43,8 @@ If the output sink is `console` or `file`, it simply outputs the crawl result as
 
 If the output sink is `elasticsearch`, it adds crawl results to a bulk queue for processing.
 The bulk queue is added to until a threshold is met (either queue number or queue size in bytes).
-It will then flush the queue, which prompts a bulk API request to the configured Elasticsearch instance.
-The bulk API settings can be configured in the config file.
+It will then flush the queue, which prompts a `_bulk` API request to the configured Elasticsearch instance.
+The `_bulk` API settings can be configured in the config file.
 
 ## Testing the elastic-crawler
 
