@@ -156,8 +156,6 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       let(:crawl_result_two) { FactoryBot.build(:html_crawl_result, url: 'http://example.com/two', content: 'work work!') }
       let(:doc_one) { { id: crawl_result_one.url_hash, body_content: 'hoho, haha!' } }
       let(:doc_two) { { id: crawl_result_two.url_hash, body_content: 'work work!' } }
-      # let(:doc_one) { { doc: doc_one } }
-      # let(:doc_two) { { doc: doc_two } }
 
       before(:each) do
         # emulated behaviour is:
