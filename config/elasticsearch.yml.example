@@ -6,6 +6,7 @@
 #  username: elastic
 #  password: changeme
 #  api_key: 1234
+#  pipeline: ent-search-generic-ingestion
 #  bulk_api:
 #    max_items: 10
 #    max_size_bytes: 1_048_576

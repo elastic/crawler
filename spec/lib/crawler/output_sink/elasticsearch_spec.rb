@@ -20,7 +20,8 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
   let(:index_name) { 'my-index' }
 
   let(:index_name) { 'some-index-name' }
-  let(:request_pipeline) { Core::ConnectorSettings::DEFAULT_REQUEST_PIPELINE }
+  let(:default_pipeline) { Crawler::OutputSink::Elasticsearch::DEFAULT_PIPELINE }
+  let(:system_logger) { double }
   let(:es_client) { double }
   let(:bulk_queue) { double }
   let(:serializer) { double }
@@ -32,6 +33,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
   before(:each) do
     allow(Utility::EsClient).to receive(:new).and_return(es_client)
     allow(Utility::BulkQueue).to receive(:new).and_return(bulk_queue)
+    allow(config).to receive(:system_logger).and_return(system_logger)
 
     allow(es_client).to receive(:bulk)
 
@@ -40,6 +42,9 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
     allow(bulk_queue).to receive(:pop_all)
     allow(bulk_queue).to receive(:current_stats)
     allow(bulk_queue).to receive(:serialize)
+
+    allow(system_logger).to receive(:debug)
+    allow(system_logger).to receive(:info)
 
     allow(Elasticsearch::API).to receive(:serializer).and_return(serializer)
     allow(serializer).to receive(:dump).and_return('')
@@ -79,6 +84,32 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
     context 'when config is okay' do
       it 'does not raise an error' do
         expect { subject }.not_to raise_error
+        expect(system_logger).to have_received(:info).with(
+          "Elasticsearch sink initialized for index [#{index_name}] with pipeline [#{default_pipeline}]"
+        )
+      end
+    end
+
+    context 'when elasticsearch.pipeline is not provided' do
+      let(:config) do
+        Crawler::API::Config.new(
+          domain_allowlist: domains,
+          seed_urls: seed_urls,
+          output_sink: 'elasticsearch',
+          output_index: index_name,
+          elasticsearch: {
+            host: 'http://localhost:1234',
+            api_key: 'key',
+            pipeline: 'my-pipeline'
+          }
+        )
+      end
+
+      it 'uses the default pipeline' do
+        expect { subject }.not_to raise_error
+        expect(system_logger).to have_received(:info).with(
+          "Elasticsearch sink initialized for index [#{index_name}] with pipeline [my-pipeline]"
+        )
       end
     end
   end
@@ -102,7 +133,6 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
     context 'when bulk queue is empty but first doc is too big for queue' do
       let(:big_crawl_result) { FactoryBot.build(:html_crawl_result, url: 'http://example.com/big', content: 'pretend this string is big') }
       let(:big_doc) { { id: big_crawl_result.url_hash, body_content: 'pretend this string is big' } }
-      let(:big_payload_doc) { { doc: big_doc } }
 
       before(:each) do
         allow(bulk_queue).to receive(:will_fit?).and_return(false)
@@ -115,7 +145,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
         # emulated behaviour is:
         # Empty queue will be popped before adding large doc
         expect(bulk_queue).to receive(:pop_all).ordered
-        expect(bulk_queue).to receive(:add).with(anything, big_payload_doc).ordered
+        expect(bulk_queue).to receive(:add).with(anything, big_doc).ordered
 
         subject.write(big_crawl_result)
       end
@@ -126,19 +156,19 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       let(:crawl_result_two) { FactoryBot.build(:html_crawl_result, url: 'http://example.com/two', content: 'work work!') }
       let(:doc_one) { { id: crawl_result_one.url_hash, body_content: 'hoho, haha!' } }
       let(:doc_two) { { id: crawl_result_two.url_hash, body_content: 'work work!' } }
-      let(:payload_doc_one) { { doc: doc_one } }
-      let(:payload_doc_two) { { doc: doc_two } }
+      # let(:doc_one) { { doc: doc_one } }
+      # let(:doc_two) { { doc: doc_two } }
 
       before(:each) do
         # emulated behaviour is:
         # Queue will be full once first item is added to it
         allow(bulk_queue).to receive(:will_fit?).and_return(true, false)
-        allow(bulk_queue).to receive(:pop_all).and_return([payload_doc_one])
+        allow(bulk_queue).to receive(:pop_all).and_return([doc_one])
 
         allow(subject).to receive(:to_doc).with(crawl_result_one).and_return(doc_one)
         allow(subject).to receive(:to_doc).with(crawl_result_two).and_return(doc_two)
 
-        allow(serializer).to receive(:dump).and_return(payload_doc_one, payload_doc_two)
+        allow(serializer).to receive(:dump).and_return(doc_one, doc_two)
       end
 
       it 'sends a bulk request with data returned from bulk queue' do
@@ -149,9 +179,9 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       end
 
       it 'pops existing documents before adding a new one' do
-        expect(bulk_queue).to receive(:add).with(anything, payload_doc_one).ordered
+        expect(bulk_queue).to receive(:add).with(anything, doc_one).ordered
         expect(bulk_queue).to receive(:pop_all).ordered
-        expect(bulk_queue).to receive(:add).with(anything, payload_doc_two).ordered
+        expect(bulk_queue).to receive(:add).with(anything, doc_two).ordered
 
         subject.write(crawl_result_one)
         subject.write(crawl_result_two)
