@@ -105,16 +105,10 @@ group(*ALL_TEST_ENVS) do
   # Warning: Keep this version in sync with spec/fixtures/shared_togo/jetty_server/simple_web_app/Gemfile
   # Otherwise, JettyServer specs will fail on CI
   gem 'test-unit', '= 3.3.6'
-
   gem 'rspec', '~> 3.13.0'
-  # gem 'rspec-core', '~> 3.10.1'
-  # gem 'rspec-collection_matchers', '~> 1.2.0'
-  # gem 'rspec_junit_formatter'
-
   gem 'webmock'
   gem 'vcr', '~> 6.1.0'
   gem 'climate_control'
-
   gem 'timecop'
   gem 'simplecov', :require => false
   gem 'simplecov-material', :require => false
@@ -124,10 +118,8 @@ end
 group(*ALL_DEVELOPMENT_ENVS, *ALL_TEST_ENVS) do
   gem 'pry'
   gem 'factory_bot_rails', '~> 6.2.0', :require => false
-
   gem 'rb-fsevent', :require => false
   gem 'rb-inotify', :require => false
   gem 'listen', '~> 1.0'
-
   gem 'ejson'
 end
