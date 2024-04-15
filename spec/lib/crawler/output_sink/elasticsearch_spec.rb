@@ -85,7 +85,12 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
     context 'when config is okay' do
       it 'does not raise an error' do
         expect { subject }.not_to raise_error
+
         expect(subject.es_config).to eq(config.elasticsearch)
+        expect(subject.index_name).to eq(index_name)
+        expect(subject.pipeline).to eq(default_pipeline)
+        expect(subject.pipeline_params).to eq(default_pipeline_params)
+
         expect(system_logger).to have_received(:info).with(
           "Elasticsearch sink initialized for index [#{index_name}] with pipeline [#{default_pipeline}]"
         )
@@ -113,27 +118,6 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
         expect(system_logger).to have_received(:info).with(
           "Elasticsearch sink initialized for index [#{index_name}] with pipeline [my-pipeline]"
         )
-      end
-    end
-
-    context 'when elasticsearch.pipeline_params are not provided' do
-      let(:config) do
-        Crawler::API::Config.new(
-          domain_allowlist: domains,
-          seed_urls: seed_urls,
-          output_sink: 'elasticsearch',
-          output_index: index_name,
-          elasticsearch: {
-            host: 'http://localhost:1234',
-            api_key: 'key',
-            pipeline: 'my-pipeline'
-          }
-        )
-      end
-
-      it 'uses the default pipeline params' do
-        expect { subject }.not_to raise_error
-        expect(subject.pipeline_params).to eq(default_pipeline_params)
       end
     end
 
