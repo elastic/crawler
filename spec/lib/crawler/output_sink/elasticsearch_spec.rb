@@ -21,6 +21,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
 
   let(:index_name) { 'some-index-name' }
   let(:default_pipeline) { Crawler::OutputSink::Elasticsearch::DEFAULT_PIPELINE }
+  let(:default_pipeline_params) { Crawler::OutputSink::Elasticsearch::DEFAULT_PIPELINE_PARAMS }
   let(:system_logger) { double }
   let(:es_client) { double }
   let(:bulk_queue) { double }
@@ -84,6 +85,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
     context 'when config is okay' do
       it 'does not raise an error' do
         expect { subject }.not_to raise_error
+        expect(subject.es_config).to eq(config.elasticsearch)
         expect(system_logger).to have_received(:info).with(
           "Elasticsearch sink initialized for index [#{index_name}] with pipeline [#{default_pipeline}]"
         )
@@ -91,6 +93,51 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
     end
 
     context 'when elasticsearch.pipeline is not provided' do
+      let(:config) do
+        Crawler::API::Config.new(
+          domain_allowlist: domains,
+          seed_urls: seed_urls,
+          output_sink: 'elasticsearch',
+          output_index: index_name,
+          elasticsearch: {
+            host: 'http://localhost:1234',
+            api_key: 'key',
+            pipeline: 'my-pipeline'
+          }
+        )
+      end
+
+      it 'uses the default pipeline' do
+        expect { subject }.not_to raise_error
+        expect(subject.pipeline).to eq('my-pipeline')
+        expect(system_logger).to have_received(:info).with(
+          "Elasticsearch sink initialized for index [#{index_name}] with pipeline [my-pipeline]"
+        )
+      end
+    end
+
+    context 'when elasticsearch.pipeline_params are not provided' do
+      let(:config) do
+        Crawler::API::Config.new(
+          domain_allowlist: domains,
+          seed_urls: seed_urls,
+          output_sink: 'elasticsearch',
+          output_index: index_name,
+          elasticsearch: {
+            host: 'http://localhost:1234',
+            api_key: 'key',
+            pipeline: 'my-pipeline'
+          }
+        )
+      end
+
+      it 'uses the default pipeline params' do
+        expect { subject }.not_to raise_error
+        expect(subject.pipeline_params).to eq(default_pipeline_params)
+      end
+    end
+
+    context 'when elasticsearch.pipeline_params are not provided' do
       let(:config) do
         Crawler::API::Config.new(
           domain_allowlist: domains,
