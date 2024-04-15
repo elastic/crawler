@@ -3,7 +3,10 @@
 RSpec.describe(Crawler::RuleEngine::Base) do
   let(:domains) { ['http://example.com'] }
   let(:seed_urls) { ['http://example.com/'] }
-  let(:config) { Crawler::API::Config.new(:domain_allowlist => domains, :seed_urls => seed_urls, :robots_txt_service => Crawler::RobotsTxtService.always_allow) }
+  let(:config) do
+    Crawler::API::Config.new(domain_allowlist: domains, seed_urls: seed_urls,
+                             robots_txt_service: Crawler::RobotsTxtService.always_allow)
+  end
   subject(:rule_engine) { described_class.new(config) }
 
   #-------------------------------------------------------------------------------------------------
@@ -26,12 +29,18 @@ RSpec.describe(Crawler::RuleEngine::Base) do
 
     context 'robots.txt' do
       let(:domain) { Crawler::Data::Domain.new('http://example.com') }
-      let(:config) { Crawler::API::Config.new(:domain_allowlist => [domain.to_s], :seed_urls => seed_urls, :robots_txt_service => @robots_txt_service) }
+      let(:config) do
+        Crawler::API::Config.new(domain_allowlist: [domain.to_s], seed_urls: seed_urls,
+                                 robots_txt_service: @robots_txt_service)
+      end
 
       context 'with crawl delay' do
         before do
-          @robots_txt_service = Crawler::RobotsTxtService.new(:user_agent => 'Elastic Crawler')
-          @robots_txt_service.register_crawl_result(domain, double(:status_code => 200, :content => "User-agent: *\nDisallow: /wp-admin\nCrawl-delay: 600"))
+          @robots_txt_service = Crawler::RobotsTxtService.new(user_agent: 'Elastic Crawler')
+          @robots_txt_service.register_crawl_result(
+            domain,
+            double(status_code: 200, content: "User-agent: *\nDisallow: /wp-admin\nCrawl-delay: 600")
+          )
         end
 
         it 'allows' do
@@ -50,8 +59,8 @@ RSpec.describe(Crawler::RuleEngine::Base) do
 
       context 'status 4xx' do
         before do
-          @robots_txt_service = Crawler::RobotsTxtService.new(:user_agent => 'Elastic Crawler')
-          @robots_txt_service.register_crawl_result(domain, double(:status_code => 404))
+          @robots_txt_service = Crawler::RobotsTxtService.new(user_agent: 'Elastic Crawler')
+          @robots_txt_service.register_crawl_result(domain, double(status_code: 404))
         end
 
         it 'always allows' do
@@ -63,8 +72,8 @@ RSpec.describe(Crawler::RuleEngine::Base) do
 
       context 'status 5xx' do
         before do
-          @robots_txt_service = Crawler::RobotsTxtService.new(:user_agent => 'Elastic Crawler')
-          @robots_txt_service.register_crawl_result(domain, double(:status_code => 500))
+          @robots_txt_service = Crawler::RobotsTxtService.new(user_agent: 'Elastic Crawler')
+          @robots_txt_service.register_crawl_result(domain, double(status_code: 500))
         end
 
         it 'never allows' do
@@ -85,8 +94,8 @@ RSpec.describe(Crawler::RuleEngine::Base) do
     context 'noindex meta tag' do
       let(:mock_crawl_result) do
         Crawler::Data::CrawlResult::HTML.new(
-          :url => url,
-          :content => '<html><head><meta name="robots" content="noindex"></head><body><a href="http://example.com/link"></a></body></html>'
+          url: url,
+          content: '<html><head><meta name="robots" content="noindex"></head><body><a href="http://example.com/link"></a></body></html>'
         )
       end
 
@@ -98,8 +107,8 @@ RSpec.describe(Crawler::RuleEngine::Base) do
     context 'noindex and nofollow meta tag' do
       let(:mock_crawl_result) do
         Crawler::Data::CrawlResult::HTML.new(
-          :url => url,
-          :content => '<html><head><meta name="robots" content="noindex, nofollow"></head><body><a href="http://example.com/link"></a></body></html>'
+          url: url,
+          content: '<html><head><meta name="robots" content="noindex, nofollow"></head><body><a href="http://example.com/link"></a></body></html>'
         )
       end
 
@@ -111,8 +120,8 @@ RSpec.describe(Crawler::RuleEngine::Base) do
     context 'for a fatal error response' do
       let(:mock_crawl_result) do
         Crawler::Data::CrawlResult::Error.new(
-          :url => url,
-          :error => 'Something went horribly wrong'
+          url: url,
+          error: 'Something went horribly wrong'
         )
       end
 
@@ -124,9 +133,9 @@ RSpec.describe(Crawler::RuleEngine::Base) do
     context 'for a response for an unsupported content type' do
       let(:mock_crawl_result) do
         Crawler::Data::CrawlResult::UnsupportedContentType.new(
-          :url => url,
-          :status_code => 200,
-          :content_type => 'application/java'
+          url: url,
+          status_code: 200,
+          content_type: 'application/java'
         )
       end
 
@@ -138,8 +147,8 @@ RSpec.describe(Crawler::RuleEngine::Base) do
     context 'ok to index page' do
       let(:mock_crawl_result) do
         Crawler::Data::CrawlResult::HTML.new(
-          :url => url,
-          :content => '<html><body><a href="http://example.com/link"></a></body></html>'
+          url: url,
+          content: '<html><body><a href="http://example.com/link"></a></body></html>'
         )
       end
 

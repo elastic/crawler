@@ -6,8 +6,8 @@ RSpec.describe(Crawler::Data::UrlQueue) do
 
   let(:config) do
     Crawler::API::Config.new(
-      :domain_allowlist => domains,
-      :seed_urls => seed_urls
+      domain_allowlist: domains,
+      seed_urls: seed_urls
     )
   end
 

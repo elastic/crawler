@@ -26,22 +26,22 @@ RSpec.describe 'robots.txt support' do
   end
 
   it 'should respect robots.txt disallow rules for matching User-Agent' do
-    results = FauxCrawl.run(site, :user_agent => 'Elastic Crawler')
+    results = FauxCrawl.run(site, user_agent: 'Elastic Crawler')
 
     expect(results).to have_only_these_results [
-      mock_response(:url => 'http://127.0.0.1:9393/', :status_code => 200),
-      mock_response(:url => 'http://127.0.0.1:9393/hey', :status_code => 200),
-      mock_response(:url => 'http://127.0.0.1:9393/sekret-stuff', :status_code => 200)
+      mock_response(url: 'http://127.0.0.1:9393/', status_code: 200),
+      mock_response(url: 'http://127.0.0.1:9393/hey', status_code: 200),
+      mock_response(url: 'http://127.0.0.1:9393/sekret-stuff', status_code: 200)
     ]
   end
 
   it 'should respect robots.txt disallow rules for wildcard User-Agent' do
-    crawler = FauxCrawl.run(site, :user_agent => 'This Does Not Match')
+    crawler = FauxCrawl.run(site, user_agent: 'This Does Not Match')
 
     expect(crawler).to have_only_these_results [
-      mock_response(:url => 'http://127.0.0.1:9393/', :status_code => 200),
-      mock_response(:url => 'http://127.0.0.1:9393/hey', :status_code => 200),
-      mock_response(:url => 'http://127.0.0.1:9393/no-elastic-crawler', :status_code => 200)
+      mock_response(url: 'http://127.0.0.1:9393/', status_code: 200),
+      mock_response(url: 'http://127.0.0.1:9393/hey', status_code: 200),
+      mock_response(url: 'http://127.0.0.1:9393/no-elastic-crawler', status_code: 200)
     ]
   end
 
@@ -51,12 +51,12 @@ RSpec.describe 'robots.txt support' do
     end
 
     it 'should respect robots.txt disallow rules for matching User-Agent' do
-      results = FauxCrawl.run(site, :user_agent => 'Elastic Crawler')
+      results = FauxCrawl.run(site, user_agent: 'Elastic Crawler')
 
       expect(results).to have_only_these_results [
-        mock_response(:url => 'http://127.0.0.1:9393/', :status_code => 200),
-        mock_response(:url => 'http://127.0.0.1:9393/hey', :status_code => 200),
-        mock_response(:url => 'http://127.0.0.1:9393/sekret-stuff', :status_code => 200)
+        mock_response(url: 'http://127.0.0.1:9393/', status_code: 200),
+        mock_response(url: 'http://127.0.0.1:9393/hey', status_code: 200),
+        mock_response(url: 'http://127.0.0.1:9393/sekret-stuff', status_code: 200)
       ]
     end
   end
@@ -90,8 +90,8 @@ RSpec.describe 'robots.txt support' do
       it 'should follow the redirect and apply the rules' do
         crawler = FauxCrawl.run(site)
         expect(crawler).to have_only_these_results [
-          mock_response(:url => 'http://127.0.0.1:9393/', :status_code => 200),
-          mock_response(:url => 'http://127.0.0.1:9393/hey', :status_code => 200)
+          mock_response(url: 'http://127.0.0.1:9393/', status_code: 200),
+          mock_response(url: 'http://127.0.0.1:9393/hey', status_code: 200)
         ]
       end
     end
@@ -137,9 +137,9 @@ RSpec.describe 'robots.txt support' do
 
         crawler = FauxCrawl.run(site)
         expect(crawler).to have_only_these_results [
-          mock_response(:url => 'http://127.0.0.1:9393/', :status_code => 200),
-          mock_response(:url => 'http://127.0.0.1:9393/hey', :status_code => 200),
-          mock_response(:url => 'http://127.0.0.1:9393/sekret-stuff', :status_code => 200)
+          mock_response(url: 'http://127.0.0.1:9393/', status_code: 200),
+          mock_response(url: 'http://127.0.0.1:9393/hey', status_code: 200),
+          mock_response(url: 'http://127.0.0.1:9393/sekret-stuff', status_code: 200)
         ]
       end
     end
@@ -170,9 +170,9 @@ RSpec.describe 'robots.txt support' do
         results = FauxCrawl.run(site)
 
         expect(results).to have_only_these_results [
-          mock_response(:url => 'http://127.0.0.1:9393/', :status_code => 200),
-          mock_response(:url => 'http://127.0.0.1:9393/hey', :status_code => 200),
-          mock_response(:url => 'http://127.0.0.1:9393/sekret-stuff', :status_code => 200)
+          mock_response(url: 'http://127.0.0.1:9393/', status_code: 200),
+          mock_response(url: 'http://127.0.0.1:9393/hey', status_code: 200),
+          mock_response(url: 'http://127.0.0.1:9393/sekret-stuff', status_code: 200)
         ]
       end
     end

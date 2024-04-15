@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# rubocop:disable Lint/ConstantDefinitionInBlock
 RSpec.describe 'Sitemap XXE vulnerability specs' do
   DO_NOT_VISIT_TXT_PATH = File.expand_path(File.join(FIXTURES_HOME, 'do-not-visit.txt'))
   SITEMAP_XML = <<~XML
@@ -49,8 +50,8 @@ RSpec.describe 'Sitemap XXE vulnerability specs' do
 
     it 'extracts links but does not look up files' do
       expect(results).to have_only_these_results [
-        mock_response(:url => 'http://127.0.0.1:9393/', :status_code => 404),
-        mock_response(:url => 'http://127.0.0.1:9393/visit-here', :status_code => 200)
+        mock_response(url: 'http://127.0.0.1:9393/', status_code: 404),
+        mock_response(url: 'http://127.0.0.1:9393/visit-here', status_code: 200)
       ]
     end
   end
@@ -75,9 +76,10 @@ RSpec.describe 'Sitemap XXE vulnerability specs' do
 
     it 'extracts links but does not look up files' do
       expect(results).to have_only_these_results [
-        mock_response(:url => 'http://127.0.0.1:9393/', :status_code => 404),
-        mock_response(:url => 'http://127.0.0.1:9393/visit-here', :status_code => 200)
+        mock_response(url: 'http://127.0.0.1:9393/', status_code: 404),
+        mock_response(url: 'http://127.0.0.1:9393/visit-here', status_code: 200)
       ]
     end
   end
 end
+# rubocop:enable Lint/ConstantDefinitionInBlock

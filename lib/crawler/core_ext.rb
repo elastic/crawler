@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 #
 # This file contains useful extensions for core classes
 #

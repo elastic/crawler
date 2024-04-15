@@ -1,8 +1,11 @@
+# frozen_string_literal: true
+
 require 'socket'
 
 RSpec.describe 'Request to a site that is sending the data back really slowly' do
+  # rubocop:disable Lint/ConstantDefinitionInBlock
   class VerySlowServer
-    PORT = 10000
+    PORT = 10_000
     RESPONSE_DURATION = 20 # seconds
     ROOT_PAGE = <<~HTML
       <html>
@@ -28,7 +31,7 @@ RSpec.describe 'Request to a site that is sending the data back really slowly' d
       end
     end
 
-    def handle_request(req, sock)
+    def handle_request(req, sock) # rubocop:disable Metrics/MethodLength
       sock.print "HTTP/1.0 200 OK\r\n"
       sock.print "Content-Type: text/html\r\n"
       if req.start_with?('GET /timeout')
@@ -57,6 +60,7 @@ RSpec.describe 'Request to a site that is sending the data back really slowly' d
       end
     end
   end
+  # rubocop:enable Lint/ConstantDefinitionInBlock
 
   it 'times out' do
     # Start a very slow server on a separate port
@@ -66,13 +70,13 @@ RSpec.describe 'Request to a site that is sending the data back really slowly' d
     # Configure and run a crawl against the slow server
     results = FauxCrawl.run(
       Faux.site, # This will never actually be called, since we seed the crawl with the slow site
-      :timeouts => { :request_timeout => 2 },
-      :seed_urls => [slow_server.root_url]
+      timeouts: { request_timeout: 2 },
+      seed_urls: [slow_server.root_url]
     )
 
     # Should only have a single result (home page)
     expect(results).to have_only_these_results [
-      mock_response(:url => "#{slow_server.root_url}/", :status_code => 200)
+      mock_response(url: "#{slow_server.root_url}/", status_code: 200)
     ]
 
     # Should properly count visited pages

@@ -27,8 +27,8 @@ RSpec.describe 'Response Content-Type support' do
 
   it 'supports single and multiple Content-Type headers' do
     expect(results).to have_only_these_results [
-      mock_response(:url => 'http://127.0.0.1:9393/', :status_code => 200),
-      mock_response(:url => 'http://127.0.0.1:9393/html', :status_code => 200)
+      mock_response(url: 'http://127.0.0.1:9393/', status_code: 200),
+      mock_response(url: 'http://127.0.0.1:9393/html', status_code: 200)
     ]
   end
 end

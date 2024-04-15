@@ -27,7 +27,7 @@ module Crawler
 
     def crawl_delay
       delay_ms = robots_rules.crawl_delay
-      delay_ms < 0 ? nil : delay_ms / 1000
+      delay_ms.negative? ? nil : delay_ms / 1000
     end
 
     def sitemaps
@@ -61,7 +61,7 @@ module Crawler
     end
 
     class Failure < RobotsTxtParser
-      def initialize(base_url:, status_code:)
+      def initialize(base_url:, status_code:) # rubocop:disable Lint/MissingSuper
         @status_code = status_code
         @base_url = Crawler::Data::URL.parse(base_url)
         @robots_rules = Java::CrawlercommonsRobots::SimpleRobotRulesParser.new.failed_fetch(status_code)

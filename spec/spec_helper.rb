@@ -17,7 +17,7 @@ ENV['CRAWLER_ENV'] = 'test'
 
 # Disable external HTTP connections
 require 'webmock/rspec'
-WebMock.disable_net_connect!(:allow_localhost => true)
+WebMock.disable_net_connect!(allow_localhost: true)
 
 # Load WebMock before crawler, so that proper mock http subclass is swapped in
 WebMock.enable!
@@ -29,7 +29,7 @@ require_relative '../lib/environment'
 require 'crawler'
 
 # Require helper files
-Dir[__dir__ + '/support/**/*.rb'].sort.each { |f| require f }
+Dir["#{__dir__}/support/**/*.rb"].sort.each { |f| require f }
 
 # Make it easier to use pry from specs, load it beforehand
 require 'pry'

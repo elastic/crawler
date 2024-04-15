@@ -18,9 +18,9 @@ RSpec.describe 'URL normalization in the presence of URL fragments' do
 
   it 'crawls discovered URLs while stripping out the fragments' do
     expect(results).to have_only_these_results [
-      mock_response(:url => 'http://127.0.0.1:9393/', :status_code => 200),
-      mock_response(:url => 'http://127.0.0.1:9393/foo', :status_code => 200),
-      mock_response(:url => 'http://127.0.0.1:9393/baz', :status_code => 200)
+      mock_response(url: 'http://127.0.0.1:9393/', status_code: 200),
+      mock_response(url: 'http://127.0.0.1:9393/foo', status_code: 200),
+      mock_response(url: 'http://127.0.0.1:9393/baz', status_code: 200)
     ]
   end
 end

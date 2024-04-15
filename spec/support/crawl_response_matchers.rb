@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 #
 # Compares an Array of Crawler::Data::CrawlResult with expected results (Array of MockResponse)
 # Each field specified in the expected results MockResponse is going to be compared
@@ -30,7 +31,7 @@ RSpec::Matchers.define :have_only_these_results do |expected_results|
 end
 
 #---------------------------------------------------------------------------------------------------
-def failure_message_template(results, expected_results)
+def failure_message_template(results, expected_results) # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity
   missing = []
   extra = results.map(&:clone)
 

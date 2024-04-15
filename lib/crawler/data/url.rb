@@ -68,7 +68,7 @@ module Crawler
       # @param [Regexp] regexp
       # @return [Array<String>]
       def extract_by_regexp(regexp)
-        raise ArgumentError.new 'regexp has to be a Regexp instance' unless regexp.kind_of?(Regexp)
+        raise ArgumentError, 'regexp has to be a Regexp instance' unless regexp.is_a?(Regexp)
 
         match_data = regexp.match(normalized_url)
         return [] unless match_data

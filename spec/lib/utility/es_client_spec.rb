@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'elasticsearch'
 
 RSpec.describe(Utility::EsClient) do
@@ -21,7 +23,7 @@ RSpec.describe(Utility::EsClient) do
       .to_return(status: 403, body: '', headers: {})
     stub_request(:get, "#{host}:9200/_cluster/health")
 
-    # TODO make a factory or something for system_logger mocks
+    # TODO: make a factory or something for system_logger mocks
     allow(system_logger).to receive(:info)
     allow(system_logger).to receive(:debug)
   end

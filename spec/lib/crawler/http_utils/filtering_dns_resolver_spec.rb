@@ -1,21 +1,21 @@
 # frozen_string_literal: true
 
-RSpec.describe(Crawler::HttpClient::FilteringDnsResolver) do
+RSpec.describe(Crawler::HttpUtils::FilteringDnsResolver) do
   let(:loopback_allowed) { false }
   let(:private_networks_allowed) { false }
 
   subject(:resolver) do
     described_class.new(
-      :loopback_allowed => loopback_allowed,
-      :private_networks_allowed => private_networks_allowed,
-      :logger => Logger.new(STDOUT)
+      loopback_allowed: loopback_allowed,
+      private_networks_allowed: private_networks_allowed,
+      logger: Logger.new($stdout)
     )
   end
 
   context 'when private_networks_allowed=false' do
     it 'does not allow resolution of private IP addresses' do
-      expect { resolver.resolve('monitoring.swiftype.net') }.to raise_error(Crawler::HttpClient::InvalidHost)
-      expect { resolver.resolve('10.10.1.42') }.to raise_error(Crawler::HttpClient::InvalidHost)
+      expect { resolver.resolve('monitoring.swiftype.net') }.to raise_error(Crawler::HttpUtils::InvalidHost)
+      expect { resolver.resolve('10.10.1.42') }.to raise_error(Crawler::HttpUtils::InvalidHost)
     end
 
     it 'strips out private addresses, but allows the request if there is at least one public IP available' do
@@ -52,7 +52,7 @@ RSpec.describe(Crawler::HttpClient::FilteringDnsResolver) do
 
     context 'when loopback_allowed=false' do
       it 'does not allow resolution of localhost' do
-        expect { resolver.resolve('localhost:9292') }.to raise_error(Crawler::HttpClient::InvalidHost)
+        expect { resolver.resolve('localhost:9292') }.to raise_error(Crawler::HttpUtils::InvalidHost)
       end
     end
 

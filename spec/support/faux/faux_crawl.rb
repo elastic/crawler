@@ -3,7 +3,7 @@
 require 'faux'
 require_relative 'results_collection'
 
-class FauxCrawl
+class FauxCraw # rubocop:disable Metrics/ClassLength
   module Settings
     def self.faux_url
       "http://#{faux_ip}:#{faux_port}/"
@@ -24,25 +24,25 @@ class FauxCrawl
   end
 
   def self.crawl_site(&block)
-    raise ArgumentError, 'Need a block defining a site' unless block_given?
+    raise ArgumentError, 'Need a block defining a site' unless block
+
     run(Faux.site(&block))
   end
 
   #-------------------------------------------------------------------------------------------------
   DEFAULT_OPTIONS = {
-    :port => Settings.faux_port,
-    :seed_urls => ['/'],
-  }
+    port: Settings.faux_port,
+    seed_urls: ['/']
+  }.freeze
 
   START_TIMEOUT = 20.seconds
 
-  attr_reader :options, :sites, :site_containers, :timeouts, :content_extraction, :default_encoding
-  attr_reader :crawl_id, :url_queue
-  attr_reader :auth, :user_agent, :seed_urls, :sitemap_urls, :domain_allowlist, :results, :expect_success
+  attr_reader :options, :sites, :site_containers, :timeouts, :content_extraction, :default_encoding, :crawl_id,
+              :url_queue, :auth, :user_agent, :seed_urls, :sitemap_urls, :domain_allowlist, :results, :expect_success
 
-  delegate :crawl, :to => :results
+  delegate :crawl, to: :results
 
-  def initialize(*sites)
+  def initialize(*sites) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
     @options = sites.extract_options!
     @sites = configure_sites(*sites)
 
@@ -53,7 +53,7 @@ class FauxCrawl
     @seed_urls = coerce_to_absolute_urls(options[:seed_urls] || [Settings.faux_url])
     @sitemap_urls = coerce_to_absolute_urls(options[:sitemap_urls] || [])
     @domain_allowlist = seed_urls.map { |url| Crawler::Data::URL.parse(url).site }
-    @content_extraction = options.fetch(:content_extraction, { :enabled => false, :mime_types => [] })
+    @content_extraction = options.fetch(:content_extraction, { enabled: false, mime_types: [] })
     @default_encoding = options[:default_encoding]
     @timeouts = options.fetch(:timeouts, {}).slice(
       :connect_timeout, :socket_timeout, :request_timeout
@@ -84,10 +84,10 @@ class FauxCrawl
   end
 
   #-------------------------------------------------------------------------------------------------
-  def start_sites
+  def start_sites # rubocop:disable Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity, Metrics/AbcSize
     sites_to_start = sites.uniq(&:port)
     @site_containers = sites_to_start.collect do |site|
-      site_options = { :port => site.port, :debug => true, :start => false }
+      site_options = { port: site.port, debug: true, start: false }
       the_site = Faux::Site.new(site.site, site_options)
       Thread.new { the_site.start }
       the_site
@@ -114,9 +114,9 @@ class FauxCrawl
       sleep 0.05
     end
 
-    if ports_remaining.any?
-      raise "Unable to start all Faux sites; these ports never were available: #{ports_remaining.inspect}"
-    end
+    return unless ports_remaining.any?
+
+    raise "Unable to start all Faux sites; these ports never were available: #{ports_remaining.inspect}"
   end
 
   #-------------------------------------------------------------------------------------------------
@@ -133,9 +133,7 @@ class FauxCrawl
     crawl.start!
 
     # Check the outcome
-    if expect_success && results.outcome != :success
-      raise "Test Crawl failed! Outcome: #{results.outcome_message}"
-    end
+    raise "Test Crawl failed! Outcome: #{results.outcome_message}" if expect_success && results.outcome != :success
 
     results
   ensure
@@ -143,23 +141,23 @@ class FauxCrawl
   end
 
   #-------------------------------------------------------------------------------------------------
-  def configure_crawl
+  def configure_crawl # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
     # Prepare crawl config
     config = {
-      :crawl_id => crawl_id,
-      :auth => auth,
-      :user_agent => user_agent,
-      :seed_urls => seed_urls,
-      :sitemap_urls => sitemap_urls,
-      :domain_allowlist => domain_allowlist,
-      :content_extraction_enabled => content_extraction.fetch(:enabled),
-      :content_extraction_mime_types => content_extraction.fetch(:mime_types),
-      :output_sink => :mock,
-      :results_collection => results,
-      :http_auth_allowed => true,
-      :loopback_allowed => true,
-      :private_networks_allowed => true,
-      :url_queue => url_queue
+      crawl_id: crawl_id,
+      auth: auth,
+      user_agent: user_agent,
+      seed_urls: seed_urls,
+      sitemap_urls: sitemap_urls,
+      domain_allowlist: domain_allowlist,
+      content_extraction_enabled: content_extraction.fetch(:enabled),
+      content_extraction_mime_types: content_extraction.fetch(:mime_types),
+      output_sink: :mock,
+      results_collection: results,
+      http_auth_allowed: true,
+      loopback_allowed: true,
+      private_networks_allowed: true,
+      url_queue: url_queue
     }
     config.merge!(timeouts)
     config[:default_encoding] = default_encoding if default_encoding
@@ -169,16 +167,16 @@ class FauxCrawl
       # Allow all traffic
       config[:crawl_rules] = domain_allowlist.map do |domain|
         {
-          :policy => 'allow',
-          :url_pattern => "\\A#{Regexp.escape(domain)}"
+          policy: 'allow',
+          url_pattern: "\\A#{Regexp.escape(domain)}"
         }
       end
 
       # Use default dedup settings
       config[:deduplication_settings] = domain_allowlist.map do |domain|
         {
-          :fields => SharedTogo::Crawler.default_deduplication_fields,
-          :url_pattern => "\\A#{Regexp.escape(domain)}"
+          fields: SharedTogo::Crawler.default_deduplication_fields,
+          url_pattern: "\\A#{Regexp.escape(domain)}"
         }
       end
     end
@@ -194,7 +192,7 @@ class FauxCrawl
   #-------------------------------------------------------------------------------------------------
   def coerce_to_absolute_urls(links)
     links.map do |link|
-      if link !~ /^http/
+      if /^http/.match?(link)
         base_url = ::Crawler::Data::URL.parse(Settings.faux_url)
         base_url.join(link).to_s
       else
@@ -204,6 +202,6 @@ class FauxCrawl
   end
 
   def log(message, color = :default)
-    puts message.colorize(:color => color)
+    puts message.colorize(color: color)
   end
 end

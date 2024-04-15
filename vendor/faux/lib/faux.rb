@@ -18,7 +18,7 @@ require_relative 'faux/version'
 module Faux
   def self.site(&block)
     Class.new(Faux::Base) do
-      instance_eval(&block) if block_given?
+      instance_eval(&block) if block
     end
   end
 end

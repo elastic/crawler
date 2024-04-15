@@ -32,8 +32,8 @@ RSpec.describe 'Per-request resource limits support' do
 
   it 'crawls all pages given the constraints specified by resource limits' do
     expect(results).to have_only_these_results [
-      mock_response(:url => 'http://127.0.0.1:9393/', :status_code => 200),
-      mock_response(:url => 'http://127.0.0.1:9393/multi-chunk', :status_code => 200)
+      mock_response(url: 'http://127.0.0.1:9393/', status_code: 200),
+      mock_response(url: 'http://127.0.0.1:9393/multi-chunk', status_code: 200)
     ]
   end
 

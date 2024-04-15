@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 RSpec.describe Crawler::Data::URL do
-  def url(s)
-    Crawler::Data::URL.parse(s)
+  def url(url_string)
+    Crawler::Data::URL.parse(url_string)
   end
 
   describe '#normalized_url' do

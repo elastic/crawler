@@ -14,7 +14,7 @@ module Crawler
         #-------------------------------------------------------------------------------------------
         attr_reader :config, :last_threshold_alert_timestamp
 
-        delegate :crawl_id, :system_logger, :to => :config
+        delegate :crawl_id, :system_logger, to: :config
 
         def initialize(config)
           @config = config
@@ -38,16 +38,17 @@ module Crawler
         # WARN_THRESHOLD_INTERVAL if we have not alerted yet
         def time_since_last_threshold_alert
           return WARN_THRESHOLD_INTERVAL unless last_threshold_alert_timestamp
+
           Time.now - last_threshold_alert_timestamp
         end
 
         # Prints an alert about the queue size into the log, throttling it to make sure we do not
         # flood the logs with duplicate messages (logs once per WARN_THRESHOLD_PCT)
         def maybe_threshold_alert(message)
-          if time_since_last_threshold_alert >= WARN_THRESHOLD_PCT
-            system_logger.warn(message.squish.squeeze(' '))
-            @last_threshold_alert_timestamp = Time.now
-          end
+          return unless time_since_last_threshold_alert >= WARN_THRESHOLD_PCT
+
+          system_logger.warn(message.squish.squeeze(' '))
+          @last_threshold_alert_timestamp = Time.now
         end
 
         #-------------------------------------------------------------------------------------------
@@ -85,7 +86,7 @@ module Crawler
         end
 
         def empty?
-          length == 0
+          length.zero?
         end
 
         def any?
