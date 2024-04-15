@@ -22,22 +22,15 @@ module Crawler
         raise ArgumentError, 'Missing elasticsearch configuration' unless config.elasticsearch
 
         @config = config
+        init_ingestion_stats
+
         system_logger.info(
           "Elasticsearch sink initialized for index [#{index_name}] with pipeline [#{pipeline}]"
         )
-
-        @queued = {
-          indexed_document_count: 0,
-          indexed_document_volume: 0
-        }
-        @completed = {
-          indexed_document_count: 0,
-          indexed_document_volume: 0
-        }
       end
 
       def write(crawl_result) # rubocop:disable Metrics/MethodLength
-        doc = to_doc(crawl_result).merge!(pipeline_params)
+        doc = parametrized_doc(crawl_result)
         index_op = { 'index' => { '_index' => index_name, '_id' => doc['id'] } }
 
         flush unless operation_queue.will_fit?(index_op, doc)
@@ -48,9 +41,7 @@ module Crawler
         )
         system_logger.debug("Added doc #{doc['id']} to bulk queue. Current stats: #{operation_queue.current_stats}")
 
-        @queued[:indexed_document_count] += 1
-        @queued[:indexed_document_volume] += operation_queue.bytesize(doc)
-
+        bump_ingestion_stats(doc)
         success
       end
 
@@ -69,7 +60,7 @@ module Crawler
         system_logger.debug("Sending bulk request with #{data.size} items and flushing queue...")
 
         begin
-          client.bulk(body: data) # TODO: parse response
+          client.bulk(body: data, pipeline: (pipeline_enabled? && pipeline)) # TODO: parse response
         rescue Utility::EsClient::IndexingFailedError => e
           system_logger.warn("Bulk index failed: #{e}")
         rescue StandardError => e
@@ -78,13 +69,9 @@ module Crawler
         end
 
         system_logger.debug("Bulk request containing #{data.size} items sent!")
+        reset_ingestion_stats
 
-        # TODO: this count isn't accurate, need to look into it
-        @completed[:indexed_document_count] += @queued[:indexed_document_count]
-        @completed[:indexed_document_volume] += @queued[:indexed_document_volume]
-
-        @queued[:indexed_document_count] = 0
-        @queued[:indexed_document_volume] = 0
+        nil
       end
 
       def ingestion_stats
@@ -115,8 +102,50 @@ module Crawler
         @pipeline ||= es_config[:pipeline] || DEFAULT_PIPELINE
       end
 
+      def pipeline_enabled?
+        @pipeline_enabled ||=
+          if es_config[:pipeline_enabled].nil?
+            true
+          else
+            es_config[:pipeline_enabled]
+          end
+      end
+
       def pipeline_params
         @pipeline_params ||= DEFAULT_PIPELINE_PARAMS.merge(es_config[:pipeline_params] || {}).deep_stringify_keys
+      end
+
+      private
+
+      def parametrized_doc(crawl_result)
+        doc = to_doc(crawl_result)
+        doc.merge!(pipeline_params) if pipeline_enabled?
+        doc
+      end
+
+      def init_ingestion_stats
+        @queued = {
+          indexed_document_count: 0,
+          indexed_document_volume: 0
+        }
+        @completed = {
+          indexed_document_count: 0,
+          indexed_document_volume: 0
+        }
+      end
+
+      def bump_ingestion_stats(doc)
+        @queued[:indexed_document_count] += 1
+        @queued[:indexed_document_volume] += operation_queue.bytesize(doc)
+      end
+
+      def reset_ingestion_stats
+        # TODO: this count isn't accurate, need to look into it
+        @completed[:indexed_document_count] += @queued[:indexed_document_count]
+        @completed[:indexed_document_volume] += @queued[:indexed_document_volume]
+
+        @queued[:indexed_document_count] = 0
+        @queued[:indexed_document_volume] = 0
       end
     end
   end

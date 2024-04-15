@@ -88,6 +88,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
 
         expect(subject.es_config).to eq(config.elasticsearch)
         expect(subject.index_name).to eq(index_name)
+        expect(subject.pipeline_enabled?).to eq(true)
         expect(subject.pipeline).to eq(default_pipeline)
         expect(subject.pipeline_params).to eq(default_pipeline_params)
 
@@ -152,6 +153,27 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       it 'overrides the specified default params and includes new ones' do
         expect { subject }.not_to raise_error
         expect(subject.pipeline_params).to eq(expected_pipeline_params)
+      end
+    end
+
+    context 'when elasticsearch.pipeline_enabled is false' do
+      let(:config) do
+        Crawler::API::Config.new(
+          domain_allowlist: domains,
+          seed_urls: seed_urls,
+          output_sink: 'elasticsearch',
+          output_index: index_name,
+          elasticsearch: {
+            host: 'http://localhost:1234',
+            api_key: 'key',
+            pipeline_enabled: false
+          }
+        )
+      end
+
+      it 'overrides the specified default params and includes new ones' do
+        expect { subject }.not_to raise_error
+        expect(subject.pipeline_enabled?).to eq(false)
       end
     end
   end
@@ -248,7 +270,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
     end
 
     it 'sends data from bulk queue to elasticsearch' do
-      expect(es_client).to receive(:bulk).with(hash_including(body: operation))
+      expect(es_client).to receive(:bulk).with(hash_including(body: operation, pipeline: default_pipeline))
 
       subject.flush
     end
