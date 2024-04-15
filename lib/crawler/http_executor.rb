@@ -98,26 +98,26 @@ module Crawler
     #-------------------------------------------------------------------------------------------------
     def handling_http_errors(crawl_task)
       yield
-    rescue Crawler::HttpClient::ResponseTooLarge => e
+    rescue Crawler::HttpUtils::ResponseTooLarge => e
       logger.warn(e.message)
       Crawler::Data::CrawlResult::Error.new(
         url: crawl_task.url,
         error: e.message
       )
-    rescue Crawler::HttpClient::ConnectTimeout => e
+    rescue Crawler::HttpUtils::ConnectTimeout => e
       timeout_error(crawl_task: crawl_task, exception: e, error: 'connection_timeout')
-    rescue Crawler::HttpClient::SocketTimeout => e
+    rescue Crawler::HttpUtils::SocketTimeout => e
       timeout_error(crawl_task: crawl_task, exception: e, error: 'read_timeout')
-    rescue Crawler::HttpClient::RequestTimeout => e
+    rescue Crawler::HttpUtils::RequestTimeout => e
       timeout_error(crawl_task: crawl_task, exception: e, error: e.message)
-    rescue Crawler::HttpClient::SslException => e
+    rescue Crawler::HttpUtils::SslException => e
       logger.error("SSL error while performing HTTP request: #{e.message}. #{e.suggestion_message}")
       Crawler::Data::CrawlResult::Error.new(
         url: crawl_task.url,
         error: e.message,
         suggestion_message: e.suggestion_message
       )
-    rescue Crawler::HttpClient::BaseError => e
+    rescue Crawler::HttpUtils::BaseError => e
       error = "Failed HTTP request: #{e}. #{e.suggestion_message}"
       logger.error(error)
       Crawler::Data::CrawlResult::Error.new(
