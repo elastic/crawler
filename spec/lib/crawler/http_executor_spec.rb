@@ -5,45 +5,45 @@ RSpec.describe(Crawler::HttpExecutor) do
   let(:crawler_url) { Crawler::Data::URL.parse(url) }
   let(:normalized_url) { crawler_url.normalized_url }
 
-  let(:logger) { double(:logger, :info => nil) }
+  let(:logger) { double(:logger, info: nil) }
   let(:system_logger) { double(:system_logger) }
   let(:executor_config) do
     double(
       :executor_config,
-      :system_logger => system_logger,
-      :user_agent => 'Elastic-Crawler (1.0.0)',
-      :loopback_allowed => false,
-      :private_networks_allowed => false,
-      :connect_timeout => 10,
-      :socket_timeout => 10,
-      :request_timeout => 60,
-      :ssl_ca_certificates => [],
-      :ssl_verification_mode => 'full',
-      :http_proxy_host => nil,
-      :http_proxy_port => nil,
-      :http_proxy_username => nil,
-      :http_proxy_password => nil,
-      :http_proxy_protocol => nil,
-      :compression_enabled => true,
-      :default_encoding => 'UTF-8',
-      :max_response_size => 10.megabytes,
-      :max_redirects => 10,
-      :content_extraction_enabled => false,
-      :content_extraction_mime_types => [],
-      :head_requests_enabled => true
+      system_logger: system_logger,
+      user_agent: 'Elastic-Crawler (1.0.0)',
+      loopback_allowed: false,
+      private_networks_allowed: false,
+      connect_timeout: 10,
+      socket_timeout: 10,
+      request_timeout: 60,
+      ssl_ca_certificates: [],
+      ssl_verification_mode: 'full',
+      http_proxy_host: nil,
+      http_proxy_port: nil,
+      http_proxy_username: nil,
+      http_proxy_password: nil,
+      http_proxy_protocol: nil,
+      compression_enabled: true,
+      default_encoding: 'UTF-8',
+      max_response_size: 10.megabytes,
+      max_redirects: 10,
+      content_extraction_enabled: false,
+      content_extraction_mime_types: [],
+      head_requests_enabled: true
     )
   end
   let(:http_executor) do
     Crawler::HttpExecutor.new(executor_config)
   end
 
-  let(:crawl_task) { Crawler::Data::CrawlTask.new(:url => crawler_url, :type => :content, :depth => 1) }
+  let(:crawl_task) { Crawler::Data::CrawlTask.new(url: crawler_url, type: :content, depth: 1) }
 
   let(:client_config) do
     {
-      :loopback_allowed => false,
-      :private_networks_allowed => false,
-      :logger => Logger.new(STDOUT)
+      loopback_allowed: false,
+      private_networks_allowed: false,
+      logger: Logger.new($stdout)
     }
   end
   let(:http_client) { Crawler::HttpClient.new(client_config) }
@@ -51,51 +51,51 @@ RSpec.describe(Crawler::HttpExecutor) do
   let(:content_type_header) do
     double(
       :content_type_header,
-      :value => 'text/html',
-      :get_value => 'text/html',
-      :get_name => 'content-type'
+      value: 'text/html',
+      get_value: 'text/html',
+      get_name: 'content-type'
     )
   end
   let(:response_entity) do
     double(
       :response_entity,
-      :content_type => 'text/html; charset=utf-8',
-      :content => nil
+      content_type: 'text/html; charset=utf-8',
+      content: nil
     )
   end
   let(:head_response) do
     double(
       :apache_response,
-      :status_code => 200,
-      :close => true,
-      :headers => [content_type_header],
-      :entity => nil
+      status_code: 200,
+      close: true,
+      headers: [content_type_header],
+      entity: nil
     )
   end
   let(:get_response) do
     double(
       :apache_response,
-      :status_code => 200,
-      :close => true,
-      :headers => [content_type_header],
-      :entity => response_entity
+      status_code: 200,
+      close: true,
+      headers: [content_type_header],
+      entity: response_entity
     )
   end
 
   let(:crawler_head_response) do
-    Crawler::HttpClient::Response.new(
-      :apache_response => head_response,
-      :url => crawler_url,
-      :request_start_time => 2.seconds.ago,
-      :request_end_time => 1.second.ago
+    Crawler::HttpUtils::Response.new(
+      apache_response: head_response,
+      url: crawler_url,
+      request_start_time: 2.seconds.ago,
+      request_end_time: 1.second.ago
     )
   end
   let(:crawler_get_response) do
-    Crawler::HttpClient::Response.new(
-      :apache_response => get_response,
-      :url => crawler_url,
-      :request_start_time => 2.seconds.ago,
-      :request_end_time => 1.second.ago
+    Crawler::HttpUtils::Response.new(
+      apache_response: get_response,
+      url: crawler_url,
+      request_start_time: 2.seconds.ago,
+      request_end_time: 1.second.ago
     )
   end
 
@@ -139,10 +139,10 @@ RSpec.describe(Crawler::HttpExecutor) do
     let(:head_response) do
       double(
         :apache_response,
-        :status_code => 405,
-        :close => true,
-        :headers => [],
-        :entity => nil
+        status_code: 405,
+        close: true,
+        headers: [],
+        entity: nil
       )
     end
 
@@ -166,27 +166,27 @@ RSpec.describe(Crawler::HttpExecutor) do
     let(:redirect_header) do
       double(
         :redirect_header,
-        :value => redirect_url,
-        :get_value => redirect_url,
-        :get_name => 'location'
+        value: redirect_url,
+        get_value: redirect_url,
+        get_name: 'location'
       )
     end
     let(:redirect_head_response) do
       double(
         :apache_response,
-        :status_code => 304,
-        :close => true,
-        :entity => nil,
-        :headers => [redirect_header]
+        status_code: 304,
+        close: true,
+        entity: nil,
+        headers: [redirect_header]
       )
     end
 
     let(:redirect_crawler_head_response) do
-      Crawler::HttpClient::Response.new(
-        :apache_response => redirect_head_response,
-        :url => crawler_redirect_url,
-        :request_start_time => 2.seconds.ago,
-        :request_end_time => 1.second.ago
+      Crawler::HttpUtils::Response.new(
+        apache_response: redirect_head_response,
+        url: crawler_redirect_url,
+        request_start_time: 2.seconds.ago,
+        request_end_time: 1.second.ago
       )
     end
 
@@ -229,19 +229,19 @@ RSpec.describe(Crawler::HttpExecutor) do
       let(:redirect_get_response) do
         double(
           :apache_response,
-          :status_code => 304,
-          :close => true,
-          :entity => response_entity,
-          :headers => [redirect_header, content_type_header]
+          status_code: 304,
+          close: true,
+          entity: response_entity,
+          headers: [redirect_header, content_type_header]
         )
       end
 
       let(:redirect_crawler_get_response) do
-        Crawler::HttpClient::Response.new(
-          :apache_response => redirect_head_response,
-          :url => crawler_redirect_url,
-          :request_start_time => 2.seconds.ago,
-          :request_end_time => 1.second.ago
+        Crawler::HttpUtils::Response.new(
+          apache_response: redirect_head_response,
+          url: crawler_redirect_url,
+          request_start_time: 2.seconds.ago,
+          request_end_time: 1.second.ago
         )
       end
 
@@ -285,16 +285,16 @@ RSpec.describe(Crawler::HttpExecutor) do
     let(:content_type_header) do
       double(
         :content_type_header,
-        :value => 'application/pdf',
-        :get_value => 'application/pdf',
-        :get_name => 'content-type'
+        value: 'application/pdf',
+        get_value: 'application/pdf',
+        get_name: 'content-type'
       )
     end
     let(:response_entity) do
       double(
         :response_entity,
-        :content_type => 'application/pdf; charset=utf-8',
-        :content => nil
+        content_type: 'application/pdf; charset=utf-8',
+        content: nil
       )
     end
 
@@ -327,16 +327,16 @@ RSpec.describe(Crawler::HttpExecutor) do
         let(:content_type_header) do
           double(
             :content_type_header,
-            :value => 'application/xml',
-            :get_value => 'application/xml',
-            :get_name => 'content-type'
+            value: 'application/xml',
+            get_value: 'application/xml',
+            get_name: 'content-type'
           )
         end
         let(:response_entity) do
           double(
             :response_entity,
-            :content_type => 'application/xml; charset=utf-8',
-            :content => nil
+            content_type: 'application/xml; charset=utf-8',
+            content: nil
           )
         end
 
@@ -350,7 +350,7 @@ RSpec.describe(Crawler::HttpExecutor) do
         end
 
         context 'when crawl task is sitemap type' do
-          let(:crawl_task) { Crawler::Data::CrawlTask.new(:url => crawler_url, :type => :sitemap, :depth => 1) }
+          let(:crawl_task) { Crawler::Data::CrawlTask.new(url: crawler_url, type: :sitemap, depth: 1) }
           it_behaves_like 'supported content'
           it 'emits a sitemap result' do
             expect(http_executor.run(crawl_task)).to be_a(Crawler::Data::CrawlResult::Sitemap)
@@ -376,19 +376,19 @@ RSpec.describe(Crawler::HttpExecutor) do
         let(:content_type_header) do
           double(
             :content_type_header,
-            :value => 'application/xml',
-            :get_value => 'application/xml',
-            :get_name => 'content-type'
+            value: 'application/xml',
+            get_value: 'application/xml',
+            get_name: 'content-type'
           )
         end
         let(:response_entity) do
           double(
             :response_entity,
-            :content_type => 'application/xml; charset=utf-8',
-            :content => nil
+            content_type: 'application/xml; charset=utf-8',
+            content: nil
           )
         end
-        let(:crawl_task) { Crawler::Data::CrawlTask.new(:url => crawler_url, :type => :sitemap, :depth => 1) }
+        let(:crawl_task) { Crawler::Data::CrawlTask.new(url: crawler_url, type: :sitemap, depth: 1) }
 
         it_behaves_like 'supported content'
       end

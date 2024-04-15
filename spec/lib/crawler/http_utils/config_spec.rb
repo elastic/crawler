@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
-RSpec.describe(Crawler::HttpClient::Config) do
+RSpec.describe(Crawler::HttpUtils::Config) do
   describe 'constructor' do
     let(:valid_config) do
       {
-        :loopback_allowed => false,
-        :private_networks_allowed => false,
-        :logger => Logger.new(STDOUT)
+        loopback_allowed: false,
+        private_networks_allowed: false,
+        logger: Logger.new($stdout)
       }
     end
 

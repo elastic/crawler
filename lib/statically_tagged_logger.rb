@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 #
 # A thin proxy for wrapping loggers with ActiveSupport::TaggedLogging using
 # a statically defined set of tags.
@@ -19,7 +20,8 @@ class StaticallyTaggedLogger
   # as a new logger with the tags applied to all subsequent logging calls.
   #
   def tagged(*tags, &block)
-    return StaticallyTaggedLogger.new(self, *tags) unless block_given?
+    return StaticallyTaggedLogger.new(self, *tags) unless block
+
     parent_logger.tagged(*tags, &block)
   end
 
@@ -38,7 +40,7 @@ class StaticallyTaggedLogger
   private
 
   def coerce_to_tagged_logger(logger)
-    if logger.kind_of?(StaticallyTaggedLogger) || logger.kind_of?(ActiveSupport::TaggedLogging)
+    if logger.is_a?(StaticallyTaggedLogger) || logger.is_a?(ActiveSupport::TaggedLogging)
       logger
     else
       ActiveSupport::TaggedLogging.new(logger)

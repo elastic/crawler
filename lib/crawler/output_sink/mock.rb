@@ -3,22 +3,22 @@
 require_dependency File.join(__dir__, 'base')
 
 module Crawler
-  class OutputSink::Mock < OutputSink::Base
-    attr_reader :results
+  module OutputSink
+    class Mock < OutputSink::Base
+      attr_reader :results
 
-    def initialize(*)
-      super
+      def initialize(*)
+        super
 
-      @results = config.results_collection
-      unless results.kind_of?(ResultsCollection)
-        raise ArgumentError, 'Needs a ResultsCollection'
+        @results = config.results_collection
+        raise ArgumentError, 'Needs a ResultsCollection' unless results.is_a?(ResultsCollection)
       end
-    end
 
-    def write(crawl_result)
-      results.append(crawl_result)
+      def write(crawl_result)
+        results.append(crawl_result)
 
-      success
+        success
+      end
     end
   end
 end

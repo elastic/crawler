@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 #
 # This class is used for aggregating crawler metrics based on crawl events.
 # It is used both for crawl-level and for node-level accounting.
@@ -31,6 +32,7 @@ module Crawler
     # Returns the total crawl duration (in milliseconds) or nil if the crawl has not started yet
     def crawl_duration_msec
       return nil unless crawl_started_at
+
       end_time = crawl_finished_at || Time.monotonic_now
       ((end_time - crawl_started_at) * 1000).to_i
     end
@@ -62,7 +64,7 @@ module Crawler
 
     # Returns average response time (in milliseconds) seen during the crawl
     def average_response_time_msec
-      fetched_pages_count > 0 ? time_spent_crawling_msec / fetched_pages_count : 0
+      fetched_pages_count.positive? ? time_spent_crawling_msec / fetched_pages_count : 0
     end
 
     #-----------------------------------------------------------------------------------------------

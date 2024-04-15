@@ -27,7 +27,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
   let(:bulk_queue) { double }
   let(:serializer) { double }
 
-  let(:document) { { :id => 15 } }
+  let(:document) { { id: 15 } }
   let(:serialized_document) { "id: #{document[:id]}, text: 'hoho, haha!'" }
   let(:deleted_id) { 25 }
 
@@ -161,7 +161,6 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
     let(:index_op) { { 'index' => { '_index' => index_name, '_id' => crawl_result.url_hash } } }
 
     before(:each) do
-      # allow(subject).to receive(:to_doc).with(crawl_result).and_return(doc)
       # bytesize is only required for adding ingested doc size to stats, any value is fine for these tests
       allow(bulk_queue).to receive(:bytesize).and_return(50)
     end
@@ -186,7 +185,9 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
     end
 
     context 'when bulk queue is empty but first doc is too big for queue' do
-      let(:big_crawl_result) { FactoryBot.build(:html_crawl_result, url: 'http://example.com/big', content: 'pretend this string is big') }
+      let(:big_crawl_result) do
+        FactoryBot.build(:html_crawl_result, url: 'http://example.com/big', content: 'pretend this string is big')
+      end
       let(:big_doc) { { id: big_crawl_result.url_hash, body_content: 'pretend this string is big' }.stringify_keys }
 
       before(:each) do
@@ -205,8 +206,12 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
     end
 
     context 'when bulk queue reports that it is full' do
-      let(:crawl_result_one) { FactoryBot.build(:html_crawl_result, url: 'http://example.com/one', content: 'hoho, haha!') }
-      let(:crawl_result_two) { FactoryBot.build(:html_crawl_result, url: 'http://example.com/two', content: 'work work!') }
+      let(:crawl_result_one) do
+        FactoryBot.build(:html_crawl_result, url: 'http://example.com/one', content: 'hoho, haha!')
+      end
+      let(:crawl_result_two) do
+        FactoryBot.build(:html_crawl_result, url: 'http://example.com/two', content: 'work work!')
+      end
       let(:doc_one) { { id: crawl_result_one.url_hash, body_content: 'hoho, haha!' }.stringify_keys }
       let(:doc_two) { { id: crawl_result_two.url_hash, body_content: 'work work!' }.stringify_keys }
 
@@ -215,8 +220,6 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
         # Queue will be full once first item is added to it
         allow(bulk_queue).to receive(:will_fit?).and_return(true, false)
         allow(bulk_queue).to receive(:pop_all).and_return([doc_one])
-
-        # allow(serializer).to receive(:dump).and_return(doc_one, doc_two)
       end
 
       it 'sends a bulk request with data returned from bulk queue' do
@@ -245,7 +248,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
     end
 
     it 'sends data from bulk queue to elasticsearch' do
-      expect(es_client).to receive(:bulk).with(hash_including(:body => operation))
+      expect(es_client).to receive(:bulk).with(hash_including(body: operation))
 
       subject.flush
     end

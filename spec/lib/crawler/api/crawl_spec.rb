@@ -6,16 +6,16 @@ RSpec.describe(Crawler::API::Crawl) do
 
   let(:crawl_config) do
     Crawler::API::Config.new(
-      :domain_allowlist => ['http://example.com'],
-      :seed_urls => [seed_url]
+      domain_allowlist: ['http://example.com'],
+      seed_urls: [seed_url]
     )
   end
 
   let(:mock_seed_body) { '<html><body><a href="http://example.com/link"></a></body></html>' }
   let(:mock_crawl_result) do
     Crawler::Data::CrawlResult::HTML.new(
-      :url => parsed_url,
-      :content => mock_seed_body
+      url: parsed_url,
+      content: mock_seed_body
     )
   end
   let(:executor) { Crawler::MockExecutor.new(seed_url => mock_crawl_result) }
@@ -82,8 +82,8 @@ RSpec.describe(Crawler::API::Crawl) do
     let(:allow_resume) { false }
     before do
       subject.start_shutdown!(
-        :reason => 'testing',
-        :allow_resume => allow_resume
+        reason: 'testing',
+        allow_resume: allow_resume
       )
     end
 
@@ -130,7 +130,7 @@ RSpec.describe(Crawler::API::Crawl) do
   context 'when resuming a crawl' do
     let(:url) { Crawler::Data::URL.parse('http://example.com') }
     let(:crawl_task) do
-      Crawler::Data::CrawlTask.new(:url => url, :depth => 1, :type => :content)
+      Crawler::Data::CrawlTask.new(url: url, depth: 1, type: :content)
     end
 
     before do

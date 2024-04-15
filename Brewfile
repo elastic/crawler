@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Local dev utils
 brew 'rbenv'
 brew 'jenv'

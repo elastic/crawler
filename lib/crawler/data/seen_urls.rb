@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-#
+
 module Crawler
   module Data
     class SeenUrls
@@ -34,10 +34,10 @@ module Crawler
       private
 
       def url_hash(url)
-        raise ArgumentError, 'Needs a URL' unless url.kind_of?(Crawler::Data::URL)
+        raise ArgumentError, 'Needs a URL' unless url.is_a?(Crawler::Data::URL)
+
         url.normalized_hash
       end
-
     end
   end
 end

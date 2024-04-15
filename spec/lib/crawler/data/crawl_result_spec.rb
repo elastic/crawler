@@ -4,8 +4,8 @@ RSpec.describe(Crawler::Data::CrawlResult) do
   let(:url) { Crawler::Data::URL.parse('https://example.com/') }
   let(:html_crawl_result) do
     Crawler::Data::CrawlResult::HTML.new(
-      :url => url,
-      :content => html
+      url: url,
+      content: html
     )
   end
 
@@ -28,16 +28,16 @@ RSpec.describe(Crawler::Data::CrawlResult) do
   let(:error) { 'Something is wrong!' }
   let(:error_crawl_result) do
     Crawler::Data::CrawlResult::Error.new(
-      :url => url,
-      :error => error
+      url: url,
+      error: error
     )
   end
 
   let(:unsupported_content_type_crawl_result) do
     Crawler::Data::CrawlResult::UnsupportedContentType.new(
-      :url => url,
-      :status_code => 200,
-      :content_type => 'audio/midi'
+      url: url,
+      status_code: 200,
+      content_type: 'audio/midi'
     )
   end
 
@@ -57,7 +57,8 @@ RSpec.describe(Crawler::Data::CrawlResult) do
 
     context 'when used on a UnsupportedContentType crawl result' do
       it 'should include the error and the content type, but not the content' do
-        expect(unsupported_content_type_crawl_result.to_h).to include(:id, :url_hash, :url, :status_code, :error, :content_type)
+        expect(unsupported_content_type_crawl_result.to_h).to include(:id, :url_hash, :url, :status_code, :error,
+                                                                      :content_type)
         expect(unsupported_content_type_crawl_result.to_h).to_not include(:content)
       end
     end

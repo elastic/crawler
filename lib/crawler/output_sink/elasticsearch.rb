@@ -5,121 +5,119 @@ require_dependency File.join(__dir__, '..', '..', 'utility', 'es_client')
 require_dependency File.join(__dir__, '..', '..', 'utility', 'bulk_queue')
 
 module Crawler
-  class OutputSink::Elasticsearch < OutputSink::Base
-    DEFAULT_PIPELINE = 'ent-search-generic-ingestion'.freeze
-    DEFAULT_PIPELINE_PARAMS = {
-      _reduce_whitespace: true,
-      _run_ml_inference: true,
-      _extract_binary_content: true
-    }.freeze
+  module OutputSink
+    class Elasticsearch < OutputSink::Base
+      DEFAULT_PIPELINE = 'ent-search-generic-ingestion'.freeze
+      DEFAULT_PIPELINE_PARAMS = {
+        _reduce_whitespace: true,
+        _run_ml_inference: true,
+        _extract_binary_content: true
+      }.freeze
 
-    def initialize(config)
-      super
+      def initialize(config) # rubocop:disable Metrics/MethodLength
+        super
 
-      unless config.output_index
-        raise ArgumentError, 'Missing output index'
+        raise ArgumentError, 'Missing output index' unless config.output_index
+
+        raise ArgumentError, 'Missing elasticsearch configuration' unless config.elasticsearch
+
+        @config = config
+        system_logger.info(
+          "Elasticsearch sink initialized for index [#{index_name}] with pipeline [#{pipeline}]"
+        )
+
+        @queued = {
+          indexed_document_count: 0,
+          indexed_document_volume: 0
+        }
+        @completed = {
+          indexed_document_count: 0,
+          indexed_document_volume: 0
+        }
       end
 
-      unless config.elasticsearch
-        raise ArgumentError, 'Missing elasticsearch configuration'
+      def write(crawl_result) # rubocop:disable Metrics/MethodLength
+        doc = to_doc(crawl_result).merge!(pipeline_params)
+        index_op = { 'index' => { '_index' => index_name, '_id' => doc['id'] } }
+
+        flush unless operation_queue.will_fit?(index_op, doc)
+
+        operation_queue.add(
+          index_op,
+          doc
+        )
+        system_logger.debug("Added doc #{doc['id']} to bulk queue. Current stats: #{operation_queue.current_stats}")
+
+        @queued[:indexed_document_count] += 1
+        @queued[:indexed_document_volume] += operation_queue.bytesize(doc)
+
+        success
       end
 
-      @config = config
-      system_logger.info(
-        "Elasticsearch sink initialized for index [#{index_name}] with pipeline [#{pipeline}]"
-      )
-
-      @queued = {
-        :indexed_document_count => 0,
-        :indexed_document_volume => 0
-      }
-      @completed = {
-        :indexed_document_count => 0,
-        :indexed_document_volume => 0
-      }
-    end
-
-    def write(crawl_result)
-      doc = to_doc(crawl_result).merge!(pipeline_params)
-      index_op = { 'index' => { '_index' => index_name, '_id' => doc['id'] } }
-
-      flush unless operation_queue.will_fit?(index_op, doc)
-
-      operation_queue.add(
-        index_op,
-        doc
-      )
-      system_logger.debug("Added doc #{doc['id']} to bulk queue. Current stats: #{operation_queue.current_stats}")
-
-      @queued[:indexed_document_count] += 1
-      @queued[:indexed_document_volume] += operation_queue.bytesize(doc)
-
-      success
-    end
-
-    def close
-      flush
-      system_logger.info(ingestion_stats)
-    end
-
-    def flush
-      data = operation_queue.pop_all
-      if data.empty?
-        system_logger.debug('Queue was empty when attempting to flush.')
-        return
+      def close
+        flush
+        system_logger.info(ingestion_stats)
       end
 
-      system_logger.debug("Sending bulk request with #{data.size} items and flushing queue...")
+      def flush # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+        data = operation_queue.pop_all
+        if data.empty?
+          system_logger.debug('Queue was empty when attempting to flush.')
+          return
+        end
 
-      begin
-        response = client.bulk(body: data, pipeline: pipeline) # TODO: parse response
-      rescue Utility::EsClient::IndexingFailedError => e
-        system_logger.warn("Bulk index failed: #{e}")
-      rescue StandardError => e
-        system_logger.warn("Bulk index failed for unexpected reason: #{e}")
-        raise e
+        system_logger.debug("Sending bulk request with #{data.size} items and flushing queue...")
+
+        begin
+          client.bulk(body: data) # TODO: parse response
+        rescue Utility::EsClient::IndexingFailedError => e
+          system_logger.warn("Bulk index failed: #{e}")
+        rescue StandardError => e
+          system_logger.warn("Bulk index failed for unexpected reason: #{e}")
+          raise e
+        end
+
+        system_logger.debug("Bulk request containing #{data.size} items sent!")
+
+        # TODO: this count isn't accurate, need to look into it
+        @completed[:indexed_document_count] += @queued[:indexed_document_count]
+        @completed[:indexed_document_volume] += @queued[:indexed_document_volume]
+
+        @queued[:indexed_document_count] = 0
+        @queued[:indexed_document_volume] = 0
       end
 
-      system_logger.debug("Bulk request containing #{data.size} items sent!")
+      def ingestion_stats
+        @completed.dup
+      end
 
-      # TODO: this count isn't accurate, need to look into it
-      @completed[:indexed_document_count] += @queued[:indexed_document_count]
-      @completed[:indexed_document_volume] += @queued[:indexed_document_volume]
+      def operation_queue
+        @operation_queue ||= Utility::BulkQueue.new(
+          es_config.dig(:bulk_api, :max_items),
+          es_config.dig(:bulk_api, :max_size_bytes),
+          system_logger
+        )
+      end
 
-      @queued[:indexed_document_count] = 0
-      @queued[:indexed_document_volume] = 0
-    end
+      def es_config
+        @es_config ||= @config.elasticsearch
+      end
 
-    def ingestion_stats
-      @completed.dup
-    end
+      def client
+        @client ||= Utility::EsClient.new(es_config, system_logger)
+      end
 
-    def operation_queue
-      @operation_queue ||= Utility::BulkQueue.new(
-        es_config.dig(:bulk_api, :max_items),
-        es_config.dig(:bulk_api, :max_size_bytes),
-        system_logger
-      )
-    end
+      def index_name
+        @index_name ||= @config.output_index
+      end
 
-    def es_config
-      @es_config ||= @config.elasticsearch
-    end
+      def pipeline
+        @pipeline ||= es_config[:pipeline] || DEFAULT_PIPELINE
+      end
 
-    def client
-      @client ||= Utility::EsClient.new(es_config, system_logger)
-    end
-
-    def index_name
-      @index_name ||= @config.output_index
-    end
-
-    def pipeline
-      @pipeline ||= es_config[:pipeline] || DEFAULT_PIPELINE
-    end
-
-    def pipeline_params
-      @pipeline_params ||= DEFAULT_PIPELINE_PARAMS.merge(es_config[:pipeline_params] || {}).deep_stringify_keys
+      def pipeline_params
+        @pipeline_params ||= DEFAULT_PIPELINE_PARAMS.merge(es_config[:pipeline_params] || {}).deep_stringify_keys
+      end
     end
   end
 end

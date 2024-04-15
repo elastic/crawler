@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 #
 # Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
 # or more contributor license agreements. Licensed under the Elastic License;
@@ -21,7 +23,9 @@ module Utility
       @size_threshold = (size_threshold || DEFAULT_SIZE_THRESHOLD).freeze
 
       @system_logger = system_logger
-      @system_logger.debug("Initialized BulkQueue with op_count_threshold #{@op_count_threshold} and size_threshold #{@size_threshold}.")
+      @system_logger.debug(
+        "Initialized BulkQueue with op_count_threshold #{@op_count_threshold} and size_threshold #{@size_threshold}."
+      )
 
       @buffer = []
       @current_op_count = 0
@@ -50,9 +54,7 @@ module Utility
 
       @buffer << operation
 
-      if payload
-        @buffer << payload
-      end
+      @buffer << payload if payload
     end
 
     def will_fit?(operation, payload = nil)
@@ -66,13 +68,14 @@ module Utility
 
     def current_stats
       {
-        :current_op_count => @current_op_count,
-        :current_buffer_size => @current_buffer_size
+        current_op_count: @current_op_count,
+        current_buffer_size: @current_buffer_size
       }
     end
 
     def bytesize(item)
       return 0 unless item
+
       serialize(item).bytesize
     end
 

@@ -6,7 +6,7 @@ require 'concurrent'
 class ResultsCollection
   attr_accessor :crawl_config, :crawl, :collection
 
-  delegate :outcome, :outcome_message, :to => :crawl
+  delegate :outcome, :outcome_message, to: :crawl
 
   def initialize
     @collection = Concurrent::Array.new

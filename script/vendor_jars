@@ -1,9 +1,10 @@
 #!/usr/bin/env jruby
+# frozen_string_literal: true
 
 require 'jar-dependencies'
 
 Jars.lock_down(
   ENV['JARS_DEBUG'] == 'true',
   ENV['JARS_VERBOSE'] == 'true',
-  :vendor_dir => 'vendor/jars'
+  vendor_dir: 'vendor/jars'
 )

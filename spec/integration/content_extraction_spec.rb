@@ -33,9 +33,9 @@ RSpec.describe 'Content extractable file support' do
   it 'supports single and multiple Content-Type headers' do
     results = FauxCrawl.run(
       site,
-      :content_extraction => {
-        :enabled => true,
-        :mime_types => [
+      content_extraction: {
+        enabled: true,
+        mime_types: [
           'application/pdf',
           'application/vnd.ms-powerpoint'
         ]
@@ -43,10 +43,10 @@ RSpec.describe 'Content extractable file support' do
     )
 
     expect(results).to have_only_these_results [
-      mock_response(:url => 'http://127.0.0.1:9393/', :status_code => 200),
-      mock_response(:url => 'http://127.0.0.1:9393/html', :status_code => 200),
-      mock_response(:url => 'http://127.0.0.1:9393/pdf', :status_code => 200),
-      mock_response(:url => 'http://127.0.0.1:9393/powerpoint', :status_code => 200)
+      mock_response(url: 'http://127.0.0.1:9393/', status_code: 200),
+      mock_response(url: 'http://127.0.0.1:9393/html', status_code: 200),
+      mock_response(url: 'http://127.0.0.1:9393/pdf', status_code: 200),
+      mock_response(url: 'http://127.0.0.1:9393/powerpoint', status_code: 200)
     ]
   end
 end

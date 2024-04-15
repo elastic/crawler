@@ -20,7 +20,7 @@ module Crawler
       'meta_keywords' => 'string',
       'meta_description' => 'string',
       'links' => 'string',
-      'headings' => 'string',
+      'headings' => 'string'
     }.freeze
 
     attr_reader :config
@@ -29,20 +29,20 @@ module Crawler
       @config = config
     end
 
-    def document_fields(crawl_result)
+    def document_fields(crawl_result) # rubocop:disable Metrics/AbcSize
       remove_empty_values(
-        'title' => crawl_result.document_title(:limit => config.max_title_size),
-        'body_content' => crawl_result.document_body(:limit => config.max_body_size),
-        'meta_keywords' => crawl_result.meta_keywords(:limit => config.max_keywords_size),
-        'meta_description' => crawl_result.meta_description(:limit => config.max_description_size),
-        'links' => crawl_result.links(:limit => config.max_indexed_links_count),
-        'headings' => crawl_result.headings(:limit => config.max_headings_count),
+        'title' => crawl_result.document_title(limit: config.max_title_size),
+        'body_content' => crawl_result.document_body(limit: config.max_body_size),
+        'meta_keywords' => crawl_result.meta_keywords(limit: config.max_keywords_size),
+        'meta_description' => crawl_result.meta_description(limit: config.max_description_size),
+        'links' => crawl_result.links(limit: config.max_indexed_links_count),
+        'headings' => crawl_result.headings(limit: config.max_headings_count),
         'last_crawled_at' => crawl_result.start_time&.rfc3339
       )
     end
 
-    def url_components(url)
-      url = Crawler::Data::URL.parse(url.to_s) unless url.kind_of?(Crawler::Data::URL)
+    def url_components(url) # rubocop:disable Metrics/MethodLength
+      url = Crawler::Data::URL.parse(url.to_s) unless url.is_a?(Crawler::Data::URL)
       path_components = url.path.split('/')
       remove_empty_values(
         'url' => url.to_s,

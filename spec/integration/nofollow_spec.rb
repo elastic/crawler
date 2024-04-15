@@ -9,7 +9,7 @@ RSpec.describe 'Robots meta support' do
           link_to '/nofollow'
 
           # This link will not be followed
-          link_to '/unreachable', :rel => :nofollow
+          link_to '/unreachable', rel: :nofollow
         end
       end
 
@@ -35,9 +35,9 @@ RSpec.describe 'Robots meta support' do
 
   it 'crawls all pages given the constraints specified by robots meta tags' do
     expect(results).to have_only_these_results [
-      mock_response(:url => 'http://127.0.0.1:9393/', :status_code => 200),
-      mock_response(:url => 'http://127.0.0.1:9393/nofollow', :status_code => 200),
-      mock_response(:url => 'http://127.0.0.1:9393/foo', :status_code => 200)
+      mock_response(url: 'http://127.0.0.1:9393/', status_code: 200),
+      mock_response(url: 'http://127.0.0.1:9393/nofollow', status_code: 200),
+      mock_response(url: 'http://127.0.0.1:9393/foo', status_code: 200)
     ]
   end
 end

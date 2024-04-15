@@ -4,171 +4,175 @@ require_dependency(File.join(__dir__, 'success'))
 
 module Crawler
   module Data
-    class CrawlResult::HTML < CrawlResult::Success
-      # Allow constructor to be called on concrete result classes
-      public_class_method :new
+    module CrawlResult
+      class HTML < Success # rubocop:disable Metrics/ClassLength
+        # Allow constructor to be called on concrete result classes
+        public_class_method :new
 
-      def initialize(status_code: 200, **kwargs)
-        super
-      end
-
-      def parsed_content
-        @parsed_content ||= Nokogiri::HTML(content)
-      end
-
-      def to_s
-        "<CrawlResult::HTML: id=#{id}, status_code=#{status_code}, url=#{url}, content=#{content.bytesize} bytes>"
-      end
-
-      def to_h
-        super.tap do |h|
-          h[:content] = content
+        def initialize(status_code: 200, **kwargs)
+          super
         end
-      end
 
-      #---------------------------------------------------------------------------------------------
-      # Returns the base URL that should be used for all relative links
-      def base_url
-        @base_url ||= begin
-          # Check if there is a <base> tag with a href attribute we should be using
-          base_href = extract_attribute_value('base[href]', 'href').to_s.strip
-          if base_href.present?
-            base_url = begin
-              parsed_url = Crawler::Data::URL.parse(base_href)
-              # parsed URL can be relative as well, complete with current URL if needed
-              parsed_url.site ||= url.site
-              parsed_url
-            rescue Addressable::URI::InvalidURIError
-              nil
+        def parsed_content
+          @parsed_content ||= Nokogiri::HTML(content)
+        end
+
+        def to_s
+          "<CrawlResult::HTML: id=#{id}, status_code=#{status_code}, url=#{url}, content=#{content.bytesize} bytes>"
+        end
+
+        def to_h
+          super.tap do |h|
+            h[:content] = content
+          end
+        end
+
+        #---------------------------------------------------------------------------------------------
+        # Returns the base URL that should be used for all relative links
+        def base_url # rubocop:disable Metrics/MethodLength
+          @base_url ||= begin
+            # Check if there is a <base> tag with a href attribute we should be using
+            base_href = extract_attribute_value('base[href]', 'href').to_s.strip
+            if base_href.present?
+              base_url = begin
+                parsed_url = Crawler::Data::URL.parse(base_href)
+                # parsed URL can be relative as well, complete with current URL if needed
+                parsed_url.site ||= url.site
+                parsed_url
+              rescue Addressable::URI::InvalidURIError
+                nil
+              end
+            end
+
+            # Fall back to the default base URL for the page
+            base_url || url
+          end
+        end
+
+        #---------------------------------------------------------------------------------------------
+        # Returns all links from the document as a set of URL objects
+        def extract_links(limit: nil, skip_invalid: false) # rubocop:disable Metrics/MethodLength
+          links = Set.new
+          limit_reached = false
+
+          parsed_content.css('a[href]').each do |a|
+            # Parse the link
+            link = Link.new(base_url: base_url, node: a)
+
+            # Optionally skip invalid links
+            next if skip_invalid && !link.valid?
+
+            links << link
+
+            if limit && links.count >= limit
+              limit_reached = true
+              break
             end
           end
 
-          # Fall back to the default base URL for the page
-          base_url || url
+          { links: links, limit_reached: limit_reached }
         end
-      end
 
-      #---------------------------------------------------------------------------------------------
-      # Returns all links from the document as a set of URL objects
-      def extract_links(limit: nil, skip_invalid: false)
-        links = Set.new
-        limit_reached = false
+        # Returns an array of links extracted from the page, up to a specified limit of items
+        def links(limit: 10)
+          # Get a set of valid links
+          result = extract_links(limit: limit, skip_invalid: true)
+          links = result.fetch(:links)
 
-        parsed_content.css('a[href]').each do |a|
-          # Parse the link
-          link = Link.new(:base_url => base_url, :node => a)
+          # Convert them to an array of strings with a predictable order
+          links.to_a.map(&:to_url).map(&:to_s).sort
+        end
 
-          # Optionally skip invalid links
-          next if skip_invalid && !link.valid?
-          links << link
+        #---------------------------------------------------------------------------------------------
+        # Returns the canonical URL of the document
+        def canonical_url
+          canonical_link&.to_url
+        end
 
-          if limit && links.count >= limit
-            limit_reached = true
-            break
+        # Returns the canonical URL of the document as a link object
+        def canonical_link
+          canonical_url = extract_attribute_value('link[rel=canonical]', 'href')
+          Link.new(base_url: url, link: canonical_url) if canonical_url
+        end
+
+        #---------------------------------------------------------------------------------------------
+        # Returns +true+ if the page contains a robots nofollow meta tag
+        def meta_nofollow?
+          !!parsed_content.at_css('meta[name=robots][content*=nofollow]')
+        end
+
+        # Returns +true+ if the page contains a robots noindex meta tag
+        def meta_noindex?
+          !!parsed_content.at_css('meta[name=robots][content*=noindex]')
+        end
+
+        # Returns the meta tag value for keywords
+        def meta_keywords(limit: 512)
+          keywords = extract_attribute_value('meta[name=keywords]', 'content')
+          Crawler::ExtractionUtils.limit_bytesize(keywords, limit)
+        end
+
+        # Returns the meta tag value for the description of the page
+        def meta_description(limit: 1024)
+          description = extract_attribute_value('meta[name=description]', 'content')
+          Crawler::ExtractionUtils.limit_bytesize(description, limit)
+        end
+
+        #---------------------------------------------------------------------------------------------
+        # Returns the title of the document, cleaned up for indexing
+        def document_title(limit: 1000)
+          title_tag = parsed_content.css('title').first
+          title = Crawler::ExtractionUtils.node_descendant_text(title_tag)
+          Crawler::ExtractionUtils.limit_bytesize(title, limit)
+        end
+
+        # Returns the body of the document, cleaned up for indexing
+        def document_body(limit: 5.megabytes)
+          body_tag = parsed_content.at_css('body')
+          return '' unless body_tag
+
+          body_tag = Crawler::ContentExtraction.transform(body_tag)
+          body_content = Crawler::ExtractionUtils.node_descendant_text(body_tag)
+          Crawler::ExtractionUtils.limit_bytesize(body_content, limit)
+        end
+
+        # Returns an array of section headings from the page (using h1-h6 tags to find those)
+        def headings(limit: 10)
+          body_tag = parsed_content.css('body').first
+          return [] unless body_tag
+
+          Set.new.tap do |headings|
+            body_tag.css('h1, h2, h3, h4, h5, h6').each do |heading|
+              heading = heading.text.to_s.squish
+              next if heading.empty?
+
+              headings << heading
+              break if headings.count >= limit
+            end
+          end.to_a
+        end
+
+        #---------------------------------------------------------------------------------------------
+        def extract_attribute_value(tag_name, attribute_name)
+          parsed_content.css(tag_name)&.attr(attribute_name)&.content
+        end
+
+        # Lookup for content using CSS selector
+        #
+        # @param [String] CSS selector or XPath expression
+        # @return [Array<String>]
+        def extract_by_selector(selector, ignore_tags)
+          parsed_content.search(selector).map do |node|
+            Crawler::ExtractionUtils.node_descendant_text(node, ignore_tags)
           end
         end
 
-        { :links => links, :limit_reached => limit_reached }
-      end
+        #---------------------------------------------------------------------------------------------
+        def full_html(enabled: false)
+          return unless enabled
 
-      # Returns an array of links extracted from the page, up to a specified limit of items
-      def links(limit: 10)
-        # Get a set of valid links
-        result = extract_links(:limit => limit, :skip_invalid => true)
-        links = result.fetch(:links)
-
-        # Convert them to an array of strings with a predictable order
-        links.to_a.map(&:to_url).map(&:to_s).sort
-      end
-
-      #---------------------------------------------------------------------------------------------
-      # Returns the canonical URL of the document
-      def canonical_url
-        canonical_link&.to_url
-      end
-
-      # Returns the canonical URL of the document as a link object
-      def canonical_link
-        canonical_url = extract_attribute_value('link[rel=canonical]', 'href')
-        Link.new(:base_url => url, :link => canonical_url) if canonical_url
-      end
-
-      #---------------------------------------------------------------------------------------------
-      # Returns +true+ if the page contains a robots nofollow meta tag
-      def meta_nofollow?
-        !!parsed_content.at_css('meta[name=robots][content*=nofollow]')
-      end
-
-      # Returns +true+ if the page contains a robots noindex meta tag
-      def meta_noindex?
-        !!parsed_content.at_css('meta[name=robots][content*=noindex]')
-      end
-
-      # Returns the meta tag value for keywords
-      def meta_keywords(limit: 512)
-        keywords = extract_attribute_value('meta[name=keywords]', 'content')
-        Crawler::ExtractionUtils.limit_bytesize(keywords, limit)
-      end
-
-      # Returns the meta tag value for the description of the page
-      def meta_description(limit: 1024)
-        description = extract_attribute_value('meta[name=description]', 'content')
-        Crawler::ExtractionUtils.limit_bytesize(description, limit)
-      end
-
-      #---------------------------------------------------------------------------------------------
-      # Returns the title of the document, cleaned up for indexing
-      def document_title(limit: 1000)
-        title_tag = parsed_content.css('title').first
-        title = Crawler::ExtractionUtils.node_descendant_text(title_tag)
-        Crawler::ExtractionUtils.limit_bytesize(title, limit)
-      end
-
-      # Returns the body of the document, cleaned up for indexing
-      def document_body(limit: 5.megabytes)
-        body_tag = parsed_content.at_css('body')
-        return '' unless body_tag
-        body_tag = Crawler::ContentExtraction.transform(body_tag)
-        body_content = Crawler::ExtractionUtils.node_descendant_text(body_tag)
-        Crawler::ExtractionUtils.limit_bytesize(body_content, limit)
-      end
-
-      # Returns an array of section headings from the page (using h1-h6 tags to find those)
-      def headings(limit: 10)
-        body_tag = parsed_content.css('body').first
-        return [] unless body_tag
-
-        Set.new.tap do |headings|
-          body_tag.css('h1, h2, h3, h4, h5, h6').each do |heading|
-            heading = heading.text.to_s.squish
-            next if heading.empty?
-
-            headings << heading
-            break if headings.count >= limit
-          end
-        end.to_a
-      end
-
-      #---------------------------------------------------------------------------------------------
-      def extract_attribute_value(tag_name, attribute_name)
-        parsed_content.css(tag_name)&.attr(attribute_name)&.content
-      end
-
-      # Lookup for content using CSS selector
-      #
-      # @param [String] CSS selector or XPath expression
-      # @return [Array<String>]
-      def extract_by_selector(selector, ignore_tags)
-        parsed_content.search(selector).map do |node|
-          Crawler::ExtractionUtils.node_descendant_text(node, ignore_tags)
+          parsed_content.inner_html
         end
-      end
-
-      #---------------------------------------------------------------------------------------------
-      def full_html(enabled: false)
-        return unless enabled
-
-        parsed_content.inner_html
       end
     end
   end

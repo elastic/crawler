@@ -9,11 +9,15 @@ module Crawler
       # There are two ways to pass a link in:
       # - `link` - a string representation of a link
       # - `node` - a Nokogiri::XML::Element object
-      def initialize(base_url:, node: nil, link: nil)
-        raise ArgumentError, 'Base URL needs to be a URL object' unless base_url.kind_of?(URL)
+      def initialize(base_url:, node: nil, link: nil) # rubocop:disable Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity
+        raise ArgumentError, 'Base URL needs to be a URL object' unless base_url.is_a?(URL)
         raise ArgumentError, 'Needs an node or a string link argument' unless node || link
-        raise ArgumentError, 'The :link argument needs to be a String' if link && !link.kind_of?(String)
-        raise ArgumentError, 'The :node argument needs to be a Nokogiri::XML::Element' if node && !node.kind_of?(Nokogiri::XML::Element)
+        raise ArgumentError, 'The :link argument needs to be a String' if link && !link.is_a?(String)
+
+        if node && !node.is_a?(Nokogiri::XML::Element)
+          raise ArgumentError,
+                'The :node argument needs to be a Nokogiri::XML::Element'
+        end
         raise ArgumentError, 'Needs only one link argument' if node && link
 
         @base_url = base_url
@@ -30,7 +34,7 @@ module Crawler
       # Make it possible to compare links and use them as keys in hashes and sets
       #---------------------------------------------------------------------------------------------
       def hash
-        @hash ||= [base_url, link, node].map(&:to_s).map(&:hash).sum
+        @hash ||= [base_url, link, node].map(&:to_s).map(&:hash).sum # rubocop:disable Performance/Sum
       end
 
       def ==(other)
@@ -81,7 +85,7 @@ module Crawler
       # Returns an array with all the values of the rel attribute for the link
       # See https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel for details
       def rel
-        node ? node['rel'].to_s.squish.downcase.split(' ') : []
+        node ? node['rel'].to_s.squish.downcase.split : []
       end
 
       # Returns +true+ if the link contains a rel=nofollow attribute

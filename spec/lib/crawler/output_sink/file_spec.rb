@@ -11,9 +11,9 @@ RSpec.describe(Crawler::OutputSink::File) do
 
     it 'should require an output directory' do
       config = Crawler::API::Config.new(
-        :domain_allowlist => domains,
-        :seed_urls => seed_urls,
-        :output_sink => 'file'
+        domain_allowlist: domains,
+        seed_urls: seed_urls,
+        output_sink: 'file'
       )
 
       expect { new_sink(config) }.to raise_error(/Missing or invalid output directory/)
@@ -22,10 +22,10 @@ RSpec.describe(Crawler::OutputSink::File) do
     it 'should create the output directory' do
       dir = '/some/directory'
       config = Crawler::API::Config.new(
-        :domain_allowlist => domains,
-        :seed_urls => seed_urls,
-        :output_sink => 'file',
-        :output_dir => dir
+        domain_allowlist: domains,
+        seed_urls: seed_urls,
+        output_sink: 'file',
+        output_dir: dir
       )
       expect(FileUtils).to receive(:mkdir_p).with(dir)
       new_sink(config)

@@ -34,7 +34,7 @@ RSpec.describe 'Headers' do
   it 'supports basic auth' do
     results = FauxCrawl.run(
       site1,
-      :auth => [
+      auth: [
         {
           'domain' => Crawler::Data::URL.parse(FauxCrawl::Settings.faux_url).site,
           'type' => 'basic',
@@ -45,14 +45,14 @@ RSpec.describe 'Headers' do
     )
 
     expect(results).to have_only_these_results [
-      mock_response(:url => 'http://127.0.0.1:9393/', :status_code => 200)
+      mock_response(url: 'http://127.0.0.1:9393/', status_code: 200)
     ]
   end
 
   it 'supports raw Authorization header' do
     results = FauxCrawl.run(
       site2,
-      :auth => [
+      auth: [
         {
           'domain' => Crawler::Data::URL.parse(FauxCrawl::Settings.faux_url).site,
           'type' => 'raw',
@@ -62,14 +62,14 @@ RSpec.describe 'Headers' do
     )
 
     expect(results).to have_only_these_results [
-      mock_response(:url => 'http://127.0.0.1:9393/', :status_code => 200)
+      mock_response(url: 'http://127.0.0.1:9393/', status_code: 200)
     ]
   end
 
   it 'does not set Authorization header for non-matching domain' do
     results = FauxCrawl.run(
       site3,
-      :auth => [
+      auth: [
         {
           'domain' => 'http://example.com',
           'type' => 'raw',
@@ -79,7 +79,7 @@ RSpec.describe 'Headers' do
     )
 
     expect(results).to have_only_these_results [
-      mock_response(:url => 'http://127.0.0.1:9393/', :status_code => 200)
+      mock_response(url: 'http://127.0.0.1:9393/', status_code: 200)
     ]
   end
 end

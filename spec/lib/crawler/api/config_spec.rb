@@ -11,15 +11,15 @@ RSpec.describe(Crawler::API::Config) do
   context 'constructor' do
     it 'should fail when provided with unknown options' do
       expect do
-        Crawler::API::Config.new(:fubar => 42)
+        Crawler::API::Config.new(fubar: 42)
       end.to raise_error(ArgumentError, /Unexpected configuration options.*fubar/)
     end
 
     #-----------------------------------------------------------------------------------------------
     it 'should use the console sink by default' do
       config = Crawler::API::Config.new(
-        :domain_allowlist => domains,
-        :seed_urls => seed_urls
+        domain_allowlist: domains,
+        seed_urls: seed_urls
       )
       expect(config.output_sink).to eq(:console)
     end
@@ -27,9 +27,9 @@ RSpec.describe(Crawler::API::Config) do
     #-----------------------------------------------------------------------------------------------
     it 'can define a crawl with console output' do
       config = Crawler::API::Config.new(
-        :domain_allowlist => domains,
-        :seed_urls => seed_urls,
-        :output_sink => :console
+        domain_allowlist: domains,
+        seed_urls: seed_urls,
+        output_sink: :console
       )
 
       expect(config.domain_allowlist.map(&:to_s)).to eq(normalized_domains)
@@ -41,10 +41,10 @@ RSpec.describe(Crawler::API::Config) do
     #-----------------------------------------------------------------------------------------------
     it 'can define a crawl with file output' do
       config = Crawler::API::Config.new(
-        :domain_allowlist => domains,
-        :seed_urls => seed_urls,
-        :output_sink => :file,
-        :output_dir => output_dir
+        domain_allowlist: domains,
+        seed_urls: seed_urls,
+        output_sink: :file,
+        output_dir: output_dir
       )
 
       expect(config.domain_allowlist.map(&:to_s)).to eq(normalized_domains)
