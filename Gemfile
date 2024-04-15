@@ -117,7 +117,7 @@ end
 
 group(*ALL_DEVELOPMENT_ENVS, *ALL_TEST_ENVS) do
   gem 'pry'
-  gem 'factory_bot_rails', '~> 6.2.0', :require => false
+  gem 'factory_bot', '~> 6.2.0', :require => false
   gem 'rb-fsevent', :require => false
   gem 'rb-inotify', :require => false
   gem 'listen', '~> 1.0'
