@@ -102,7 +102,7 @@ module Crawler
       ].freeze
 
       # Please note: These defaults are used in Enterprise Search config parser
-      # and in the `Crawler::HttpClient::Config` class.
+      # and in the `Crawler::HttpUtils::Config` class.
       # Make sure to check those before renaming or removing any defaults.
       DEFAULTS = {
         crawl_stage: :primary,

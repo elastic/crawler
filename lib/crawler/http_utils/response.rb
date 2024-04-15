@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 require 'active_support/core_ext/string/filters'
-require_dependency File.join(__dir__, 'base')
+require_dependency File.join(__dir__, '..', 'http_client')
 
 module Crawler
-  module HttpClient
+  module HttpUtils
     class Response # rubocop:disable Metrics/ClassLength
       java_import org.apache.hc.core5.util.ByteArrayBuffer
       java_import org.apache.hc.core5.http.ContentType
@@ -154,7 +154,7 @@ module Crawler
 
           total_downloaded = response_buffer.length + received_bytes
           if max_response_size && total_downloaded >= max_response_size
-            raise Crawler::HttpClient::ResponseTooLarge, <<~ERROR.squish
+            raise Crawler::HttpUtils::ResponseTooLarge, <<~ERROR.squish
               Failed to fetch the response from #{url.inspect} after downloading
               #{total_downloaded} bytes (hit the response size limit of
               #{max_response_size})
@@ -163,9 +163,7 @@ module Crawler
 
           response_buffer.append(chunk, 0, received_bytes)
 
-          if request_timeout && time_since_request_start > request_timeout
-            raise Crawler::HttpClient::RequestTimeout, url
-          end
+          raise Crawler::HttpUtils::RequestTimeout, url if request_timeout && time_since_request_start > request_timeout
         end
 
         response_buffer.to_byte_array
@@ -194,7 +192,7 @@ module Crawler
         response_content_encodings.each do |encoding|
           next if Crawler::HttpClient::CONTENT_DECODERS.include?(encoding)
 
-          raise Crawler::HttpClient::InvalidEncoding, encoding
+          raise Crawler::HttpUtils::InvalidEncoding, encoding
         end
       end
     end

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe(Crawler::HttpClient::Config) do
+RSpec.describe(Crawler::HttpUtils::Config) do
   describe 'constructor' do
     let(:valid_config) do
       {

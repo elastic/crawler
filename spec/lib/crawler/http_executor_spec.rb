@@ -83,7 +83,7 @@ RSpec.describe(Crawler::HttpExecutor) do
   end
 
   let(:crawler_head_response) do
-    Crawler::HttpClient::Response.new(
+    Crawler::HttpUtils::Response.new(
       apache_response: head_response,
       url: crawler_url,
       request_start_time: 2.seconds.ago,
@@ -91,7 +91,7 @@ RSpec.describe(Crawler::HttpExecutor) do
     )
   end
   let(:crawler_get_response) do
-    Crawler::HttpClient::Response.new(
+    Crawler::HttpUtils::Response.new(
       apache_response: get_response,
       url: crawler_url,
       request_start_time: 2.seconds.ago,
@@ -182,7 +182,7 @@ RSpec.describe(Crawler::HttpExecutor) do
     end
 
     let(:redirect_crawler_head_response) do
-      Crawler::HttpClient::Response.new(
+      Crawler::HttpUtils::Response.new(
         apache_response: redirect_head_response,
         url: crawler_redirect_url,
         request_start_time: 2.seconds.ago,
@@ -237,7 +237,7 @@ RSpec.describe(Crawler::HttpExecutor) do
       end
 
       let(:redirect_crawler_get_response) do
-        Crawler::HttpClient::Response.new(
+        Crawler::HttpUtils::Response.new(
           apache_response: redirect_head_response,
           url: crawler_redirect_url,
           request_start_time: 2.seconds.ago,

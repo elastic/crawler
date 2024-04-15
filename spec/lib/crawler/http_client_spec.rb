@@ -2,7 +2,7 @@
 
 require 'webrick/httpproxy'
 
-RSpec.describe(Crawler::HttpClient::Base) do
+RSpec.describe(Crawler::HttpClient) do
   let(:client_config) do
     {
       loopback_allowed: false,
@@ -10,7 +10,7 @@ RSpec.describe(Crawler::HttpClient::Base) do
       logger: Logger.new($stdout)
     }
   end
-  let(:client) { Crawler::HttpClient::Base.new(client_config) }
+  let(:client) { Crawler::HttpClient.new(client_config) }
 
   #-------------------------------------------------------------------------------------------------
   let(:site_server_settings) do
@@ -25,7 +25,7 @@ RSpec.describe(Crawler::HttpClient::Base) do
   #-------------------------------------------------------------------------------------------------
   # Stubs DNS resolution in HTTP client to always return localhost IPs
   def stub_http_resolver!
-    allow_any_instance_of(Crawler::HttpClient::FilteringDnsResolver).to receive(:resolve) do |resolver, _host|
+    allow_any_instance_of(Crawler::HttpUtils::FilteringDnsResolver).to receive(:resolve) do |resolver, _host|
       resolver.default_resolver.resolve('localhost')
     end
   end
@@ -48,7 +48,7 @@ RSpec.describe(Crawler::HttpClient::Base) do
 
     def expect_result(url, result_code)
       result = get(url)
-      expect(result).to be_a(Crawler::HttpClient::Response)
+      expect(result).to be_a(Crawler::HttpUtils::Response)
       expect(result.code).to eq(result_code)
     end
 
@@ -69,13 +69,13 @@ RSpec.describe(Crawler::HttpClient::Base) do
     it 'rejects loopback addresses' do
       expect do
         get('http://localhost:9200').body
-      end.to raise_error(Crawler::HttpClient::InvalidHost)
+      end.to raise_error(Crawler::HttpUtils::InvalidHost)
     end
 
     it 'rejects private addresses' do
       expect do
         get('http://monitoring.swiftype.net').body
-      end.to raise_error(Crawler::HttpClient::InvalidHost)
+      end.to raise_error(Crawler::HttpUtils::InvalidHost)
     end
 
     #-----------------------------------------------------------------------------------------------
@@ -94,7 +94,7 @@ RSpec.describe(Crawler::HttpClient::Base) do
           with_example_site do
             expect do
               get('http://localhost:12345')
-            end.to raise_error(Crawler::HttpClient::SocketTimeout, /Read timed out/)
+            end.to raise_error(Crawler::HttpUtils::SocketTimeout, /Read timed out/)
           end
         end
       end
@@ -250,7 +250,7 @@ RSpec.describe(Crawler::HttpClient::Base) do
         with_mock_server do
           get('http://localhost:12347/')
           expect(mock_requests.first.accept_encoding.sort).to eq(
-            Crawler::HttpClient::Base::CONTENT_DECODERS.keys.sort
+            Crawler::HttpClient::CONTENT_DECODERS.keys.sort
           )
         end
       end
@@ -307,7 +307,7 @@ RSpec.describe(Crawler::HttpClient::Base) do
       it 'should fail SSL handshake with self-signed certs' do
         with_example_site do
           expect { get('https://example.org:12345') }.to raise_error(
-            Crawler::HttpClient::SslException,
+            Crawler::HttpUtils::SslException,
             /unable to find valid certification path/
           )
         end
@@ -329,7 +329,7 @@ RSpec.describe(Crawler::HttpClient::Base) do
         it 'should validate server names' do
           with_example_site do
             expect { get('https://localhost:12345') }.to raise_error(
-              Crawler::HttpClient::SslException,
+              Crawler::HttpUtils::SslException,
               /doesn't match common name of the certificate subject/
             )
           end
@@ -341,7 +341,7 @@ RSpec.describe(Crawler::HttpClient::Base) do
           it 'should fail' do
             with_example_site do
               expect { get('https://example.org:12345') }.to raise_error(
-                Crawler::HttpClient::SslCertificateExpiredError,
+                Crawler::HttpUtils::SslCertificateExpiredError,
                 /SSL certificate expired/
               )
             end
@@ -363,7 +363,7 @@ RSpec.describe(Crawler::HttpClient::Base) do
             it 'should fail' do
               with_example_site do
                 expect { get('https://example.org:12345') }.to raise_error(
-                  Crawler::HttpClient::SslCertificateExpiredError,
+                  Crawler::HttpUtils::SslCertificateExpiredError,
                   /SSL certificate expired/
                 )
               end

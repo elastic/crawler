@@ -6,7 +6,7 @@
 #
 skip = ENV['BAD_SSL'] ? false : 'Set BAD_SSL=1 to run SSL tests!'
 
-RSpec.describe(Crawler::HttpClient, 'vs bad SSL:', skip: skip) do
+RSpec.describe(Crawler::HttpUtils, 'vs bad SSL:', skip: skip) do
   let(:client_config) do
     {
       loopback_allowed: false,
@@ -22,7 +22,7 @@ RSpec.describe(Crawler::HttpClient, 'vs bad SSL:', skip: skip) do
 
   let(:error) do
     res = begin get; rescue StandardError => e; e; end
-    expect(res).to be_a(Crawler::HttpClient::SslException)
+    expect(res).to be_a(Crawler::HttpUtils::SslException)
     res
   end
 

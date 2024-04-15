@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Crawler
-  module HttpClient
+  module HttpUtils
     class BaseError < StandardError
       # No suggestions by default
       def suggestion_message
