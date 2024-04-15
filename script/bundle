@@ -25,13 +25,6 @@ function bundle_command() {
 }
 
 #---------------------------------------------------------------------------------------------------
-echo "------------------------------------------------------------------------"
-yellow_echo "Removing the legacy bundle config file..."
-echo "------------------------------------------------------------------------"
-rm -rvf .bundle/config
-green_echo "Done!"
-
-#---------------------------------------------------------------------------------------------------
 BUNDLER_VERSION="$(cat .bundler-version)"
 BUNDLER_CONSTRAINT="~> $BUNDLER_VERSION"
 
@@ -39,6 +32,10 @@ JRUBY_VERSION="$(cat .ruby-version)"
 JAVA_VERSION="$(cat .java-version)"
 
 #---------------------------------------------------------------------------------------------------
+# Enable jenv and rbenv support
+rbenv_init
+jenv_init
+
 # Make sure we have the java version we need
 ensure_java_installed "$JAVA_VERSION"
 
@@ -50,8 +47,9 @@ echo "------------------------------------------------------------------------"
 yellow_echo "Bundling jruby gems..."
 echo "------------------------------------------------------------------------"
 
-# Remove the legacy config
-rm -rf .bundle/config-JRuby
+# Ensure jenv/rbenv shell
+jenv shell "$JAVA_VERSION"
+rbenv shell "$JRUBY_VERSION"
 
 # Make sure all gems will be cached, including git-sourced
 bundle_command config cache_all true
