@@ -137,7 +137,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       end
     end
 
-    context 'when elasticsearch.pipeline_params are not provided' do
+    context 'when elasticsearch.pipeline_params are changed' do
       let(:config) do
         Crawler::API::Config.new(
           domain_allowlist: domains,
@@ -147,16 +147,27 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
           elasticsearch: {
             host: 'http://localhost:1234',
             api_key: 'key',
-            pipeline: 'my-pipeline'
+            pipeline: 'my-pipeline',
+            pipeline_params: {
+              _reduce_whitespace: false,
+              _foo_param: true
+            }
           }
         )
       end
+      let(:expected_pipeline_params) do
+        # DEFAULT_PIPELINE_PARAMS with alterations
+        {
+          _reduce_whitespace: false,
+          _run_ml_inference: true,
+          _extract_binary_content: true,
+          _foo_param: true
+        }
+      end
 
-      it 'uses the default pipeline' do
+      it 'overrides the specified default params and includes new ones' do
         expect { subject }.not_to raise_error
-        expect(system_logger).to have_received(:info).with(
-          "Elasticsearch sink initialized for index [#{index_name}] with pipeline [my-pipeline]"
-        )
+        expect(subject.pipeline_params).to eq(expected_pipeline_params)
       end
     end
   end
