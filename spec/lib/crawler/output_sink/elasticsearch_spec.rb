@@ -21,7 +21,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
 
   let(:index_name) { 'some-index-name' }
   let(:default_pipeline) { Crawler::OutputSink::Elasticsearch::DEFAULT_PIPELINE }
-  let(:default_pipeline_params) { Crawler::OutputSink::Elasticsearch::DEFAULT_PIPELINE_PARAMS }
+  let(:default_pipeline_params) { Crawler::OutputSink::Elasticsearch::DEFAULT_PIPELINE_PARAMS.deep_stringify_keys }
   let(:system_logger) { double }
   let(:es_client) { double }
   let(:bulk_queue) { double }
@@ -146,7 +146,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
           _run_ml_inference: true,
           _extract_binary_content: true,
           _foo_param: true
-        }
+        }.stringify_keys
       end
 
       it 'overrides the specified default params and includes new ones' do

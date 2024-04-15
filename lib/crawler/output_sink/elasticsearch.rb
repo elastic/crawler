@@ -40,7 +40,7 @@ module Crawler
     end
 
     def write(crawl_result)
-      doc = to_doc(crawl_result).merge!(pipeline_params.stringify_keys)
+      doc = to_doc(crawl_result).merge!(pipeline_params)
       index_op = { 'index' => { '_index' => index_name, '_id' => doc['id'] } }
 
       flush unless operation_queue.will_fit?(index_op, doc)
@@ -119,7 +119,7 @@ module Crawler
     end
 
     def pipeline_params
-      @pipeline_params ||= DEFAULT_PIPELINE_PARAMS.merge(es_config[:pipeline_params] || {})
+      @pipeline_params ||= DEFAULT_PIPELINE_PARAMS.merge(es_config[:pipeline_params] || {}).deep_stringify_keys
     end
   end
 end
