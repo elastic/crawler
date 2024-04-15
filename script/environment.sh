@@ -27,29 +27,3 @@ rbenv shell "$JRUBY_VERSION"
 # Check dependencies and install if needed
 check_bundle
 check_yarn
-
-# Check your local git setup
-# check_git
-
-# Main method
-function togo() {
-  export RAILS_ENV=${RAILS_ENV:-$1}
-
-  if [ "$2" == "help" ] || [ "$2" == "--help" ] || [ "$2" == "-h" ]; then
-    echo "Usage:"
-    echo "  start [PROCESS] # Starts a program from the current environment's Procfile"
-    echo "  exec [COMMAND]  # Run a command with the current environment"
-    echo "  help            # Show this help message"
-    exit 0
-  elif [ "$2" == "start" ]; then
-    exec script/forego -f Procfile "${@:3}"
-  elif [ "$2" == "exec" ]; then
-    if [ "$3" == "rdebug-ide" ]; then
-      export JRUBY_OPTS="${JRUBY_OPTS:-} -X+O"
-    fi
-    exec "${@:3}"
-  else
-    echo "ERROR: Invalid command: start or exec is required!"
-    exit 1
-  fi
-}
