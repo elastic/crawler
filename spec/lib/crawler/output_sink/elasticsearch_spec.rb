@@ -157,37 +157,48 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
   end
 
   describe '#write' do
-    let(:crawl_result) { FactoryBot.build(:html_crawl_result) }
+    let(:crawl_result) { FactoryBot.build(:html_crawl_result, content: 'some page') }
+    let(:index_op) { { 'index' => { '_index' => index_name, '_id' => crawl_result.url_hash } } }
 
     before(:each) do
+      # allow(subject).to receive(:to_doc).with(crawl_result).and_return(doc)
       # bytesize is only required for adding ingested doc size to stats, any value is fine for these tests
       allow(bulk_queue).to receive(:bytesize).and_return(50)
     end
 
     context 'when bulk queue still has capacity' do
+      let(:expected_doc) do
+        {
+          id: crawl_result.url_hash,
+          body_content: 'some page',
+          _reduce_whitespace: true,
+          _run_ml_inference: true,
+          _extract_binary_content: true
+        }.stringify_keys
+      end
+
       it 'does not immediately send the document into elasticsearch' do
         expect(es_client).to_not receive(:bulk)
 
         subject.write(crawl_result)
+        expect(bulk_queue).to have_received(:add).with(index_op, hash_including(expected_doc))
       end
     end
 
     context 'when bulk queue is empty but first doc is too big for queue' do
       let(:big_crawl_result) { FactoryBot.build(:html_crawl_result, url: 'http://example.com/big', content: 'pretend this string is big') }
-      let(:big_doc) { { id: big_crawl_result.url_hash, body_content: 'pretend this string is big' } }
+      let(:big_doc) { { id: big_crawl_result.url_hash, body_content: 'pretend this string is big' }.stringify_keys }
 
       before(:each) do
         allow(bulk_queue).to receive(:will_fit?).and_return(false)
         allow(bulk_queue).to receive(:pop_all).and_return([])
-
-        allow(subject).to receive(:to_doc).with(big_crawl_result).and_return(big_doc)
       end
 
       it 'does not immediately send the document into elasticsearch' do
         # emulated behaviour is:
         # Empty queue will be popped before adding large doc
         expect(bulk_queue).to receive(:pop_all).ordered
-        expect(bulk_queue).to receive(:add).with(anything, big_doc).ordered
+        expect(bulk_queue).to receive(:add).with(anything, hash_including(big_doc)).ordered
 
         subject.write(big_crawl_result)
       end
@@ -196,8 +207,8 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
     context 'when bulk queue reports that it is full' do
       let(:crawl_result_one) { FactoryBot.build(:html_crawl_result, url: 'http://example.com/one', content: 'hoho, haha!') }
       let(:crawl_result_two) { FactoryBot.build(:html_crawl_result, url: 'http://example.com/two', content: 'work work!') }
-      let(:doc_one) { { id: crawl_result_one.url_hash, body_content: 'hoho, haha!' } }
-      let(:doc_two) { { id: crawl_result_two.url_hash, body_content: 'work work!' } }
+      let(:doc_one) { { id: crawl_result_one.url_hash, body_content: 'hoho, haha!' }.stringify_keys }
+      let(:doc_two) { { id: crawl_result_two.url_hash, body_content: 'work work!' }.stringify_keys }
 
       before(:each) do
         # emulated behaviour is:
@@ -205,10 +216,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
         allow(bulk_queue).to receive(:will_fit?).and_return(true, false)
         allow(bulk_queue).to receive(:pop_all).and_return([doc_one])
 
-        allow(subject).to receive(:to_doc).with(crawl_result_one).and_return(doc_one)
-        allow(subject).to receive(:to_doc).with(crawl_result_two).and_return(doc_two)
-
-        allow(serializer).to receive(:dump).and_return(doc_one, doc_two)
+        # allow(serializer).to receive(:dump).and_return(doc_one, doc_two)
       end
 
       it 'sends a bulk request with data returned from bulk queue' do
@@ -219,9 +227,9 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       end
 
       it 'pops existing documents before adding a new one' do
-        expect(bulk_queue).to receive(:add).with(anything, doc_one).ordered
+        expect(bulk_queue).to receive(:add).with(anything, hash_including(doc_one)).ordered
         expect(bulk_queue).to receive(:pop_all).ordered
-        expect(bulk_queue).to receive(:add).with(anything, doc_two).ordered
+        expect(bulk_queue).to receive(:add).with(anything, hash_including(doc_two)).ordered
 
         subject.write(crawl_result_one)
         subject.write(crawl_result_two)

@@ -40,8 +40,7 @@ module Crawler
     end
 
     def write(crawl_result)
-      doc = to_doc(crawl_result)
-      doc.merge!(pipeline_params)
+      doc = to_doc(crawl_result).merge!(pipeline_params.stringify_keys)
       index_op = { 'index' => { '_index' => index_name, '_id' => doc['id'] } }
 
       flush unless operation_queue.will_fit?(index_op, doc)
