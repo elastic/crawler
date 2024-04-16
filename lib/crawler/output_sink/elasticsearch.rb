@@ -6,15 +6,15 @@ require_dependency File.join(__dir__, '..', '..', 'utility', 'bulk_queue')
 
 module Crawler
   module OutputSink
-    class Elasticsearch < OutputSink::Base
-      DEFAULT_PIPELINE = 'ent-search-generic-ingestion'.freeze
+    class Elasticsearch < OutputSink::Base # rubocop:disable Metrics/ClassLength
+      DEFAULT_PIPELINE = 'ent-search-generic-ingestion'
       DEFAULT_PIPELINE_PARAMS = {
         _reduce_whitespace: true,
         _run_ml_inference: true,
         _extract_binary_content: true
       }.freeze
 
-      def initialize(config) # rubocop:disable Metrics/MethodLength
+      def initialize(config)
         super
 
         raise ArgumentError, 'Missing output index' unless config.output_index
@@ -29,7 +29,7 @@ module Crawler
         )
       end
 
-      def write(crawl_result) # rubocop:disable Metrics/MethodLength
+      def write(crawl_result)
         doc = parametrized_doc(crawl_result)
         index_op = { 'index' => { '_index' => index_name, '_id' => doc['id'] } }
 
@@ -41,7 +41,7 @@ module Crawler
         )
         system_logger.debug("Added doc #{doc['id']} to bulk queue. Current stats: #{operation_queue.current_stats}")
 
-        bump_ingestion_stats(doc)
+        increment_ingestion_stats(doc)
         success
       end
 
@@ -60,7 +60,7 @@ module Crawler
         system_logger.debug("Sending bulk request with #{data.size} items and flushing queue...")
 
         begin
-          client.bulk(body: data, pipeline: (pipeline_enabled? && pipeline)) # TODO: parse response
+          client.bulk(body: data, pipeline: pipeline) # TODO: parse response
         rescue Utility::EsClient::IndexingFailedError => e
           system_logger.warn("Bulk index failed: #{e}")
         rescue StandardError => e
@@ -99,7 +99,7 @@ module Crawler
       end
 
       def pipeline
-        @pipeline ||= es_config[:pipeline] || DEFAULT_PIPELINE
+        @pipeline ||= pipeline_enabled? ? (es_config[:pipeline] || DEFAULT_PIPELINE) : nil
       end
 
       def pipeline_enabled?
@@ -134,7 +134,7 @@ module Crawler
         }
       end
 
-      def bump_ingestion_stats(doc)
+      def increment_ingestion_stats(doc)
         @queued[:indexed_document_count] += 1
         @queued[:indexed_document_volume] += operation_queue.bytesize(doc)
       end
