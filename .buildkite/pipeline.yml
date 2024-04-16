@@ -3,7 +3,8 @@
 steps:
   - label: ":wrench: Linting"
     timeout_in_minutes: 1
-    command: "make lint"
+    commands:
+      - ".buildkite/scripts/run_command.sh linter"
 
   - label: "Build"
     command: "true"
