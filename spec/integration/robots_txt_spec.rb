@@ -101,7 +101,7 @@ RSpec.describe 'robots.txt support' do
       let(:site) do
         Faux.site do
           # Generate a long redirect chain
-          (0..20).each do |i|
+          21.times do |i|
             page "/robots-redirect-#{i}.txt" do
               redirect "/robots-redirect-#{i + 1}.txt"
             end

@@ -215,7 +215,7 @@ module Crawler
       system_logger_severity = outcome.to_s == 'success' ? Logger::INFO : Logger::WARN
       system_logger.add(
         system_logger_severity,
-        "Processed crawl results from the page '#{url}' via the #{sink_name} output. "\
+        "Processed crawl results from the page '#{url}' via the #{sink_name} output. " \
         "Outcome: #{outcome}. Message: #{message}."
       )
 
