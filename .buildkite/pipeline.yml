@@ -1,6 +1,10 @@
 ---
 # $yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
 steps:
+  - label: ":wrench: Linting"
+    timeout_in_minutes: 10
+    command: "make lint"
+
   - label: "Build"
     command: "true"
 

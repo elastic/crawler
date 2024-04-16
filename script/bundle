@@ -1,13 +1,13 @@
 #!/bin/bash
 
-# Load our common shell functions library
-source "$(dirname $0)/functions.sh"
+source "$(dirname $0)/environment.sh"
 
 # Fail the script in case of any errors
 set -e
 
 # Tune jruby for faster performance for CLI tools
 export JRUBY_OPTS="${JRUBY_OPTS:-} --dev"
+export JAVA_OPTS="-Xmx2g ${JAVA_OPTS:-} -Djava.awt.headless=true -Dsun.jnu.encoding=UTF-8 -Dfile.encoding=UTF-8 -XX:+HeapDumpOnOutOfMemoryError"
 
 # Used by Gemfile to limit direct access to bundle commands
 export SCRIPT_BUNDLE=true
@@ -28,6 +28,9 @@ function bundle_command() {
 BUNDLER_VERSION="$(cat .bundler-version)"
 BUNDLER_CONSTRAINT="~> $BUNDLER_VERSION"
 
+# Load version files for ruby and java
+load_version_constraints
+
 JRUBY_VERSION="$(cat .ruby-version)"
 JAVA_VERSION="$(cat .java-version)"
 
@@ -42,14 +45,14 @@ ensure_java_installed "$JAVA_VERSION"
 # Make sure we have the correct MRI and JRuby installed
 ensure_jruby_installed "$JRUBY_VERSION"
 
+# Ensure jenv/rbenv shell
+jenv shell "$JAVA_VERSION"
+rbenv shell "$JRUBY_VERSION"
+
 #---------------------------------------------------------------------------------------------------
 echo "------------------------------------------------------------------------"
 yellow_echo "Bundling jruby gems..."
 echo "------------------------------------------------------------------------"
-
-# Ensure jenv/rbenv shell
-jenv shell "$JAVA_VERSION"
-rbenv shell "$JRUBY_VERSION"
 
 # Make sure all gems will be cached, including git-sourced
 bundle_command config cache_all true

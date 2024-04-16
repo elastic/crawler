@@ -9,6 +9,7 @@ AllCops:
     - 'vendor/**/*'
     - 'Gemfile'
     - 'bin/**/*'
+    - 'spec/support/faux/**/*'
 
 Style/Documentation:
   Enabled: false
