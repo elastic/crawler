@@ -1,5 +1,7 @@
----
-# $yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
+agents:
+  provider: "gcp"
+  machineType: "n1-standard-8"
+
 steps:
   - label: ":wrench: Linting"
     timeout_in_minutes: 1
