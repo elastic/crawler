@@ -14,7 +14,7 @@ RSpec.describe(Crawler::HttpUtils, 'vs bad SSL:', skip: skip) do
       logger: Logger.new($stdout)
     }
   end
-  let(:client) { Crawler::HttpClient.new(client_config) }
+  let(:client) { Crawler::HttpUtils.new(client_config) }
 
   def get
     client.get(Crawler::Data::URL.parse(url))

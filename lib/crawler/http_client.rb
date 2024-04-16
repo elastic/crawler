@@ -90,7 +90,7 @@ module Crawler
       apache_response = client.execute(http_head)
       end_time = Time.now
 
-      Crawler::HttpClient::Response.new(
+      Crawler::HttpUtils::Response.new(
         apache_response: apache_response,
         url: url,
         request_start_time: start_time,
