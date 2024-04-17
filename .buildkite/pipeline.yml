@@ -6,7 +6,7 @@ steps:
   - label: ":construction: Build CI docker image"
     key: "build-ci-docker"
     commands:
-      - "docker build -t crawler-ci /ci/.buildkite"
+      - ".buildkite/scripts/run_command.sh docker"
 
   - label: ":wrench: Lint"
     timeout_in_minutes: 1
