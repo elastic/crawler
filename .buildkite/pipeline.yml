@@ -9,7 +9,6 @@ steps:
 #      - ".buildkite/scripts/run_command.sh docker"
 
   - label: ":wrench: Lint"
-    timeout_in_minutes: 1
     commands:
       - ".buildkite/scripts/run_command.sh docker"
       - ".buildkite/scripts/run_command.sh lint"
