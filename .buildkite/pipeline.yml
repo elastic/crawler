@@ -3,10 +3,15 @@ agents:
   machineType: "n1-standard-8"
 
 steps:
+  - label: "Build Docker Image"
+    commands:
+      - "docker build -t crawler-ci ."
+      - ".buildkite/scripts/run_command.sh install"
+
   - label: ":wrench: Linting"
     timeout_in_minutes: 1
     commands:
-      - ".buildkite/scripts/run_command.sh linter"
+      - ".buildkite/scripts/run_command.sh lint"
 
   - label: "Build"
     command: "true"

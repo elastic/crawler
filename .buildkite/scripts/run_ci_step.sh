@@ -2,13 +2,18 @@
 
 set -euxo pipefail
 
-export PATH="$PATH:/root/.jenv/bin:/ci/.jenv/shims:/root/.rbenv/bin:/ci/.rbenv/shims"
+export RUBY_VERSION=$(cat .ruby-version)
+export JAVA_VERSION=$(cat .java-version)
 
 case $1 in
+  install)
+    echo "---- installing dependencies"
+    make install-ci
+    ;;
 
-  linter)
+  lint)
     echo "---- running linter"
-    make install lint
+    make lint
     ;;
 
   *)

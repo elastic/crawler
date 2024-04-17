@@ -3,7 +3,6 @@
 # 6.1
 gem 'thread_safe', '= 0.3.6'
 
-# #---------------------------------------------------------------------------------------------------
 # # Unless we are in a deployment mode or are running from a script bundle, show a warning
 is_install_or_update = (ARGV.empty? || ARGV.include?('install') || ARGV.include?('update'))
 not_deployment_mode = !ARGV.include?('--deployment')
@@ -20,24 +19,12 @@ if File.basename($PROGRAM_NAME) == 'bundle' && is_install_or_update && not_deplo
   $printed_bundle_warning = true
 end
 
-#---------------------------------------------------------------------------------------------------
-jruby_version = File.read(File.join(__dir__, '.ruby-version')).strip.delete_prefix('jruby-')
 supported_bundler_version = "~> #{File.read(File.join(__dir__, '.bundler-version')).strip}"
 
-ALL_DEVELOPMENT_ENVS = %i[development crawler_development]
-ALL_TEST_ENVS = %w[test crawler_test]
-
-#---------------------------------------------------------------------------------------------------
-# Pull gem index from rubygems
 source 'https://rubygems.org'
-
-# Pin the version of bundle we support
 gem 'bundler', supported_bundler_version
 
-#---------------------------------------------------------------------------------------------------
-# Default dependencies for all environments (including the crawler)
-#---------------------------------------------------------------------------------------------------
-group :default, :crawler do
+group :default do
   gem 'addressable', '>= 2.8.0'
   gem 'bson', '~> 4.2.2'
   gem 'concurrent-ruby', '~> 1.1.4'
@@ -45,49 +32,27 @@ group :default, :crawler do
   gem 'nokogiri', '= 1.13.10', :require => false
   gem 'mail', '2.7.1'
   gem 'rake', '~> 12.3.2'
+  gem 'json-schema'
+
+  # Local gem for testing fake sites
+  gem 'faux', :path => 'vendor/faux', :require => false
 
   # We need to bundle TZ data because on windows and in some minimal Linux installations there is
   # no system-level TZ data info and the app blows up when trying to use timezone information
   # See https://github.com/tzinfo/tzinfo/wiki/Resolving-TZInfo::DataSourceNotFound-Errors for details
   gem 'tzinfo-data'
-
-  # Used for config file validation
-  gem 'json-schema'
 end
 
-# Security updates
 gem 'rack-cors', '~> 1.0.4', :require => 'rack/cors'
 gem 'json', '~> 2.3.1'
+gem 'jar-dependencies', '0.4.1'
 
 # override ipaddr 1.2.2 that comes from jruby-jars 9.3.3.0
 # issue https://github.com/elastic/enterprise-search-team/issues/2137
 # it can be removed when jruby-jars includes ipaddr ~> 1.2.4
 gem 'ipaddr', '~> 1.2.4'
 
-#---------------------------------------------------------------------------------------------------
-# Crawler-only default dependencies
-#---------------------------------------------------------------------------------------------------
-# This group acts as a default group for standalone crawler scripts/tests/etc
-group :crawler do
-  gem 'faux', :path => 'vendor/faux', :require => false
-end
-
-#---------------------------------------------------------------------------------------------------
-# Development dependencies for Rails environments (but not for the crawler)
-#---------------------------------------------------------------------------------------------------
 group :development do
-  gem 'execjs'
-  gem 'ruby-maven', :require => false
-
-  # Add ffaker to create fake people in demo accounts
-  gem 'ffaker'
-  gem 'rails-erd', :require => false
-end
-
-#---------------------------------------------------------------------------------------------------
-# Development and test dependencies for all environments (including the crawler)
-#---------------------------------------------------------------------------------------------------
-group(*ALL_DEVELOPMENT_ENVS) do
   gem 'rubocop', '1.18.4'
   gem 'rubocop-performance', '1.11.5'
 
@@ -99,9 +64,7 @@ group(*ALL_DEVELOPMENT_ENVS) do
   gem 'tty-prompt', :require => false
 end
 
-group(*ALL_TEST_ENVS) do
-  # Warning: Keep this version in sync with spec/fixtures/shared_togo/jetty_server/simple_web_app/Gemfile
-  # Otherwise, JettyServer specs will fail on CI
+group :test do
   gem 'test-unit', '= 3.3.6'
   gem 'rspec', '~> 3.13.0'
   gem 'webmock'
@@ -113,7 +76,7 @@ group(*ALL_TEST_ENVS) do
   gem 'oas_parser'
 end
 
-group(*ALL_DEVELOPMENT_ENVS, *ALL_TEST_ENVS) do
+group :development, :test do
   gem 'pry'
   gem 'factory_bot', '~> 6.2.0', :require => false
   gem 'rb-fsevent', :require => false

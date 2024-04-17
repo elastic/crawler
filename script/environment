@@ -1,0 +1,20 @@
+#!/bin/bash
+
+source "$(dirname $0)/functions.sh"
+
+set -e
+
+load_version_constraints
+
+echo "JRuby version required: ${JRUBY_VERSION}"
+echo "Java version required: ${JAVA_VERSION}"
+
+jenv_init
+ensure_java_installed "$JAVA_VERSION"
+jenv shell "$JAVA_VERSION"
+
+rbenv_init
+ensure_jruby_installed "$JRUBY_VERSION"
+rbenv shell "$JRUBY_VERSION"
+
+check_bundle

@@ -4,7 +4,6 @@
 brew 'rbenv'
 brew 'jenv'
 brew 'icu4c'
-brew 'forego'
 
 # Stack services
 cask 'homebrew/cask-versions/temurin11'
