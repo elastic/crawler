@@ -1,18 +1,16 @@
 #!/bin/bash
 
-# Load our common shell functions library
 source "$(dirname $0)/functions.sh"
 
-# Fail the script in case of any errors
 set -e
-
-# Tune jruby for faster performance for CLI tools
-export JRUBY_OPTS="${JRUBY_OPTS:-} --dev"
 
 # Used by Gemfile to limit direct access to bundle commands
 export SCRIPT_BUNDLE=true
 
-# Runs bundler and proxies all parameters to it, then handles any errors with a message
+# Tune for faster startup
+export JRUBY_OPTS="${JRUBY_OPTS:-} --dev --debug"
+export JAVA_OPTS="-Xmx2g ${JAVA_OPTS:-} -Djava.awt.headless=true -Dsun.jnu.encoding=UTF-8 -Dfile.encoding=UTF-8 -XX:+HeapDumpOnOutOfMemoryError"
+
 function bundle_command() {
   if ! bundle "$@"; then
     set +x
@@ -24,40 +22,13 @@ function bundle_command() {
   fi
 }
 
-#---------------------------------------------------------------------------------------------------
 BUNDLER_VERSION="$(cat .bundler-version)"
 BUNDLER_CONSTRAINT="~> $BUNDLER_VERSION"
 
-JRUBY_VERSION="$(cat .ruby-version)"
-JAVA_VERSION="$(cat .java-version)"
-
-#---------------------------------------------------------------------------------------------------
-# Enable jenv and rbenv support
-rbenv_init
-jenv_init
-
-# Make sure we have the java version we need
-ensure_java_installed "$JAVA_VERSION"
-
-# Make sure we have the correct MRI and JRuby installed
-ensure_jruby_installed "$JRUBY_VERSION"
-
-#---------------------------------------------------------------------------------------------------
-echo "------------------------------------------------------------------------"
 yellow_echo "Bundling jruby gems..."
-echo "------------------------------------------------------------------------"
-
-# Ensure jenv/rbenv shell
-jenv shell "$JAVA_VERSION"
-rbenv shell "$JRUBY_VERSION"
-
-# Make sure all gems will be cached, including git-sourced
 bundle_command config cache_all true
 
-# Run the actual bundle command specified by the user
-echo "------------------------------------------------------------------------"
 yellow_echo "Running the bundle command..."
-echo "------------------------------------------------------------------------"
 bundle_command "$@"
 
 green_echo "Done!"

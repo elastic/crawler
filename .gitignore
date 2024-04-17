@@ -52,10 +52,10 @@ dump/
 *.codekit
 
 # Static asset build system
-node_modules
-!package.json
 .tmp/
-.npm/
+.m2/
+.local/
+.cache/
 
 # Ignore example file outputs
 output

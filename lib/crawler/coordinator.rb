@@ -162,7 +162,7 @@ module Crawler
       return unless valid_auto_discovered_sitemap_urls.any?
 
       system_logger.info(
-        "Seeding the crawl with #{valid_auto_discovered_sitemap_urls.count} "\
+        "Seeding the crawl with #{valid_auto_discovered_sitemap_urls.count} " \
         'auto-discovered (via robots.txt) Sitemap URLs...'
       )
       add_urls_to_backlog(
@@ -214,7 +214,7 @@ module Crawler
       if shutdown_started?
         set_outcome(
           :shutdown,
-          "Terminated the crawl with #{crawl_queue.length} unprocessed URLs "\
+          "Terminated the crawl with #{crawl_queue.length} unprocessed URLs " \
           "due to a crawler shutdown (allow_resume=#{allow_resume?})"
         )
         system_logger.warn("Shutting down the crawl with #{crawl_queue.length} unprocessed URLs...")

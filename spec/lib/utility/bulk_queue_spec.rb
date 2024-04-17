@@ -88,7 +88,7 @@ RSpec.describe(Utility::BulkQueue) do
     context 'when size of items added to the queue is too big' do
       let(:big_operation) { 'this_is: a big operation' }
       let(:big_operation_bytesize) { 26 }
-      let(:size_threshold) { big_operation_bytesize * 5 - 1 } # only 4 big operations will fit
+      let(:size_threshold) { (big_operation_bytesize * 5) - 1 } # only 4 big operations will fit
 
       before(:each) do
         allow(big_operation).to receive(:bytesize).and_return(big_operation_bytesize)

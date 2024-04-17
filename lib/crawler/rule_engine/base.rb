@@ -39,7 +39,7 @@ module Crawler
         return denied_outcome(:noindex_meta_denied) if crawl_result.html? && crawl_result.meta_noindex?
 
         if crawl_result.redirect? && crawl_result.redirect_count > config.max_redirects
-          error = "Too many redirects (#{crawl_result.redirect_count}) "\
+          error = "Too many redirects (#{crawl_result.redirect_count}) " \
                   "while trying to download the page at #{crawl_result.original_url.inspect}"
           return denied_outcome(:too_many_redirects, error)
         end

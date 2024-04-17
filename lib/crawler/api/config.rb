@@ -227,7 +227,7 @@ module Crawler
       #---------------------------------------------------------------------------------------------
       def confugure_ssl_ca_certificates!
         ssl_ca_certificates.map! do |cert|
-          if /BEGIN CERTIFICATE/.match?(cert)
+          if /BEGIN CERTIFICATE/.include?(cert)
             parse_certificate_string(cert)
           else
             load_certificate_from_file(cert)
