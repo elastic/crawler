@@ -5,7 +5,7 @@ set -euxo pipefail
 COMMAND_TO_RUN=${1:-}
 
 if [[ "${COMMAND_TO_RUN:-}" == "" ]]; then
-    echo "Usage: run_command.sh {install|lint}"
+    echo "Usage: run_command.sh {lint|docker}"
     exit 2
 fi
 

@@ -12,7 +12,7 @@ case $1 in
     ;;
 
   *)
-    echo "Usage: run_command {linter}"
+    echo "Usage: run_command {docker|lint}"
     exit 2
     ;;
 esac

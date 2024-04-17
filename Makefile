@@ -25,4 +25,4 @@ clean:
 	rm -rf Jars.lock vendor/jars
 
 build-docker-ci:
-	docker build -t crawler-ci $(PROJECT_ROOT)
+	docker build -t crawler-ci .buildkite
