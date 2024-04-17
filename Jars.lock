@@ -134,8 +134,3 @@ org.bouncycastle:bcprov-jdk18on:1.76:compile:
 org.apache.uima:uimaj-core:3.3.1:compile:
 org.bitbucket.mstrobel:procyon-compilertools:0.5.32:compile:
 org.bitbucket.mstrobel:procyon-core:0.5.32:compile:
-javax.xml.bind:jaxb-api:2.3.1:runtime:
-javax.activation:javax.activation-api:1.2.0:runtime:
-com.sun.xml.bind:jaxb-core:2.3.0.1:runtime:
-com.sun.xml.bind:jaxb-impl:2.3.1:runtime:
-javax.annotation:javax.annotation-api:1.3.2:compile:

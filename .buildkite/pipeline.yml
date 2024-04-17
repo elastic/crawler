@@ -6,7 +6,6 @@ steps:
   - label: "Build Docker Image"
     commands:
       - "docker build -t crawler-ci ."
-      - ".buildkite/scripts/run_command.sh install"
 
   - label: ":wrench: Linting"
     timeout_in_minutes: 1
