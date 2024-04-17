@@ -33,6 +33,7 @@ group :default do
   gem 'mail', '2.7.1'
   gem 'rake', '~> 12.3.2'
   gem 'json-schema'
+  gem 'activesupport', '= 6.1.7.7'
 
   # Local gem for testing fake sites
   gem 'faux', :path => 'vendor/faux', :require => false
