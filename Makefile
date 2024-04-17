@@ -1,4 +1,4 @@
-.phony: lint autocorrect install install-ci install-gems install-jars clean
+.phony: lint autocorrect install install-ci install-gems install-jars clean build-docker-ci
 
 lint:
 	rubocop
@@ -23,3 +23,6 @@ install-jars:
 
 clean:
 	rm -rf Jars.lock vendor/jars
+
+build-docker-ci:
+	docker build -t crawler-ci .
