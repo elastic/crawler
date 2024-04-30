@@ -9,7 +9,7 @@ CRAWLER_ENV = ENV.fetch('CRAWLER_ENV', 'development')
 # Set up bundler
 require 'rubygems'
 require 'bundler'
-Bundler.setup(:crawler, "crawler_#{CRAWLER_ENV}")
+Bundler.setup(:default, CRAWLER_ENV)
 
 # Load common dependencies
 require 'active_support'
