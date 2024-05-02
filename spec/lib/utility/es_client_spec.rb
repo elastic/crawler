@@ -67,7 +67,7 @@ RSpec.describe(Utility::EsClient) do
         expect(result[:url]).to eq('http://user:pw@notreallyaserver')
         expect(result[:host]).to be_nil
         expect(result[:api_key]).to be_nil
-        expect(result[:transport_options][:headers][:'user-agent']).to eq('elastic-open-web-crawler-0.0.0-foo')
+        expect(result[:transport_options][:headers][:'user-agent']).to eq('elastic-web-crawler-0.0.0-foo')
       end
     end
 
@@ -78,7 +78,7 @@ RSpec.describe(Utility::EsClient) do
         expect(result[:url]).to be_nil
         expect(result[:host]).to eq(host)
         expect(result[:api_key]).to eq('key')
-        expect(result[:transport_options][:headers][:'user-agent']).to eq('elastic-open-web-crawler-0.0.0-bar')
+        expect(result[:transport_options][:headers][:'user-agent']).to eq('elastic-web-crawler-0.0.0-bar')
       end
     end
 
