@@ -16,7 +16,7 @@ RSpec.describe(Utility::EsClient) do
     }.deep_symbolize_keys
   end
 
-  let(:subject) { described_class.new(config[:elasticsearch], system_logger) }
+  let(:subject) { described_class.new(config[:elasticsearch], system_logger, '0.0.0-test') }
 
   before(:each) do
     stub_request(:get, "#{host}:9200/")
@@ -62,21 +62,23 @@ RSpec.describe(Utility::EsClient) do
       it 'initialises with username and password' do
         config[:elasticsearch][:api_key] = nil
 
-        result = subject.connection_configs(config[:elasticsearch])
+        result = subject.connection_configs(config[:elasticsearch], '0.0.0-foo')
 
         expect(result[:url]).to eq('http://user:pw@notreallyaserver')
         expect(result[:host]).to be_nil
         expect(result[:api_key]).to be_nil
+        expect(result[:transport_options][:headers][:'user-agent']).to eq('elastic-web-crawler-0.0.0-foo')
       end
     end
 
     context 'when API key is present' do
       it 'overrides username and password' do
-        result = subject.connection_configs(config[:elasticsearch])
+        result = subject.connection_configs(config[:elasticsearch], '0.0.0-bar')
 
         expect(result[:url]).to be_nil
         expect(result[:host]).to eq(host)
         expect(result[:api_key]).to eq('key')
+        expect(result[:transport_options][:headers][:'user-agent']).to eq('elastic-web-crawler-0.0.0-bar')
       end
     end
 
@@ -91,7 +93,7 @@ RSpec.describe(Utility::EsClient) do
       it 'configures Elasticsearch client with headers' do
         config[:elasticsearch]['headers'] = headers
 
-        result = subject.connection_configs(config[:elasticsearch])
+        result = subject.connection_configs(config[:elasticsearch], '0.0.0-test')
 
         expect(result['headers']).to eq(headers)
       end
@@ -101,7 +103,7 @@ RSpec.describe(Utility::EsClient) do
       it 'configures Elasticsearch client with no headers' do
         config[:elasticsearch][:headers] = nil
 
-        result = subject.connection_configs(config[:elasticsearch])
+        result = subject.connection_configs(config[:elasticsearch], '0.0.0-test')
 
         expect(result).to_not have_key(:headers)
       end

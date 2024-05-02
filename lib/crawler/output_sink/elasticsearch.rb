@@ -22,8 +22,10 @@ module Crawler
         raise ArgumentError, 'Missing elasticsearch configuration' unless config.elasticsearch
 
         @config = config
-        init_ingestion_stats
+        # initialize client now to fail fast if config is bad
+        client
 
+        init_ingestion_stats
         system_logger.info(
           "Elasticsearch sink initialized for index [#{index_name}] with pipeline [#{pipeline}]"
         )
@@ -91,7 +93,7 @@ module Crawler
       end
 
       def client
-        @client ||= Utility::EsClient.new(es_config, system_logger)
+        @client ||= Utility::EsClient.new(es_config, system_logger, Crawler.version)
       end
 
       def index_name

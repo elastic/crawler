@@ -10,6 +10,8 @@ require 'elasticsearch'
 
 module Utility
   class EsClient < ::Elasticsearch::Client
+    USER_AGENT = 'elastic-web-crawler-'
+
     class IndexingFailedError < StandardError
       def initialize(message, error = nil)
         super(message)
@@ -19,13 +21,20 @@ module Utility
       attr_reader :cause
     end
 
-    def initialize(es_config, system_logger, &block)
+    def initialize(es_config, system_logger, crawler_version, &block)
       @system_logger = system_logger
-      super(connection_configs(es_config), &block)
+      super(connection_configs(es_config, crawler_version), &block)
     end
 
-    def connection_configs(es_config) # rubocop:disable Metrics/MethodLength
-      configs = {}
+    def connection_configs(es_config, crawler_version) # rubocop:disable Metrics/MethodLength
+      configs = {
+        transport_options: {
+          headers: {
+            'user-agent': "#{USER_AGENT}#{crawler_version}",
+            'X-elastic-product-origin': 'crawler'
+          }
+        }
+      }
 
       if es_config[:api_key]
         configs[:host] = es_config[:host]

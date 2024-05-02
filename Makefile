@@ -4,7 +4,7 @@ lint:
 	rubocop
 
 autocorrect:
-	rubocop --autocorrect
+	rubocop --auto-correct
 
 install:
 	script/environment

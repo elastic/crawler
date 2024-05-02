@@ -30,8 +30,6 @@ group :default do
   gem 'concurrent-ruby', '~> 1.1.4'
   gem 'elasticsearch', '~> 8.13.0'
   gem 'nokogiri', '= 1.13.10', :require => false
-  gem 'mail', '2.7.1'
-  gem 'rake', '~> 12.3.2'
   gem 'json-schema'
   gem 'activesupport', '= 6.1.7.7'
 
@@ -44,8 +42,6 @@ group :default do
   gem 'tzinfo-data'
 end
 
-gem 'rack-cors', '~> 1.0.4', :require => 'rack/cors'
-gem 'json', '~> 2.3.1'
 gem 'jar-dependencies', '0.4.1'
 
 # override ipaddr 1.2.2 that comes from jruby-jars 9.3.3.0
