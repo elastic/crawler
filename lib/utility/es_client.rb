@@ -10,7 +10,7 @@ require 'elasticsearch'
 
 module Utility
   class EsClient < ::Elasticsearch::Client
-    USER_AGENT = 'elastic-open-web-crawler-'
+    USER_AGENT = 'elastic-web-crawler-'
 
     class IndexingFailedError < StandardError
       def initialize(message, error = nil)
