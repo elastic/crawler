@@ -3,7 +3,7 @@
 require 'faux'
 require_relative 'results_collection'
 
-class FauxCraw # rubocop:disable Metrics/ClassLength
+class FauxCrawl # rubocop:disable Metrics/ClassLength
   module Settings
     def self.faux_url
       "http://#{faux_ip}:#{faux_port}/"
@@ -107,7 +107,8 @@ class FauxCraw # rubocop:disable Metrics/ClassLength
         port_to_check = ports_remaining.first
         response = HTTPClient.new.get("http://127.0.0.1:#{port_to_check}/status")
         ports_remaining.shift if (200..299).cover?(response.status)
-      rescue StandardError
+      rescue StandardError => e
+        puts(e)
         # Silence errors from health checks
       end
 

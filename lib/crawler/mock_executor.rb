@@ -15,7 +15,9 @@ module Crawler
       {}
     end
 
-    def run(crawl_task, _follow_redirects: false)
+    # The arg `follow_redirects` is required despite not being used within the method.
+    # This is because the mock is called using expected args in specs.
+    def run(crawl_task, follow_redirects: false) # rubocop:disable Lint/UnusedMethodArgument
       url = crawl_task.url
       mock_results.fetch(url.to_s, mock_404_result(url))
     end

@@ -33,8 +33,8 @@ RSpec.describe 'Sitemaps Support' do
   it 'makes it possible to use sitemap seed URLs for discovering links on a site' do
     results = FauxCrawl.run(
       site,
-      seed_urls: ['/'],
-      sitemap_urls: ['/sitemap.xml']
+      seed_urls: ['http://127.0.0.1:9393/'],
+      sitemap_urls: ['http://127.0.0.1:9393/sitemap.xml']
     )
 
     expect(results).to have_only_these_results [

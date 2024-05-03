@@ -53,8 +53,18 @@ We require unit tests to be added or updated for every contribution.
 
 ### Unit Tests
 
-To test the elastic-crawler, run:
+We have makefile commands to run tests.
+These act as a wrapper around a typical `bundle exec rspec` command.
+You can use the makefile command to run all tests in the repo, all tests in a single file, or a single spec in a file.
+Target files are specified with the `file=/path/to/spec` argument.
 
 ```shell
-./script/rspec path/to/file_spec.rb
+# run all tests in elastic-crawler
+make test
+
+# runs all unit tests in `crawl_spec.rb`
+make test file=spec/lib/crawler/api/crawl_spec.rb
+
+# runs only the unit test on line 35 in `crawl_spec.rb`
+make test file=spec/lib/crawler/api/crawl_spec.rb:35
 ```

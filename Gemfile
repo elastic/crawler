@@ -74,6 +74,8 @@ group :test do
 end
 
 group :development, :test do
+  gem 'rack', '~> 2.2.8.1'
+  gem 'httpclient'
   gem 'pry'
   gem 'factory_bot', '~> 6.2.0', :require => false
   gem 'rb-fsevent', :require => false

@@ -91,7 +91,7 @@ RSpec.describe(Utility::BulkQueue) do
       let(:size_threshold) { (big_operation_bytesize * 5) - 1 } # only 4 big operations will fit
 
       before(:each) do
-        allow(big_operation).to receive(:bytesize).and_return(big_operation_bytesize)
+        allow(subject).to receive(:bytesize).and_call_original
 
         4.times do
           subject.add(big_operation)
@@ -132,7 +132,7 @@ RSpec.describe(Utility::BulkQueue) do
     let(:big_operation_bytesize) { 26 }
 
     before(:each) do
-      allow(big_operation).to receive(:bytesize).and_return(big_operation_bytesize)
+      allow(subject).to receive(:bytesize).and_call_original
 
       op_count.times do
         subject.add(big_operation)

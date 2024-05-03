@@ -9,7 +9,7 @@ RSpec.describe 'Seed URLs' do
   end
 
   it 'crawls all of the seed urls specified by the config' do
-    results = FauxCrawl.run(site, seed_urls: ['/foo', '/baz'])
+    results = FauxCrawl.run(site, seed_urls: %w[http://127.0.0.1:9393/foo http://127.0.0.1:9393/baz])
 
     expect(results).to have_only_these_results [
       mock_response(url: 'http://127.0.0.1:9393/foo', status_code: 200),
