@@ -52,6 +52,7 @@ GEM
     hansi (0.2.1)
     hash-deep-merge (0.1.1)
     hashdiff (1.1.0)
+    httpclient (2.8.3)
     i18n (1.14.4)
       concurrent-ruby (~> 1.0)
     ipaddr (1.2.6)
@@ -98,7 +99,7 @@ GEM
       slop (~> 3.0)
     public_suffix (5.0.5)
     racc (1.7.3-java)
-    rack (3.0.10)
+    rack (2.2.8.1)
     rack-mount (0.8.3)
       rack (>= 1.0.0)
     rainbow (3.1.1)
@@ -195,6 +196,7 @@ DEPENDENCIES
   elasticsearch (~> 8.13.0)
   factory_bot (~> 6.2.0)
   faux!
+  httpclient
   ipaddr (~> 1.2.4)
   jar-dependencies (= 0.4.1)
   json-schema
@@ -204,6 +206,7 @@ DEPENDENCIES
   pry
   pry-nav
   pry-remote
+  rack (~> 2.2.8.1)
   rb-fsevent
   rb-inotify
   rspec (~> 3.13.0)

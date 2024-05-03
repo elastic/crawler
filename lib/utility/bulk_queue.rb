@@ -6,7 +6,7 @@
 # you may not use this file except in compliance with the Elastic License.
 #
 
-require('elasticsearch/api')
+require 'elasticsearch/api'
 
 module Utility
   class BulkQueue
@@ -17,7 +17,6 @@ module Utility
 
     class QueueOverflowError < StandardError; end
 
-    # 500 items or 5MB
     def initialize(op_count_threshold, size_threshold, system_logger)
       @op_count_threshold = (op_count_threshold || DEFAULT_OP_COUNT_THRESHOLD).freeze
       @size_threshold = (size_threshold || DEFAULT_SIZE_THRESHOLD).freeze

@@ -9,12 +9,16 @@ load_version_constraints
 echo "JRuby version required: ${JRUBY_VERSION}"
 echo "Java version required: ${JAVA_VERSION}"
 
-jenv_init
-ensure_java_installed "$JAVA_VERSION"
-jenv shell "$JAVA_VERSION"
+if [ -n "${IS_DOCKER}" ] && [ "${IS_DOCKER}" = "1" ]; then
+  echo "Skipping jenv and rbenv setup because it isn't required for Docker setups."
+else
+  jenv_init
+  ensure_java_installed "$JAVA_VERSION"
+  jenv shell "$JAVA_VERSION"
 
-rbenv_init
-ensure_jruby_installed "$JRUBY_VERSION"
-rbenv shell "$JRUBY_VERSION"
+  rbenv_init
+  ensure_jruby_installed "$JRUBY_VERSION"
+  rbenv shell "$JRUBY_VERSION"
+fi
 
 check_bundle

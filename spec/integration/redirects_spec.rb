@@ -1,9 +1,8 @@
 # frozen_string_literal: true
 
 RSpec.describe 'Redirect handling' do
-  let(:num_redirects) { 20 }
-
   let(:results) do
+    num_redirects = 20
     FauxCrawl.crawl_site do
       page '/' do
         body do

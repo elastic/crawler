@@ -3,7 +3,7 @@
 require 'faux'
 require_relative 'results_collection'
 
-class FauxCraw # rubocop:disable Metrics/ClassLength
+class FauxCrawl # rubocop:disable Metrics/ClassLength
   module Settings
     def self.faux_url
       "http://#{faux_ip}:#{faux_port}/"

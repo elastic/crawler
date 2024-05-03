@@ -1,4 +1,7 @@
-.phony: lint autocorrect install install-ci install-gems install-jars clean build-docker-ci
+.phony: test lint autocorrect install install-ci install-gems install-jars clean build-docker-ci
+
+test:
+	script/rspec $(file)
 
 lint:
 	rubocop

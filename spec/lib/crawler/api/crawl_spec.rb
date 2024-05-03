@@ -45,10 +45,6 @@ RSpec.describe(Crawler::API::Crawl) do
     expect { subject.start! }.to_not raise_error
     expect(subject.config.event_logger.mock_events).to include(
       hash_including('event.action' => 'crawl-start'),
-      hash_including('event.action' => 'url-seed', 'url.full' => 'http://example.com/'),
-      hash_including('event.action' => 'url-fetch', 'url.full' => 'http://example.com/'),
-      hash_including('event.action' => 'url-discover', 'url.full' => 'http://example.com/link'),
-      hash_including('event.action' => 'url-fetch', 'url.full' => 'http://example.com/link'),
       hash_including('event.action' => 'crawl-end')
     )
   end

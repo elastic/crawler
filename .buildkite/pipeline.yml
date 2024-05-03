@@ -4,8 +4,13 @@ agents:
 
 defaultTimeoutInMinutes: 5
 
+# TODO: change docker build steps into pulling a ci-agent-image to speed up build time
 steps:
-  - label: ":wrench: Lint"
+  - label: ":rubocop: Lint"
     commands:
       - ".buildkite/scripts/run_command.sh docker"
       - ".buildkite/scripts/run_command.sh lint"
+  - label: ":rspec: Test"
+    commands:
+      - ".buildkite/scripts/run_command.sh docker"
+      - ".buildkite/scripts/run_command.sh test"
