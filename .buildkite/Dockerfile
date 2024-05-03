@@ -4,6 +4,6 @@ RUN apt-get update && \
     libicu-dev netbase make
 
 # used for skipping jenv/rbenv setup
-ARG IS_DOCKER=1
+ENV IS_DOCKER=1
 
 ENTRYPOINT [ "/bin/bash" ]
