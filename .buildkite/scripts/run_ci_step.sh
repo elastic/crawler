@@ -11,6 +11,11 @@ case $1 in
     make install-gems lint
     ;;
 
+  test)
+    echo "---- running tests"
+    make install test
+    ;;
+
   *)
     echo "Usage: run_command {docker|lint}"
     exit 2
