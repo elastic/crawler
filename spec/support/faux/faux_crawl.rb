@@ -107,8 +107,7 @@ class FauxCrawl # rubocop:disable Metrics/ClassLength
         port_to_check = ports_remaining.first
         response = HTTPClient.new.get("http://127.0.0.1:#{port_to_check}/status")
         ports_remaining.shift if (200..299).cover?(response.status)
-      rescue StandardError => e
-        puts(e)
+      rescue StandardError
         # Silence errors from health checks
       end
 
