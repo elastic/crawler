@@ -18,7 +18,7 @@ spec:
     apiVersion: buildkite.elastic.dev/v1
     kind: Pipeline
     metadata:
-      name: crawler
+      name: elastic-crawler
       description: 
     spec:
       repository: elastic/crawler
