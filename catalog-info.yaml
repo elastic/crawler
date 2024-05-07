@@ -8,7 +8,7 @@ metadata:
   description: Buildkite Pipeline for Elastic Open Web Crawler
   links:
     - title: Pipeline
-      url: https://buildkite.com/elastic/crawler
+      url: https://buildkite.com/elastic/elastic-crawler
 
 spec:
   type: buildkite-pipeline
@@ -18,7 +18,7 @@ spec:
     apiVersion: buildkite.elastic.dev/v1
     kind: Pipeline
     metadata:
-      name: elastic-crawler
+      name: crawler
       description: 
     spec:
       repository: elastic/crawler
