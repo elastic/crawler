@@ -22,17 +22,13 @@ GEM
     base64 (0.2.0)
     bigdecimal (3.1.7-java)
     bson (4.2.2-java)
-    builder (3.2.4)
-    climate_control (1.2.0)
     coderay (1.1.3)
     concurrent-ruby (1.1.10)
     crack (1.0.0)
       bigdecimal
       rexml
-    deep_merge (1.2.2)
     diff-lcs (1.5.1)
     docile (1.4.0)
-    ejson (1.4.1)
     elastic-transport (8.3.2)
       faraday (< 3)
       multi_json
@@ -49,8 +45,6 @@ GEM
       ruby2_keywords (>= 0.0.4)
     faraday-net_http (3.0.2)
     ffi (1.16.3-java)
-    hansi (0.2.1)
-    hash-deep-merge (0.1.1)
     hashdiff (1.1.0)
     httpclient (2.8.3)
     i18n (1.14.4)
@@ -59,33 +53,15 @@ GEM
     jar-dependencies (0.4.1)
     json-schema (4.3.0)
       addressable (>= 2.8)
-    listen (1.3.1)
-      rb-fsevent (>= 0.9.3)
-      rb-inotify (>= 0.9)
-      rb-kqueue (>= 0.2)
     method_source (1.1.0)
     minitest (5.22.3)
     multi_json (1.15.0)
-    mustermann (1.1.2)
-      ruby2_keywords (~> 0.0.1)
-    mustermann-contrib (1.1.2)
-      hansi (~> 0.2.0)
-      mustermann (= 1.1.2)
     nokogiri (1.13.10-java)
       racc (~> 1.4)
-    oas_parser (0.25.4)
-      activesupport (>= 4.0.0)
-      addressable (~> 2.3)
-      builder (~> 3.2.3)
-      deep_merge (~> 1.2.1)
-      hash-deep-merge
-      mustermann-contrib (~> 1.1.1)
-      nokogiri
     parallel (1.24.0)
     parser (3.3.1.0)
       ast (~> 2.4.1)
       racc
-    power_assert (2.0.3)
     pry (0.14.2-java)
       coderay (~> 1.1)
       method_source (~> 1.0)
@@ -102,11 +78,6 @@ GEM
       rack (>= 1.0.0)
     rainbow (3.1.1)
     rake (13.2.1)
-    rb-fsevent (0.11.2)
-    rb-inotify (0.10.1)
-      ffi (~> 1.0)
-    rb-kqueue (0.2.8)
-      ffi (>= 0.5.0)
     regexp_parser (2.9.0)
     rexml (3.2.6)
     rspec (3.13.0)
@@ -152,16 +123,12 @@ GEM
     slop (3.6.0)
     spoon (0.0.6)
       ffi
-    test-unit (3.3.6)
-      power_assert
     thread_safe (0.3.6-java)
-    timecop (0.9.8)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
     tzinfo-data (1.2024.1)
       tzinfo (>= 1.0.0)
     unicode-display_width (2.5.0)
-    vcr (6.1.0)
     webmock (3.23.0)
       addressable (>= 2.8.0)
       crack (>= 0.3.2)
@@ -177,9 +144,7 @@ DEPENDENCIES
   addressable (>= 2.8.0)
   bson (~> 4.2.2)
   bundler (~> 2.2.29)
-  climate_control
   concurrent-ruby (~> 1.1.4)
-  ejson
   elasticsearch (~> 8.13.0)
   factory_bot (~> 6.2.0)
   faux!
@@ -187,15 +152,11 @@ DEPENDENCIES
   ipaddr (~> 1.2.4)
   jar-dependencies (= 0.4.1)
   json-schema
-  listen (~> 1.0)
   nokogiri (= 1.13.10)
-  oas_parser
   pry
   pry-nav
   pry-remote
   rack (~> 2.2.8.1)
-  rb-fsevent
-  rb-inotify
   rspec (~> 3.13.0)
   rubocop (= 1.18.4)
   rubocop-performance (= 1.11.5)
@@ -203,11 +164,8 @@ DEPENDENCIES
   ruby-debug-ide
   simplecov
   simplecov-material
-  test-unit (= 3.3.6)
   thread_safe (= 0.3.6)
-  timecop
   tzinfo-data
-  vcr (~> 6.1.0)
   webmock
 
 BUNDLED WITH

@@ -29,7 +29,7 @@ group :default do
   gem 'bson', '~> 4.2.2'
   gem 'concurrent-ruby', '~> 1.1.4'
   gem 'elasticsearch', '~> 8.13.0'
-  gem 'nokogiri', '= 1.13.10', :require => false
+  gem 'nokogiri', '= 1.13.10', require: false
   gem 'json-schema'
   gem 'activesupport', '= 6.1.7.7'
   gem 'jar-dependencies', '0.4.1'
@@ -40,7 +40,7 @@ group :default do
   gem 'ipaddr', '~> 1.2.4'
 
   # Local gem for testing fake sites
-  gem 'faux', :path => 'vendor/faux', :require => false
+  gem 'faux', path: 'vendor/faux', require: false
 
   # We need to bundle TZ data because on windows and in some minimal Linux installations there is
   # no system-level TZ data info and the app blows up when trying to use timezone information
@@ -52,30 +52,21 @@ group :development do
   gem 'rubocop', '1.18.4'
   gem 'rubocop-performance', '1.11.5'
   gem 'ruby-debug-ide'
-  gem 'ruby-debug-base', '0.11.0', :platform => 'jruby'
+  gem 'ruby-debug-base', '0.11.0', platform: :jruby
   gem 'pry-remote'
   gem 'pry-nav'
 end
 
 group :test do
-  gem 'test-unit', '= 3.3.6'
   gem 'rspec', '~> 3.13.0'
   gem 'webmock'
-  gem 'vcr', '~> 6.1.0'
-  gem 'climate_control'
-  gem 'timecop'
-  gem 'simplecov', :require => false
-  gem 'simplecov-material', :require => false
-  gem 'oas_parser'
+  gem 'simplecov'
+  gem 'simplecov-material', require: false
 end
 
 group :development, :test do
   gem 'rack', '~> 2.2.8.1'
   gem 'httpclient'
   gem 'pry'
-  gem 'factory_bot', '~> 6.2.0', :require => false
-  gem 'rb-fsevent', :require => false
-  gem 'rb-inotify', :require => false
-  gem 'listen', '~> 1.0'
-  gem 'ejson'
+  gem 'factory_bot', '~> 6.2.0', require: false
 end
