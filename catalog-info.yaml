@@ -5,7 +5,7 @@ apiVersion: backstage.io/v1alpha1
 kind: Resource
 metadata:
   name: buildkite-pipeline-elastic-crawler
-  description: Buildkite Pipeline for elastic-crawler
+  description: Buildkite Pipeline for Elastic Open Web Crawler
   links:
     - title: Pipeline
       url: https://buildkite.com/elastic/elastic-crawler
@@ -21,7 +21,7 @@ spec:
       name: elastic-crawler
       description: 
     spec:
-      repository: elastic/elastic-crawler
+      repository: elastic/crawler
       pipeline_file: ".buildkite/pipeline.yml"
       teams:
         ent-search-eng:

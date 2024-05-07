@@ -32,6 +32,12 @@ group :default do
   gem 'nokogiri', '= 1.13.10', :require => false
   gem 'json-schema'
   gem 'activesupport', '= 6.1.7.7'
+  gem 'jar-dependencies', '0.4.1'
+
+  # override ipaddr 1.2.2 that comes from jruby-jars 9.3.3.0
+  # issue https://github.com/elastic/enterprise-search-team/issues/2137
+  # it can be removed when jruby-jars includes ipaddr ~> 1.2.4
+  gem 'ipaddr', '~> 1.2.4'
 
   # Local gem for testing fake sites
   gem 'faux', :path => 'vendor/faux', :require => false
@@ -42,23 +48,13 @@ group :default do
   gem 'tzinfo-data'
 end
 
-gem 'jar-dependencies', '0.4.1'
-
-# override ipaddr 1.2.2 that comes from jruby-jars 9.3.3.0
-# issue https://github.com/elastic/enterprise-search-team/issues/2137
-# it can be removed when jruby-jars includes ipaddr ~> 1.2.4
-gem 'ipaddr', '~> 1.2.4'
-
 group :development do
   gem 'rubocop', '1.18.4'
   gem 'rubocop-performance', '1.11.5'
-
   gem 'ruby-debug-ide'
+  gem 'ruby-debug-base', '0.11.0', :platform => 'jruby'
   gem 'pry-remote'
   gem 'pry-nav'
-  gem 'ruby-debug-base', '0.11.0', :platform => 'jruby'
-
-  gem 'tty-prompt', :require => false
 end
 
 group :test do
