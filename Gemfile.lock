@@ -29,6 +29,7 @@ GEM
       rexml
     diff-lcs (1.5.1)
     docile (1.4.0)
+    dry-cli (0.7.0)
     elastic-transport (8.3.2)
       faraday (< 3)
       multi_json
@@ -145,6 +146,7 @@ DEPENDENCIES
   bson (~> 4.2.2)
   bundler (~> 2.2.29)
   concurrent-ruby (~> 1.1.4)
+  dry-cli
   elasticsearch (~> 8.13.0)
   factory_bot (~> 6.2.0)
   faux!
