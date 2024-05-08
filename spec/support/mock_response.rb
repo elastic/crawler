@@ -6,6 +6,8 @@
 
 # frozen_string_literal: true
 
+require 'ostruct'
+
 class MockResponse < OpenStruct
   def equal_for_specified_keys?(response)
     to_h.all? do |key, val|
