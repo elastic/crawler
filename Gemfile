@@ -49,7 +49,7 @@ group :default do
 end
 
 group :development do
-  gem 'rubocop', '1.18.4'
+  gem 'rubocop', '~> 1.63'
   gem 'rubocop-performance', '1.11.5'
   gem 'ruby-debug-ide'
   gem 'ruby-debug-base', '0.11.0', platform: :jruby
