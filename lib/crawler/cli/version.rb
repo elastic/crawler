@@ -1,11 +1,11 @@
-require "dry/cli"
+require 'dry/cli'
 
 module Crawler
   module CLI
     class Version < Dry::CLI::Command
-      VERSION_PATH = File.expand_path("../../../../product_version", __FILE__).freeze
+      VERSION_PATH = File.expand_path('../../../product_version', __dir__).freeze
 
-      desc "Print version"
+      desc 'Print version'
 
       def call(*)
         puts File.read(VERSION_PATH).strip

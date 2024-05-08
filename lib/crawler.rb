@@ -20,4 +20,6 @@ end
 
 # Load other parts of the crawler
 # Ignore Crawler CLI
-Dir[File.join(__dir__, 'crawler/**/*.rb')].reject { |file| file =~ %r{\/crawler\/cli\/} }.each { |f| require_dependency(f) }
+Dir[File.join(__dir__, 'crawler/**/*.rb')].reject do |file|
+  file =~ %r{/crawler/cli/}
+end.each { |f| require_dependency(f) }

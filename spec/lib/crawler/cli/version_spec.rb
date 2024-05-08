@@ -1,6 +1,6 @@
 RSpec.describe(Crawler::CLI::Version) do
   describe '.call' do
-    let(:version_path) { File.expand_path('../../../../../product_version', __FILE__) }
+    let(:version_path) { File.expand_path('../../../../product_version', __dir__) }
 
     it 'prints the current version from product_version_file' do
       expect(File).to receive(:read).with(version_path).and_return('1.0.0')
