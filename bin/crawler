@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+
+require "bundler/setup"
+require 'dry/cli'
+
+require_relative File.expand_path('../../lib/environment', __FILE__)
+require 'crawler/cli'
+
+Dry::CLI.new(Crawler::CLI).call
