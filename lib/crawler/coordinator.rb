@@ -324,7 +324,7 @@ module Crawler
       end
 
       # Content extraction complete, log an event about it
-      events.url_extracted(extracted_event)
+      events.url_extracted(**extracted_event)
     end
 
     #-----------------------------------------------------------------------------------------------
@@ -335,6 +335,7 @@ module Crawler
       crawl_task_progress(crawl_task, 'extracting links')
       return enqueue_redirect_link(crawl_task, crawl_result) if crawl_result.redirect?
       return extract_and_enqueue_html_links(crawl_task, crawl_result) if crawl_result.html?
+
       extract_and_enqueue_sitemap_links(crawl_task, crawl_result) if crawl_result.sitemap?
     end
 
