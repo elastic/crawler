@@ -1,5 +1,5 @@
 # load CLI dependencies
-Dir[File.join(__dir__, 'cli/**/*.rb')].each { |f| puts f; require(f) }
+Dir[File.join(__dir__, 'cli/**/*.rb')].each { |f| require(f) }
 
 module Crawler
   module CLI
