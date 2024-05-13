@@ -62,3 +62,6 @@ output
 
 # Config files
 config/*.yml
+
+# Code coverage
+coverage
