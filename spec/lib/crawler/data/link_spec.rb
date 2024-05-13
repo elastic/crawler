@@ -11,25 +11,25 @@ RSpec.describe(Crawler::Data::Link) do
   let(:base_url) { Crawler::Data::URL.parse(base) }
 
   let(:broken_link_string) { 'foo%:' }
-  let(:broken_link) { Crawler::Data::Link.new(base_url: base_url, link: broken_link_string) }
+  let(:broken_link) { Crawler::Data::Link.new(base_url:, link: broken_link_string) }
 
   let(:valid_link_string) { '/foo' }
-  let(:valid_link) { Crawler::Data::Link.new(base_url: base_url, link: valid_link_string) }
+  let(:valid_link) { Crawler::Data::Link.new(base_url:, link: valid_link_string) }
 
   let(:xml_link) { Nokogiri::HTML.parse('<a href="http://google.com">').css('a').first }
 
   #-------------------------------------------------------------------------------------------------
   describe 'constructor' do
     it 'should require either an html or a string link' do
-      expect { Crawler::Data::Link.new(base_url: base_url) }.to raise_error(ArgumentError)
+      expect { Crawler::Data::Link.new(base_url:) }.to raise_error(ArgumentError)
     end
 
     it 'should fail if given a non-string link argument' do
-      expect { Crawler::Data::Link.new(base_url: base_url, link: 123) }.to raise_error(ArgumentError)
+      expect { Crawler::Data::Link.new(base_url:, link: 123) }.to raise_error(ArgumentError)
     end
 
     it 'should fail if given a non-XML node argument' do
-      expect { Crawler::Data::Link.new(base_url: base_url, node: 'boo') }.to raise_error(ArgumentError)
+      expect { Crawler::Data::Link.new(base_url:, node: 'boo') }.to raise_error(ArgumentError)
     end
 
     it 'should not fail if the link is invalid' do
@@ -39,7 +39,7 @@ RSpec.describe(Crawler::Data::Link) do
     it 'should fail when given both an XML and a string link argument' do
       expect do
         Crawler::Data::Link.new(
-          base_url: base_url,
+          base_url:,
           node: xml_link,
           link: valid_link_string
         )
@@ -47,7 +47,7 @@ RSpec.describe(Crawler::Data::Link) do
     end
 
     it 'should initialize the link value using a href attribute when given an HTML link' do
-      link = Crawler::Data::Link.new(base_url: base_url, node: xml_link)
+      link = Crawler::Data::Link.new(base_url:, node: xml_link)
       expect(link.link).to eq(xml_link['href'])
     end
   end
@@ -55,8 +55,8 @@ RSpec.describe(Crawler::Data::Link) do
   #-------------------------------------------------------------------------------------------------
   describe 'comparison operators' do
     context 'when initialized with a link' do
-      let(:link1) { Crawler::Data::Link.new(base_url: base_url, link: valid_link_string) }
-      let(:link2) { Crawler::Data::Link.new(base_url: base_url, link: valid_link_string) }
+      let(:link1) { Crawler::Data::Link.new(base_url:, link: valid_link_string) }
+      let(:link2) { Crawler::Data::Link.new(base_url:, link: valid_link_string) }
 
       it 'should work with a Set' do
         set = Set.new([link1, link2])
@@ -68,7 +68,7 @@ RSpec.describe(Crawler::Data::Link) do
       end
 
       it 'should consider links different if the link value differs' do
-        another_link = Crawler::Data::Link.new(base_url: base_url, link: '/yo')
+        another_link = Crawler::Data::Link.new(base_url:, link: '/yo')
         expect(link1).to_not eq(another_link)
       end
 
@@ -80,8 +80,8 @@ RSpec.describe(Crawler::Data::Link) do
     end
 
     context 'when initialized with an HTML link' do
-      let(:link1) { Crawler::Data::Link.new(base_url: base_url, node: xml_link) }
-      let(:link2) { Crawler::Data::Link.new(base_url: base_url, node: xml_link) }
+      let(:link1) { Crawler::Data::Link.new(base_url:, node: xml_link) }
+      let(:link2) { Crawler::Data::Link.new(base_url:, node: xml_link) }
 
       it 'should work with a Set' do
         set = Set.new([link1, link2])
@@ -94,21 +94,21 @@ RSpec.describe(Crawler::Data::Link) do
 
       it 'should consider links different if the html link value differs' do
         another_xml_link = Nokogiri::HTML.parse('<a href="http://amazon.com">').css('a').first
-        another_link = Crawler::Data::Link.new(base_url: base_url, node: another_xml_link)
+        another_link = Crawler::Data::Link.new(base_url:, node: another_xml_link)
         expect(link1).to_not eq(another_link)
       end
 
       it 'should consider links equal even when they come from different tags' do
         html = Nokogiri::HTML.parse('<a href="http://google.com"><a href="http://google.com">')
         links = html.css('a')
-        link1 = Crawler::Data::Link.new(base_url: base_url, node: links[0])
-        link2 = Crawler::Data::Link.new(base_url: base_url, node: links[1])
+        link1 = Crawler::Data::Link.new(base_url:, node: links[0])
+        link2 = Crawler::Data::Link.new(base_url:, node: links[1])
         expect(link1).to eq(link2)
       end
 
       it 'should consider links different if they have different HTML attributes' do
         nofollow_link = Nokogiri::HTML.parse('<a href="http://google.com" rel="nofollow">').css('a').first
-        another_link = Crawler::Data::Link.new(base_url: base_url, node: nofollow_link)
+        another_link = Crawler::Data::Link.new(base_url:, node: nofollow_link)
         expect(link1).to_not eq(another_link)
       end
     end
@@ -123,7 +123,7 @@ RSpec.describe(Crawler::Data::Link) do
     it 'should return false for a link without href' do
       node_html = '<a :href="url" class="Product__details  t-small" v-cloak="" v-if="bundle">View product details</a>'
       node = Nokogiri::HTML.parse(node_html).css('a').first
-      link = Crawler::Data::Link.new(base_url: base_url, node: node)
+      link = Crawler::Data::Link.new(base_url:, node:)
       expect(link).to_not be_valid
       expect(link.error).to eq("Link has no href attribute: #{node_html}")
     end

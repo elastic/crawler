@@ -83,7 +83,7 @@ module Crawler
 
       {
         type: match&.fetch('type'),
-        value: value
+        value:
       }
     end
 

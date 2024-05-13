@@ -30,7 +30,7 @@ module Crawler
 
     def mock_404_result(url)
       Crawler::Data::CrawlResult::Error.new(
-        url: url,
+        url:,
         status_code: 404,
         error: 'Not found'
       )

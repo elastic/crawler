@@ -7,7 +7,7 @@
 # frozen_string_literal: true
 
 # load CLI dependencies
-Dir[File.join(__dir__, 'cli/**/*.rb')].sort.each { |f| require(f) }
+Dir[File.join(__dir__, 'cli/**/*.rb')].each { |f| require(f) }
 
 module Crawler
   module CLI

@@ -20,7 +20,7 @@ module Crawler
 
           super(
             error: error || 'Authenticated crawling of non-HTTPS URLs is not allowed',
-            suggestion_message: suggestion_message,
+            suggestion_message:,
             **kwargs
           )
         end

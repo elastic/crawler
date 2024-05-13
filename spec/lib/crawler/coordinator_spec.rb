@@ -17,9 +17,9 @@ RSpec.describe(Crawler::Coordinator) do
   let(:crawl_configuration) do
     {
       domain_allowlist: [domain],
-      seed_urls: seed_urls,
-      sitemap_urls: sitemap_urls,
-      results_collection: results_collection
+      seed_urls:,
+      sitemap_urls:,
+      results_collection:
     }
   end
 
@@ -43,13 +43,13 @@ RSpec.describe(Crawler::Coordinator) do
     double(
       :crawl,
       config: crawl_config,
-      events: events,
-      system_logger: system_logger,
-      rule_engine: rule_engine,
-      sink: sink,
+      events:,
+      system_logger:,
+      rule_engine:,
+      sink:,
       shutdown_started?: false,
-      crawl_queue: crawl_queue,
-      seen_urls: seen_urls,
+      crawl_queue:,
+      seen_urls:,
       allow_resume?: false
     )
   end
@@ -60,13 +60,13 @@ RSpec.describe(Crawler::Coordinator) do
     let(:url) { Crawler::Data::URL.parse('http://example.com') }
     let(:canonical_link) { nil }
     let(:links) { [] }
-    let(:crawl_task) { Crawler::Data::CrawlTask.new(url: url, depth: 1, type: :content) }
+    let(:crawl_task) { Crawler::Data::CrawlTask.new(url:, depth: 1, type: :content) }
     let(:meta_nofollow) { false }
     let(:crawl_result) do
       double(
         :crawl_result,
-        url: url,
-        canonical_link: canonical_link,
+        url:,
+        canonical_link:,
         extract_links: { links: Set.new(links), limit_reached: false },
         meta_nofollow?: meta_nofollow,
         error?: false,
@@ -248,7 +248,7 @@ RSpec.describe(Crawler::Coordinator) do
     def add_urls_to_backlog(urls, params = {})
       coordinator.send(
         :add_urls_to_backlog,
-        urls: urls,
+        urls:,
         type: :content,
         source_type: :organic,
         crawl_depth: 2,
@@ -291,7 +291,7 @@ RSpec.describe(Crawler::Coordinator) do
         url = Crawler::Data::URL.parse(seed_url).join('/hello')
         expect(events).to receive(:url_discover_denied).with(
           hash_including(
-            url: url,
+            url:,
             deny_reason: :too_many_unique_links
           )
         )
@@ -322,7 +322,7 @@ RSpec.describe(Crawler::Coordinator) do
 
     def add_url_to_backlog(params = {})
       params = {
-        url: url,
+        url:,
         type: :content,
         source_type: :organic,
         crawl_depth: 1,
@@ -334,7 +334,7 @@ RSpec.describe(Crawler::Coordinator) do
     context 'when the queue is not full' do
       it 'should record the url-seed event for the the URL' do
         expect(events).to receive(:url_seed).with(
-          url: url,
+          url:,
           source_url: nil,
           type: :content,
           crawl_depth: 1,
@@ -356,7 +356,7 @@ RSpec.describe(Crawler::Coordinator) do
 
       it 'should not blow up and record the event in the event log instead' do
         expect(events).to receive(:url_discover_denied).with(
-          url: url,
+          url:,
           source_url: nil,
           crawl_depth: 1,
           deny_reason: :queue_full
@@ -439,10 +439,10 @@ RSpec.describe(Crawler::Coordinator) do
     def check_discovered_url(url, type: nil, source_url: nil, crawl_depth: 1)
       coordinator.send(
         :check_discovered_url,
-        url: url,
-        type: type,
-        source_url: source_url,
-        crawl_depth: crawl_depth
+        url:,
+        type:,
+        source_url:,
+        crawl_depth:
       )
     end
 
@@ -453,7 +453,7 @@ RSpec.describe(Crawler::Coordinator) do
     def expect_denied_with_reason(url, reason)
       expect(events).to receive(:url_discover_denied).with(
         hash_including(
-          url: url,
+          url:,
           crawl_depth: 1,
           deny_reason: reason
         )
@@ -551,13 +551,13 @@ RSpec.describe(Crawler::Coordinator) do
 
     let(:crawl_result) do
       Crawler::Data::CrawlResult::HTML.new(
-        url: url,
+        url:,
         content: html
       )
     end
 
     def extract_links(crawl_result, crawl_depth: 1)
-      coordinator.send(:extract_links, crawl_result, crawl_depth: crawl_depth)
+      coordinator.send(:extract_links, crawl_result, crawl_depth:)
     end
 
     it 'should extract valid links' do

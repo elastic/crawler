@@ -68,7 +68,7 @@ module Crawler
         system_logger.debug("Sending bulk request with #{data.size} items and flushing queue...")
 
         begin
-          client.bulk(body: data, pipeline: pipeline) # TODO: parse response
+          client.bulk(body: data, pipeline:) # TODO: parse response
         rescue Utility::EsClient::IndexingFailedError => e
           system_logger.warn("Bulk index failed: #{e}")
         rescue StandardError => e

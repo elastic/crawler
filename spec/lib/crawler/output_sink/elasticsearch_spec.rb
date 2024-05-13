@@ -11,7 +11,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
   let(:config) do
     Crawler::API::Config.new(
       domain_allowlist: domains,
-      seed_urls: seed_urls,
+      seed_urls:,
       output_sink: 'elasticsearch',
       output_index: index_name,
       elasticsearch: {
@@ -63,7 +63,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       let(:config) do
         Crawler::API::Config.new(
           domain_allowlist: domains,
-          seed_urls: seed_urls,
+          seed_urls:,
           output_sink: 'elasticsearch'
         )
       end
@@ -77,7 +77,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       let(:config) do
         Crawler::API::Config.new(
           domain_allowlist: domains,
-          seed_urls: seed_urls,
+          seed_urls:,
           output_sink: 'elasticsearch',
           output_index: index_name
         )
@@ -108,7 +108,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       let(:config) do
         Crawler::API::Config.new(
           domain_allowlist: domains,
-          seed_urls: seed_urls,
+          seed_urls:,
           output_sink: 'elasticsearch',
           output_index: index_name,
           elasticsearch: {
@@ -132,7 +132,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       let(:config) do
         Crawler::API::Config.new(
           domain_allowlist: domains,
-          seed_urls: seed_urls,
+          seed_urls:,
           output_sink: 'elasticsearch',
           output_index: index_name,
           elasticsearch: {
@@ -166,7 +166,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       let(:config) do
         Crawler::API::Config.new(
           domain_allowlist: domains,
-          seed_urls: seed_urls,
+          seed_urls:,
           output_sink: 'elasticsearch',
           output_index: index_name,
           elasticsearch: {

@@ -146,8 +146,8 @@ module Crawler
         @outcome_message = message
 
         events.crawl_end(
-          outcome: outcome,
-          message: message,
+          outcome:,
+          message:,
           resume_possible: allow_resume?
         )
       end

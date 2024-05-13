@@ -66,7 +66,7 @@ module Crawler
 
               return Crawler::Data::CrawlResult::RedirectError.new(
                 url: crawl_task.url,
-                error: error
+                error:
               )
             end
 
@@ -93,7 +93,7 @@ module Crawler
           # fetch GET if it wasn't pre-emptively fetched earlier
           get_response = get_request(crawl_task) if get_response.nil?
           return generate_crawl_result(
-            crawl_task: crawl_task,
+            crawl_task:,
             response: get_response
           )
         end
@@ -111,11 +111,11 @@ module Crawler
         error: e.message
       )
     rescue Crawler::HttpUtils::ConnectTimeout => e
-      timeout_error(crawl_task: crawl_task, exception: e, error: 'connection_timeout')
+      timeout_error(crawl_task:, exception: e, error: 'connection_timeout')
     rescue Crawler::HttpUtils::SocketTimeout => e
-      timeout_error(crawl_task: crawl_task, exception: e, error: 'read_timeout')
+      timeout_error(crawl_task:, exception: e, error: 'read_timeout')
     rescue Crawler::HttpUtils::RequestTimeout => e
-      timeout_error(crawl_task: crawl_task, exception: e, error: e.message)
+      timeout_error(crawl_task:, exception: e, error: e.message)
     rescue Crawler::HttpUtils::SslException => e
       logger.error("SSL error while performing HTTP request: #{e.message}. #{e.suggestion_message}")
       Crawler::Data::CrawlResult::Error.new(
@@ -128,7 +128,7 @@ module Crawler
       logger.error(error)
       Crawler::Data::CrawlResult::Error.new(
         url: crawl_task.url,
-        error: error,
+        error:,
         suggestion_message: e.suggestion_message
       )
     end
@@ -152,7 +152,7 @@ module Crawler
         http_proxy_password: config.http_proxy_password,
         http_proxy_scheme: config.http_proxy_protocol,
         compression_enabled: config.compression_enabled,
-        logger: logger
+        logger:
       )
     end
 
@@ -224,21 +224,21 @@ module Crawler
       case response.mime_type
       when *SUPPORTED_MIME_TYPES[:html]
         generate_html_crawl_result(
-          crawl_task: crawl_task,
-          response: response,
-          response_body: response_body
+          crawl_task:,
+          response:,
+          response_body:
         )
       when *content_extractable_file_mime_types
         generate_content_extractable_file_crawl_result(
-          crawl_task: crawl_task,
-          response: response,
-          response_body: response_body
+          crawl_task:,
+          response:,
+          response_body:
         )
       when *SUPPORTED_MIME_TYPES[:xml]
         generate_xml_sitemap_crawl_result(
-          crawl_task: crawl_task,
-          response: response,
-          response_body: response_body
+          crawl_task:,
+          response:,
+          response_body:
         )
       else
         Crawler::Data::CrawlResult::UnsupportedContentType.new(**result_args)
@@ -253,7 +253,7 @@ module Crawler
       Crawler::Data::CrawlResult::UnsupportedContentType.new(
         url: crawl_task.url,
         status_code: response.code,
-        content_type: content_type,
+        content_type:,
         error: "Unexpected content type #{content_type} for a crawl task with type=#{crawl_task.type}"
       )
     end
@@ -263,7 +263,7 @@ module Crawler
       logger.error("Failed HTTP request with a timeout: #{exception.inspect}")
       Crawler::Data::CrawlResult::Error.new(
         url: crawl_task.url,
-        error: error
+        error:
       )
     end
 
@@ -280,8 +280,8 @@ module Crawler
         )
       else
         generate_unexpected_type_crawl_result(
-          crawl_task: crawl_task,
-          response: response
+          crawl_task:,
+          response:
         )
       end
     end
@@ -299,8 +299,8 @@ module Crawler
         )
       else
         generate_unexpected_type_crawl_result(
-          crawl_task: crawl_task,
-          response: response
+          crawl_task:,
+          response:
         )
       end
     end
@@ -308,8 +308,8 @@ module Crawler
     #-------------------------------------------------------------------------------------------------
     def generate_content_extractable_file_crawl_result(crawl_task:, response:, response_body:)
       if SUPPORTED_MIME_TYPES[:xml].include?(response.mime_type) && crawl_task.sitemap?
-        generate_xml_sitemap_crawl_result(crawl_task: crawl_task, response: response,
-                                          response_body: response_body)
+        generate_xml_sitemap_crawl_result(crawl_task:, response:,
+                                          response_body:)
       elsif crawl_task.content?
         Crawler::Data::CrawlResult::ContentExtractableFile.new(
           url: crawl_task.url,
@@ -321,8 +321,8 @@ module Crawler
         )
       else
         generate_unexpected_type_crawl_result(
-          crawl_task: crawl_task,
-          response: response
+          crawl_task:,
+          response:
         )
       end
     end

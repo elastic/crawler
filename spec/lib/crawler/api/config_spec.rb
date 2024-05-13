@@ -25,7 +25,7 @@ RSpec.describe(Crawler::API::Config) do
     it 'should use the console sink by default' do
       config = Crawler::API::Config.new(
         domain_allowlist: domains,
-        seed_urls: seed_urls
+        seed_urls:
       )
       expect(config.output_sink).to eq(:console)
     end
@@ -34,7 +34,7 @@ RSpec.describe(Crawler::API::Config) do
     it 'can define a crawl with console output' do
       config = Crawler::API::Config.new(
         domain_allowlist: domains,
-        seed_urls: seed_urls,
+        seed_urls:,
         output_sink: :console
       )
 
@@ -48,9 +48,9 @@ RSpec.describe(Crawler::API::Config) do
     it 'can define a crawl with file output' do
       config = Crawler::API::Config.new(
         domain_allowlist: domains,
-        seed_urls: seed_urls,
+        seed_urls:,
         output_sink: :file,
-        output_dir: output_dir
+        output_dir:
       )
 
       expect(config.domain_allowlist.map(&:to_s)).to eq(normalized_domains)

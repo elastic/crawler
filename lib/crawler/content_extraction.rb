@@ -10,7 +10,7 @@ module Crawler
   module ContentExtraction
     INCLUDE_ATTR = 'data-elastic-include'
     EXCLUDE_ATTR = 'data-elastic-exclude'
-    EXCLUDE_ATTR_SELECTOR = "[#{EXCLUDE_ATTR}]"
+    EXCLUDE_ATTR_SELECTOR = "[#{EXCLUDE_ATTR}]".freeze
 
     def self.transform(doc)
       transform!(doc.dup)

@@ -18,7 +18,7 @@ RSpec.describe(Crawler::OutputSink::File) do
     it 'should require an output directory' do
       config = Crawler::API::Config.new(
         domain_allowlist: domains,
-        seed_urls: seed_urls,
+        seed_urls:,
         output_sink: 'file'
       )
 
@@ -29,7 +29,7 @@ RSpec.describe(Crawler::OutputSink::File) do
       dir = '/some/directory'
       config = Crawler::API::Config.new(
         domain_allowlist: domains,
-        seed_urls: seed_urls,
+        seed_urls:,
         output_sink: 'file',
         output_dir: dir
       )

@@ -12,7 +12,7 @@ RSpec.describe(Crawler::EventGenerator) do
   let(:config) do
     Crawler::API::Config.new(
       domain_allowlist: domains,
-      seed_urls: seed_urls
+      seed_urls:
     )
   end
 
@@ -96,13 +96,13 @@ RSpec.describe(Crawler::EventGenerator) do
 
     it 'should write helpful message to system logger' do
       events.url_output(
-        url: url,
-        sink_name: sink_name,
-        outcome: outcome,
+        url:,
+        sink_name:,
+        outcome:,
         start_time: Time.now,
         end_time: Time.now,
         duration: 0,
-        message: message
+        message:
       )
 
       expect(system_logger_io.string).to match(/INFO -- : #{Regexp.escape(expected_message)}/)
@@ -113,13 +113,13 @@ RSpec.describe(Crawler::EventGenerator) do
 
       it 'should write helpful message to system logger with WARN severity' do
         events.url_output(
-          url: url,
-          sink_name: sink_name,
-          outcome: outcome,
+          url:,
+          sink_name:,
+          outcome:,
           start_time: Time.now,
           end_time: Time.now,
           duration: 0,
-          message: message
+          message:
         )
 
         expect(system_logger_io.string).to match(/WARN -- : #{Regexp.escape(expected_message)}/)

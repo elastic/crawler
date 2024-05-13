@@ -63,7 +63,7 @@ module Crawler
 
           parsed_content.css('a[href]').each do |a|
             # Parse the link
-            link = Link.new(base_url: base_url, node: a)
+            link = Link.new(base_url:, node: a)
 
             # Optionally skip invalid links
             next if skip_invalid && !link.valid?
@@ -76,13 +76,13 @@ module Crawler
             end
           end
 
-          { links: links, limit_reached: limit_reached }
+          { links:, limit_reached: }
         end
 
         # Returns an array of links extracted from the page, up to a specified limit of items
         def links(limit: 10)
           # Get a set of valid links
-          result = extract_links(limit: limit, skip_invalid: true)
+          result = extract_links(limit:, skip_invalid: true)
           links = result.fetch(:links)
 
           # Convert them to an array of strings with a predictable order

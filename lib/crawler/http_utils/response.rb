@@ -47,8 +47,8 @@ module Crawler
         return unless http_entity.content
 
         content_bytes = consume_http_entity(
-          max_response_size: max_response_size,
-          request_timeout: request_timeout
+          max_response_size:,
+          request_timeout:
         )
 
         encoding = detect_encoding_from_content_charset || default_encoding

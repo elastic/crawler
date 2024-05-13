@@ -43,7 +43,7 @@ module Crawler
       #-----------------------------------------------------------------------------------------------
       # Returns a hash with the outcome of crawl result ingestion (to be used for logging above)
       def outcome(outcome, message)
-        { outcome: outcome, message: message }
+        { outcome:, message: }
       end
 
       def success(message = 'Successfully ingested crawl result')

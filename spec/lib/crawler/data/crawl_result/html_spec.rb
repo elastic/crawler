@@ -11,7 +11,7 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
 
   let(:crawl_result) do
     described_class.new(
-      url: url,
+      url:,
       content: html
     )
   end

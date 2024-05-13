@@ -85,7 +85,7 @@ RSpec.describe(Crawler::API::Crawl) do
     before do
       subject.start_shutdown!(
         reason: 'testing',
-        allow_resume: allow_resume
+        allow_resume:
       )
     end
 
@@ -132,7 +132,7 @@ RSpec.describe(Crawler::API::Crawl) do
   context 'when resuming a crawl' do
     let(:url) { Crawler::Data::URL.parse('http://example.com') }
     let(:crawl_task) do
-      Crawler::Data::CrawlTask.new(url: url, depth: 1, type: :content)
+      Crawler::Data::CrawlTask.new(url:, depth: 1, type: :content)
     end
 
     before do

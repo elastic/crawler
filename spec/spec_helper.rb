@@ -37,7 +37,7 @@ require 'crawler'
 require_relative '../lib/crawler/cli'
 
 # Require helper files
-Dir["#{__dir__}/support/**/*.rb"].sort.each { |f| require f }
+Dir["#{__dir__}/support/**/*.rb"].each { |f| require f }
 
 # Make it easier to use pry from specs, load it beforehand
 require 'pry'
