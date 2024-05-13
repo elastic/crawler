@@ -47,6 +47,8 @@ group :default do
   # no system-level TZ data info and the app blows up when trying to use timezone information
   # See https://github.com/tzinfo/tzinfo/wiki/Resolving-TZInfo::DataSourceNotFound-Errors for details
   gem 'tzinfo-data'
+
+  gem 'dry-cli'
 end
 
 group :development do

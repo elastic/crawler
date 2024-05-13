@@ -34,6 +34,8 @@ require_relative '../lib/environment'
 # Load the crawler itself
 require 'crawler'
 
+require_relative '../lib/crawler/cli'
+
 # Require helper files
 Dir["#{__dir__}/support/**/*.rb"].sort.each { |f| require f }
 
