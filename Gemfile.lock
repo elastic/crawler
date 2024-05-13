@@ -52,8 +52,10 @@ GEM
       concurrent-ruby (~> 1.0)
     ipaddr (1.2.6)
     jar-dependencies (0.4.1)
+    json (2.7.2-java)
     json-schema (4.3.0)
       addressable (>= 2.8)
+    language_server-protocol (3.17.0.3)
     method_source (1.1.0)
     minitest (5.22.3)
     multi_json (1.15.0)
@@ -94,17 +96,19 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.13.0)
     rspec-support (3.13.1)
-    rubocop (1.18.4)
+    rubocop (1.63.4)
+      json (~> 2.3)
+      language_server-protocol (>= 3.17.0)
       parallel (~> 1.10)
-      parser (>= 3.0.0.0)
+      parser (>= 3.3.0.2)
       rainbow (>= 2.2.2, < 4.0)
       regexp_parser (>= 1.8, < 3.0)
-      rexml
-      rubocop-ast (>= 1.8.0, < 2.0)
+      rexml (>= 3.2.5, < 4.0)
+      rubocop-ast (>= 1.31.1, < 2.0)
       ruby-progressbar (~> 1.7)
-      unicode-display_width (>= 1.4.0, < 3.0)
-    rubocop-ast (1.30.0)
-      parser (>= 3.2.1.0)
+      unicode-display_width (>= 2.4.0, < 3.0)
+    rubocop-ast (1.31.3)
+      parser (>= 3.3.1.0)
     rubocop-performance (1.11.5)
       rubocop (>= 1.7.0, < 2.0)
       rubocop-ast (>= 0.4.0)
@@ -134,17 +138,17 @@ GEM
       addressable (>= 2.8.0)
       crack (>= 0.3.2)
       hashdiff (>= 0.4.0, < 2.0.0)
+    webrick (1.8.1)
     zeitwerk (2.6.13)
 
 PLATFORMS
-  universal-java-11
-  universal-java-17
+  universal-java-21
 
 DEPENDENCIES
   activesupport (= 6.1.7.7)
   addressable (>= 2.8.0)
   bson (~> 4.2.2)
-  bundler (~> 2.2.29)
+  bundler (~> 2.3.26)
   concurrent-ruby (~> 1.1.4)
   dry-cli
   elasticsearch (~> 8.13.0)
@@ -160,7 +164,7 @@ DEPENDENCIES
   pry-remote
   rack (~> 2.2.8.1)
   rspec (~> 3.13.0)
-  rubocop (= 1.18.4)
+  rubocop (~> 1.63)
   rubocop-performance (= 1.11.5)
   ruby-debug-base (= 0.11.0)
   ruby-debug-ide
@@ -169,6 +173,7 @@ DEPENDENCIES
   thread_safe (= 0.3.6)
   tzinfo-data
   webmock
+  webrick (~> 1.8.1)
 
 BUNDLED WITH
-   2.2.34
+   2.3.26

@@ -197,7 +197,7 @@ module Crawler
     def url_discover_denied(args)
       raise ArgumentError, 'Need a deny reason' unless args.include?(:deny_reason)
 
-      url_discover(args.merge(type: :denied))
+      url_discover(**args.merge(type: :denied))
     end
 
     #-----------------------------------------------------------------------------------------------

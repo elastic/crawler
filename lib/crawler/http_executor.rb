@@ -190,7 +190,7 @@ module Crawler
       # - we have to track the redirect chain to handle infinite redirects correctly
       if response.redirect?
         return Crawler::Data::CrawlResult::Redirect.new(
-          result_args.merge(
+          **result_args.merge(
             location: response.redirect_location,
             redirect_chain: crawl_task.redirect_chain
           )
@@ -202,7 +202,7 @@ module Crawler
       # - Capture the HTTP status line reason phrase as the error message
       if response.error?
         return Crawler::Data::CrawlResult::Error.new(
-          result_args.merge(error: response.reason_phrase)
+          **result_args.merge(error: response.reason_phrase)
         )
       end
 
@@ -216,7 +216,7 @@ module Crawler
       # Special responses for robots.txt tasks (no matter the content type)
       if crawl_task.robots_txt?
         return Crawler::Data::CrawlResult::RobotsTxt.new(
-          result_args.merge(content: response_body)
+          **result_args.merge(content: response_body)
         )
       end
 
@@ -241,7 +241,7 @@ module Crawler
           response_body: response_body
         )
       else
-        Crawler::Data::CrawlResult::UnsupportedContentType.new(result_args)
+        Crawler::Data::CrawlResult::UnsupportedContentType.new(**result_args)
       end
     ensure
       response.release_connection

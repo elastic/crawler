@@ -6,7 +6,9 @@
 
 # frozen_string_literal: true
 
-class MockResponse < OpenStruct
+require 'ostruct'
+
+class MockResponse < OpenStruct # rubocop:disable Style/OpenStructUse
   def equal_for_specified_keys?(response)
     to_h.all? do |key, val|
       val.to_s == response.send(key).to_s

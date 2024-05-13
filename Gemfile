@@ -33,6 +33,7 @@ group :default do
   gem 'json-schema'
   gem 'activesupport', '= 6.1.7.7'
   gem 'jar-dependencies', '0.4.1'
+  gem 'webrick', '~> 1.8.1'
 
   # override ipaddr 1.2.2 that comes from jruby-jars 9.3.3.0
   # issue https://github.com/elastic/enterprise-search-team/issues/2137
@@ -51,7 +52,7 @@ group :default do
 end
 
 group :development do
-  gem 'rubocop', '1.18.4'
+  gem 'rubocop', '~> 1.63'
   gem 'rubocop-performance', '1.11.5'
   gem 'ruby-debug-ide'
   gem 'ruby-debug-base', '0.11.0', platform: :jruby

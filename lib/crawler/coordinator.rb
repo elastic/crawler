@@ -324,7 +324,7 @@ module Crawler
       end
 
       # Content extraction complete, log an event about it
-      events.url_extracted(extracted_event)
+      events.url_extracted(**extracted_event)
     end
 
     #-----------------------------------------------------------------------------------------------
@@ -335,7 +335,8 @@ module Crawler
       crawl_task_progress(crawl_task, 'extracting links')
       return enqueue_redirect_link(crawl_task, crawl_result) if crawl_result.redirect?
       return extract_and_enqueue_html_links(crawl_task, crawl_result) if crawl_result.html?
-      return extract_and_enqueue_sitemap_links(crawl_task, crawl_result) if crawl_result.sitemap?
+
+      extract_and_enqueue_sitemap_links(crawl_task, crawl_result) if crawl_result.sitemap?
     end
 
     #-----------------------------------------------------------------------------------------------
@@ -562,28 +563,28 @@ module Crawler
       # Make sure it is an HTTP(S) link
       # FIXME: Feels like this should be a rules engine rule (which protocols to allow)
       unless url.supported_scheme?
-        events.url_discover_denied(discover_event.merge(deny_reason: :incorrect_protocol))
+        events.url_discover_denied(**discover_event.merge(deny_reason: :incorrect_protocol))
         return :deny
       end
 
       # Check URL length
       # FIXME: Feels like this should be a rules engine rule
       if url.request_uri.length > config.max_url_length
-        events.url_discover_denied(discover_event.merge(deny_reason: :link_too_long))
+        events.url_discover_denied(**discover_event.merge(deny_reason: :link_too_long))
         return :deny
       end
 
       # Check URL segments limit
       # FIXME: Feels like this should be a rules engine rule
       if url.path_segments_count > config.max_url_segments
-        events.url_discover_denied(discover_event.merge(deny_reason: :link_with_too_many_segments))
+        events.url_discover_denied(**discover_event.merge(deny_reason: :link_with_too_many_segments))
         return :deny
       end
 
       # Check URL query parameters limit
       # FIXME: Feels like this should be a rules engine rule
       if url.params_count > config.max_url_params
-        events.url_discover_denied(discover_event.merge(deny_reason: :link_with_too_many_params))
+        events.url_discover_denied(**discover_event.merge(deny_reason: :link_with_too_many_params))
         return :deny
       end
 
@@ -596,7 +597,7 @@ module Crawler
       discover_url_outcome = rule_engine.discover_url_outcome(url) unless type == :sitemap
       if discover_url_outcome&.denied?
         events.url_discover_denied(
-          discover_event.merge(
+          **discover_event.merge(
             deny_reason: discover_url_outcome.deny_reason,
             message: discover_url_outcome.message
           )
@@ -606,13 +607,13 @@ module Crawler
 
       # Check if we went deep enough and should stop here
       if crawl_depth > config.max_crawl_depth
-        events.url_discover_denied(discover_event.merge(deny_reason: :link_too_deep))
+        events.url_discover_denied(**discover_event.merge(deny_reason: :link_too_deep))
         return :deny
       end
 
       # Check if we have reached the limit on the number of unique URLs we have seen
       if seen_urls.count >= config.max_unique_url_count
-        events.url_discover_denied(discover_event.merge(deny_reason: :too_many_unique_links))
+        events.url_discover_denied(**discover_event.merge(deny_reason: :too_many_unique_links))
         return :deny
       end
 
@@ -620,12 +621,12 @@ module Crawler
       # Warning: This should be the last check since it adds the URL to the seen_urls and
       #          we don't want to add a URL as seen if we could deny it afterwards
       unless seen_urls.add?(url)
-        events.url_discover_denied(discover_event.merge(deny_reason: :already_seen))
+        events.url_discover_denied(**discover_event.merge(deny_reason: :already_seen))
         return :deny
       end
 
       # Finally, if the URL is considered OK to crawl, record it as allowed
-      events.url_discover(discover_event.merge(type: :allowed))
+      events.url_discover(**discover_event.merge(type: :allowed))
 
       :allow
     end

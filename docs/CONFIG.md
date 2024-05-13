@@ -37,13 +37,13 @@ The order of the opts is not important.
 When performing a crawl with only a crawl config:
 
 ```shell
-$ ./bin/crawl --crawl-config config/my-crawler.yml
+$ bin/crawl --crawl-config config/my-crawler.yml
 ```
 
 When performing a crawl with only both a crawl config and an Elasticsearch config:
 
 ```shell
-$ ./bin/crawl --crawl-config config/my-crawler.yml --es-config config/elasticsearch.yml
+$ bin/crawl --crawl-config config/my-crawler.yml --es-config config/elasticsearch.yml
 ```
 
 ## Example configurations

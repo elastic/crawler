@@ -248,12 +248,11 @@ RSpec.describe(Crawler::Coordinator) do
     def add_urls_to_backlog(urls, params = {})
       coordinator.send(
         :add_urls_to_backlog,
-        {
-          urls: urls,
-          type: :content,
-          source_type: :organic,
-          crawl_depth: 2
-        }.merge(params)
+        urls: urls,
+        type: :content,
+        source_type: :organic,
+        crawl_depth: 2,
+        **params
       )
     end
 
@@ -329,7 +328,7 @@ RSpec.describe(Crawler::Coordinator) do
         crawl_depth: 1,
         source_url: nil
       }.merge(params)
-      coordinator.send(:add_url_to_backlog, params)
+      coordinator.send(:add_url_to_backlog, **params)
     end
 
     context 'when the queue is not full' do

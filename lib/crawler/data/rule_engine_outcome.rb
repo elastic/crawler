@@ -37,10 +37,10 @@ module Crawler
           )
         end
 
-        def domain_filter_denied(domains:)
+        def domain_filter_denied(allow_list)
           DeniedOutcome.new(
             :domain_filter_denied,
-            message: "Does not match allowed domains: #{domains.join(', ')}"
+            message: "Does not match allowed domains: #{allow_list[:domains].join(', ')}"
           )
         end
 
