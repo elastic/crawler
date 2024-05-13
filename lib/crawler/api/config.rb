@@ -296,12 +296,12 @@ module Crawler
 
       #---------------------------------------------------------------------------------------------
       def configure_robots_txt_service!
-        @robots_txt_service ||= Crawler::RobotsTxtService.new(user_agent: user_agent) # rubocop:disable Naming/MemoizedInstanceVariableName
+        @robots_txt_service ||= Crawler::RobotsTxtService.new(user_agent:) # rubocop:disable Naming/MemoizedInstanceVariableName
       end
 
       #---------------------------------------------------------------------------------------------
       def configure_http_header_service!
-        @http_header_service ||= Crawler::HttpHeaderService.new(auth: auth) # rubocop:disable Naming/MemoizedInstanceVariableName
+        @http_header_service ||= Crawler::HttpHeaderService.new(auth:) # rubocop:disable Naming/MemoizedInstanceVariableName
       end
 
       #---------------------------------------------------------------------------------------------

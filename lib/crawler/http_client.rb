@@ -97,8 +97,8 @@ module Crawler
       end_time = Time.now
 
       Crawler::HttpUtils::Response.new(
-        apache_response: apache_response,
-        url: url,
+        apache_response:,
+        url:,
         request_start_time: start_time,
         request_end_time: end_time
       )
@@ -134,8 +134,8 @@ module Crawler
       end_time = Time.now
 
       Crawler::HttpUtils::Response.new(
-        apache_response: apache_response,
-        url: url,
+        apache_response:,
+        url:,
         request_start_time: start_time,
         request_end_time: end_time
       )
@@ -290,7 +290,7 @@ module Crawler
       Crawler::HttpUtils::FilteringDnsResolver.new(
         loopback_allowed: config.loopback_allowed?,
         private_networks_allowed: config.private_networks_allowed?,
-        logger: logger
+        logger:
       )
     end
 

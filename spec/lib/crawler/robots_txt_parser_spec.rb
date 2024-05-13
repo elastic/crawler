@@ -14,7 +14,7 @@ RSpec.describe(Crawler::RobotsTxtParser) do
     Allow: /
     TXT
   end
-  let(:robot_parser) { described_class.new(robots_text, base_url: base_url) }
+  let(:robot_parser) { described_class.new(robots_text, base_url:) }
 
   context '#sitemaps' do
     context 'when robots.txt points to absolute URL sitemap' do
@@ -131,7 +131,7 @@ RSpec.describe(Crawler::RobotsTxtParser) do
   end
 
   context 'failure: 4xx' do
-    let(:robot_parser) { described_class::Failure.new(base_url: base_url, status_code: 404) }
+    let(:robot_parser) { described_class::Failure.new(base_url:, status_code: 404) }
 
     describe '#sitemaps' do
       it 'returns empty array' do
@@ -148,7 +148,7 @@ RSpec.describe(Crawler::RobotsTxtParser) do
   end
 
   context 'failure: 5xx' do
-    let(:robot_parser) { described_class::Failure.new(base_url: base_url, status_code: 500) }
+    let(:robot_parser) { described_class::Failure.new(base_url:, status_code: 500) }
 
     describe '#sitemaps' do
       it 'returns empty array' do

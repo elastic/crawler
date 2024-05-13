@@ -21,9 +21,9 @@ module Utility
       attr_reader :cause
     end
 
-    def initialize(es_config, system_logger, crawler_version, &block)
+    def initialize(es_config, system_logger, crawler_version, &)
       @system_logger = system_logger
-      super(connection_configs(es_config, crawler_version), &block)
+      super(connection_configs(es_config, crawler_version), &)
     end
 
     def connection_configs(es_config, crawler_version) # rubocop:disable Metrics/MethodLength

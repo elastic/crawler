@@ -19,7 +19,7 @@ module Crawler
           MSG
 
           super(
-            content_type: content_type,
+            content_type:,
             error: error || "Unsupported content type: #{content_type}",
             suggestion_message: suggestion,
             **kwargs

@@ -12,7 +12,7 @@
 #
 skip = ENV['BAD_SSL'] ? false : 'Set BAD_SSL=1 to run SSL tests!'
 
-RSpec.describe(Crawler::HttpUtils, 'vs bad SSL:', skip: skip) do
+RSpec.describe(Crawler::HttpUtils, 'vs bad SSL:', skip:) do
   let(:client_config) do
     {
       loopback_allowed: false,

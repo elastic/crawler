@@ -12,12 +12,12 @@ module Crawler
   module Data
     module CrawlResult
       class Redirect < Base
-        VALID_STATUS_CODES = (300..399).freeze
+        VALID_STATUS_CODES = (300..399)
 
         attr_reader :redirect_chain, :location
 
         def initialize(status_code:, location:, redirect_chain:, **kwargs)
-          super(status_code: status_code, **kwargs)
+          super(status_code:, **kwargs)
 
           unless status_code.in?(VALID_STATUS_CODES)
             error = "Redirects have to have a 3xx response code, received #{status_code.inspect}"
@@ -36,8 +36,8 @@ module Crawler
         #---------------------------------------------------------------------------------------------
         def to_h
           super.merge(
-            location: location,
-            redirect_chain: redirect_chain
+            location:,
+            redirect_chain:
           )
         end
 

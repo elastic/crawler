@@ -14,7 +14,7 @@ RSpec.describe(Crawler::OutputSink) do
     it 'should validate the sync name' do
       config = Crawler::API::Config.new(
         domain_allowlist: domains,
-        seed_urls: seed_urls,
+        seed_urls:,
         output_sink: 'magnetic-tape'
       )
 
@@ -26,7 +26,7 @@ RSpec.describe(Crawler::OutputSink) do
     it 'should return a new sink object of a correct type' do
       config = Crawler::API::Config.new(
         domain_allowlist: domains,
-        seed_urls: seed_urls,
+        seed_urls:,
         output_sink: 'console'
       )
 

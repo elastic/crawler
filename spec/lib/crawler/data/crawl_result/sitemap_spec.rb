@@ -11,8 +11,8 @@ RSpec.describe(Crawler::Data::CrawlResult::Sitemap) do
   let(:status_code) { 200 }
   let(:crawl_result) do
     Crawler::Data::CrawlResult::Sitemap.new(
-      url: url,
-      status_code: status_code,
+      url:,
+      status_code:,
       content: sitemap_content
     )
   end

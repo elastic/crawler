@@ -281,8 +281,8 @@ module Crawler
     # Fetches a URL and logs info about the HTTP request/response.
     def execute_task(crawl_task, follow_redirects: false)
       crawl_task_progress(crawl_task, 'HTTP execution')
-      executor.run(crawl_task, follow_redirects: follow_redirects).tap do |crawl_result|
-        events.url_fetch(url: crawl_task.url, crawl_result: crawl_result, auth_type: crawl_task.auth_type)
+      executor.run(crawl_task, follow_redirects:).tap do |crawl_result|
+        events.url_fetch(url: crawl_task.url, crawl_result:, auth_type: crawl_task.auth_type)
       end
     end
 
@@ -304,9 +304,9 @@ module Crawler
       extracted_event = {
         url: crawl_result.url,
         type: :allowed,
-        start_time: start_time,
-        end_time: end_time,
-        duration: duration,
+        start_time:,
+        end_time:,
+        duration:,
         outcome: :success
       }
 
@@ -433,7 +433,7 @@ module Crawler
             events.url_discover_denied(
               url: link.to_url,
               source_url: crawl_result.url,
-              crawl_depth: crawl_depth,
+              crawl_depth:,
               deny_reason: :nofollow
             )
             next
@@ -488,10 +488,10 @@ module Crawler
 
         # Skip unless this URL is allowed
         discover_outcome = check_discovered_url(
-          url: url,
-          type: type,
-          source_url: source_url,
-          crawl_depth: crawl_depth
+          url:,
+          type:,
+          source_url:,
+          crawl_depth:
         )
         next unless discover_outcome == :allow
 
@@ -499,12 +499,12 @@ module Crawler
         added_urls_count += 1
 
         add_url_to_backlog(
-          url: url,
-          type: type,
-          source_type: source_type,
-          crawl_depth: crawl_depth,
-          source_url: source_url,
-          redirect_chain: redirect_chain
+          url:,
+          type:,
+          source_type:,
+          crawl_depth:,
+          source_url:,
+          redirect_chain:
         )
       end
 
@@ -521,19 +521,19 @@ module Crawler
     def add_url_to_backlog(url:, type:, source_type:, crawl_depth:, source_url:, redirect_chain: []) # rubocop:disable Metrics/ParameterLists
       crawl_queue.push(
         Crawler::Data::CrawlTask.new(
-          url: url,
-          type: type,
+          url:,
+          type:,
           depth: crawl_depth,
-          redirect_chain: redirect_chain
+          redirect_chain:
         )
       )
 
       events.url_seed(
-        url: url,
-        source_url: source_url,
-        type: type,
-        source_type: source_type,
-        crawl_depth: crawl_depth
+        url:,
+        source_url:,
+        type:,
+        source_type:,
+        crawl_depth:
       )
     rescue Crawler::Data::UrlQueue::TransientError => e
       # We couldn't visit the URL, so let's remove it from the seen URLs list
@@ -543,9 +543,9 @@ module Crawler
       # The queue itself will log about its state on the warning log level
       system_logger.debug("Failed to add a crawler task into the processing queue: #{e}")
       events.url_discover_denied(
-        url: url,
-        source_url: source_url,
-        crawl_depth: crawl_depth,
+        url:,
+        source_url:,
+        crawl_depth:,
         deny_reason: :queue_full
       )
     end
@@ -555,9 +555,9 @@ module Crawler
     # FIXME: Feels like we need a generic way of encoding URL decisions, probably in the rules engine
     def check_discovered_url(url:, type:, source_url:, crawl_depth:) # rubocop:disable Metrics/PerceivedComplexity
       discover_event = {
-        url: url,
-        source_url: source_url,
-        crawl_depth: crawl_depth
+        url:,
+        source_url:,
+        crawl_depth:
       }
 
       # Make sure it is an HTTP(S) link

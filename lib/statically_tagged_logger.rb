@@ -33,9 +33,9 @@ class StaticallyTaggedLogger
 
   #-------------------------------------------------------------------------------------------------
   # Proxy all calls to the parent object, behaving like a proxy
-  def method_missing(meth, *args, &block)
+  def method_missing(meth, ...)
     parent_logger.tagged(*tags) do
-      parent_logger.public_send(meth, *args, &block)
+      parent_logger.public_send(meth, ...)
     end
   end
 

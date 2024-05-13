@@ -16,7 +16,7 @@ RSpec.describe(Crawler::HttpExecutor) do
   let(:executor_config) do
     double(
       :executor_config,
-      system_logger: system_logger,
+      system_logger:,
       user_agent: 'Elastic-Crawler (1.0.0)',
       loopback_allowed: false,
       private_networks_allowed: false,

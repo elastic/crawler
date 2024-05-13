@@ -30,7 +30,7 @@ module Crawler
     def register_crawl_result(domain, crawl_result)
       store[domain.to_s] =
         if crawl_result.status_code < 300
-          Crawler::RobotsTxtParser.new(crawl_result.content, base_url: domain.to_s, user_agent: user_agent)
+          Crawler::RobotsTxtParser.new(crawl_result.content, base_url: domain.to_s, user_agent:)
         else
           Crawler::RobotsTxtParser::Failure.new(base_url: domain.to_s, status_code: crawl_result.status_code)
         end

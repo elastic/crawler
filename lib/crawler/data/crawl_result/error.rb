@@ -18,7 +18,7 @@ module Crawler
         attr_reader :error, :suggestion_message
 
         def initialize(error:, status_code: FATAL_ERROR_STATUS, suggestion_message: nil, **kwargs)
-          super(status_code: status_code, **kwargs)
+          super(status_code:, **kwargs)
           @error = error
           @suggestion_message = suggestion_message
         end
@@ -28,7 +28,7 @@ module Crawler
 
         #---------------------------------------------------------------------------------------------
         def to_h
-          super.merge(error: error)
+          super.merge(error:)
         end
 
         def to_s

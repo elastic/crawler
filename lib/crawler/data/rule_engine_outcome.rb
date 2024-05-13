@@ -45,21 +45,21 @@ module Crawler
         end
 
         def robots_txt_disallowed(message)
-          DeniedOutcome.new(:robots_txt_disallowed, message: message)
+          DeniedOutcome.new(:robots_txt_disallowed, message:)
         end
 
         def crawl_rule_denied(rule)
           DeniedOutcome.new(
             :rule_engine_denied,
             message: "Denied by crawl rule: #{rule.source}",
-            details: { rule: rule }
+            details: { rule: }
           )
         end
 
         def crawl_rule_allowed(rule)
           AllowedOutcome.new(
             message: "Allowed by crawl rule: #{rule.source}",
-            details: { rule: rule }
+            details: { rule: }
           )
         end
 

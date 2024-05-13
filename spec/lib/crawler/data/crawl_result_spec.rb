@@ -10,7 +10,7 @@ RSpec.describe(Crawler::Data::CrawlResult) do
   let(:url) { Crawler::Data::URL.parse('https://example.com/') }
   let(:html_crawl_result) do
     Crawler::Data::CrawlResult::HTML.new(
-      url: url,
+      url:,
       content: html
     )
   end
@@ -34,14 +34,14 @@ RSpec.describe(Crawler::Data::CrawlResult) do
   let(:error) { 'Something is wrong!' }
   let(:error_crawl_result) do
     Crawler::Data::CrawlResult::Error.new(
-      url: url,
-      error: error
+      url:,
+      error:
     )
   end
 
   let(:unsupported_content_type_crawl_result) do
     Crawler::Data::CrawlResult::UnsupportedContentType.new(
-      url: url,
+      url:,
       status_code: 200,
       content_type: 'audio/midi'
     )

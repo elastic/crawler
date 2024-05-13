@@ -13,7 +13,7 @@ RSpec.describe(Crawler::Data::UrlQueue::MemoryOnly) do
   let(:config) do
     Crawler::API::Config.new(
       domain_allowlist: domains,
-      seed_urls: seed_urls,
+      seed_urls:,
       url_queue: :memory_only
     )
   end

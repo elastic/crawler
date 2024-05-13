@@ -10,7 +10,7 @@ RSpec.describe(Crawler::RuleEngine::Base) do
   let(:domains) { ['http://example.com'] }
   let(:seed_urls) { ['http://example.com/'] }
   let(:config) do
-    Crawler::API::Config.new(domain_allowlist: domains, seed_urls: seed_urls,
+    Crawler::API::Config.new(domain_allowlist: domains, seed_urls:,
                              robots_txt_service: Crawler::RobotsTxtService.always_allow)
   end
   subject(:rule_engine) { described_class.new(config) }
@@ -36,7 +36,7 @@ RSpec.describe(Crawler::RuleEngine::Base) do
     context 'robots.txt' do
       let(:domain) { Crawler::Data::Domain.new('http://example.com') }
       let(:config) do
-        Crawler::API::Config.new(domain_allowlist: [domain.to_s], seed_urls: seed_urls,
+        Crawler::API::Config.new(domain_allowlist: [domain.to_s], seed_urls:,
                                  robots_txt_service: @robots_txt_service)
       end
 
@@ -100,7 +100,7 @@ RSpec.describe(Crawler::RuleEngine::Base) do
     context 'noindex meta tag' do
       let(:mock_crawl_result) do
         Crawler::Data::CrawlResult::HTML.new(
-          url: url,
+          url:,
           content: '<html><head><meta name="robots" content="noindex"></head><body><a href="http://example.com/link"></a></body></html>'
         )
       end
@@ -113,7 +113,7 @@ RSpec.describe(Crawler::RuleEngine::Base) do
     context 'noindex and nofollow meta tag' do
       let(:mock_crawl_result) do
         Crawler::Data::CrawlResult::HTML.new(
-          url: url,
+          url:,
           content: '<html><head><meta name="robots" content="noindex, nofollow"></head><body><a href="http://example.com/link"></a></body></html>'
         )
       end
@@ -126,7 +126,7 @@ RSpec.describe(Crawler::RuleEngine::Base) do
     context 'for a fatal error response' do
       let(:mock_crawl_result) do
         Crawler::Data::CrawlResult::Error.new(
-          url: url,
+          url:,
           error: 'Something went horribly wrong'
         )
       end
@@ -139,7 +139,7 @@ RSpec.describe(Crawler::RuleEngine::Base) do
     context 'for a response for an unsupported content type' do
       let(:mock_crawl_result) do
         Crawler::Data::CrawlResult::UnsupportedContentType.new(
-          url: url,
+          url:,
           status_code: 200,
           content_type: 'application/java'
         )
@@ -153,7 +153,7 @@ RSpec.describe(Crawler::RuleEngine::Base) do
     context 'ok to index page' do
       let(:mock_crawl_result) do
         Crawler::Data::CrawlResult::HTML.new(
-          url: url,
+          url:,
           content: '<html><body><a href="http://example.com/link"></a></body></html>'
         )
       end

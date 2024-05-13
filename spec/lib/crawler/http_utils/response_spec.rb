@@ -10,8 +10,8 @@ RSpec.describe(Crawler::HttpUtils::Response) do
   let(:url) { Crawler::Data::URL.parse('http://example.org/') }
   let(:response) do
     Crawler::HttpUtils::Response.new(
-      apache_response: apache_response,
-      url: url,
+      apache_response:,
+      url:,
       request_start_time: 1.second.ago,
       request_end_time: Time.now
     )

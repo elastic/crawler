@@ -47,10 +47,10 @@ module Crawler
         def to_h
           {
             id: id.to_s,
-            url_hash: url_hash,
+            url_hash:,
             url: url.to_s,
-            status_code: status_code,
-            content_type: content_type
+            status_code:,
+            content_type:
           }
         end
 

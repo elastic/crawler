@@ -17,7 +17,7 @@ RSpec.describe(Utility::EsClient) do
         username: 'user',
         password: 'pw',
         api_key: 'key',
-        host: host
+        host:
       }
     }.deep_symbolize_keys
   end

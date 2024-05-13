@@ -15,8 +15,8 @@ FactoryBot.define do
     initialize_with do
       new(
         url: Crawler::Data::URL.parse(url),
-        status_code: status_code,
-        content: content
+        status_code:,
+        content:
       )
     end
   end
@@ -29,8 +29,8 @@ FactoryBot.define do
     initialize_with do
       new(
         url: Crawler::Data::URL.parse(url),
-        status_code: status_code,
-        content: content
+        status_code:,
+        content:
       )
     end
   end
@@ -43,8 +43,8 @@ FactoryBot.define do
     initialize_with do
       new(
         url: Crawler::Data::URL.parse(url),
-        status_code: status_code,
-        content: content
+        status_code:,
+        content:
       )
     end
   end
@@ -57,8 +57,8 @@ FactoryBot.define do
     initialize_with do
       new(
         url: Crawler::Data::URL.parse(url),
-        status_code: status_code,
-        content: content
+        status_code:,
+        content:
       )
     end
   end
@@ -72,9 +72,9 @@ FactoryBot.define do
     initialize_with do
       new(
         url: Crawler::Data::URL.parse(url),
-        status_code: status_code,
+        status_code:,
         location: Crawler::Data::URL.parse(location),
-        redirect_chain: redirect_chain
+        redirect_chain:
       )
     end
   end
@@ -87,8 +87,8 @@ FactoryBot.define do
     initialize_with do
       new(
         url: Crawler::Data::URL.parse(url),
-        status_code: status_code,
-        error: error
+        status_code:,
+        error:
       )
     end
   end
@@ -101,8 +101,8 @@ FactoryBot.define do
     initialize_with do
       new(
         url: Crawler::Data::URL.parse(url),
-        status_code: status_code,
-        error: error
+        status_code:,
+        error:
       )
     end
   end
@@ -115,8 +115,8 @@ FactoryBot.define do
     initialize_with do
       new(
         url: Crawler::Data::URL.parse(url),
-        status_code: status_code,
-        error: error
+        status_code:,
+        error:
       )
     end
   end
