@@ -14,5 +14,6 @@ module Crawler
     extend Dry::CLI::Registry
 
     register 'version', Crawler::CLI::Version, aliases: ['v', '--version']
+    register 'crawl', Crawler::CLI::Crawl, aliases: %w[r run]
   end
 end
