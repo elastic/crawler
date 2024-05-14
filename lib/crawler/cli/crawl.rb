@@ -17,9 +17,8 @@ module Crawler
       argument :crawl_config, required: true, desc: 'Path to crawl config file'
 
       option :es_config, desc: 'Path to elasticsearch config file'
-      option :debug, type: :boolean, default: false, desc: 'Enable verbose mode'
 
-      def call(crawl_config:, debug:, es_config: nil, **)
+      def call(crawl_config:, es_config: nil, **)
         config = load_yaml(crawl_config)
         unless es_config.nil?
           es_config = load_yaml(es_config)
@@ -34,13 +33,8 @@ module Crawler
 
       private
 
-      def die(message, print_help = false)
+      def die(message)
         puts "ERROR: #{message}"
-        if print_help
-          puts
-          print_usage_help
-        end
-
         exit(1)
       end
 
