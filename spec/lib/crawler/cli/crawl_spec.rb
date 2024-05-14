@@ -55,7 +55,7 @@ RSpec.describe(Crawler::CLI::Crawl) do
       context 'when an elasticsearch config is provided' do
         it 'shows an error message' do
           es_config_path = 'spec/fixtures/elasticsearch.yml'
-          es_config = YAML.safe_load(File.read(es_config_path))
+          es_config = YAML.safe_load_file(es_config_path)
           allow(Crawler::API::Crawl).to receive(:new).and_return(crawl_mock)
 
           expect(Crawler::API::Config).to receive(:new).with(hash_including(es_config.deep_symbolize_keys)).once
