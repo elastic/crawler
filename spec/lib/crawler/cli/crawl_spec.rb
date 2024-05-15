@@ -82,7 +82,6 @@ RSpec.describe(Crawler::CLI::Crawl) do
 
         Options:
           --es-config=VALUE                 # Path to elasticsearch config file
-          --[no-]debug                      # Enable verbose mode, default: false
           --help, -h                        # Print this help
       OUTPUT
 
