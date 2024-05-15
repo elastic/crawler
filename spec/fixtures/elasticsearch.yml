@@ -1,0 +1,14 @@
+elasticsearch:
+ host: http://test:9200
+ username: test
+ password: changeme-test
+ api_key: 1234
+ pipeline: ent-search-generic-ingestion
+ pipeline_enabled: true
+ pipeline_params:
+   _reduce_whitespace: true
+   _run_ml_inference: true
+   _extract_binary_content: true
+ bulk_api:
+   max_items: 10
+   max_size_bytes: 1_048_576

@@ -1,0 +1,33 @@
+# Domains allowed for the crawl
+domain_allowlist:
+  - https://localhost:80
+
+# URLs used to seed the crawl
+seed_urls:
+  - https://localhost:80
+  - https://localhost:80/news/
+
+# Where to send the results. Possible values are console, file, or elasticsearch
+output_sink: elasticsearch
+
+# Elasticsearch index name to ingest crawl results into. Required if output_sink is elasticsearch
+output_index: test-index
+
+# Crawl tuning
+max_crawl_depth: 2
+
+# Crawl result field size limits
+max_title_size: 500
+max_body_size: 5_242_880 # 5 megabytes
+max_keywords_size: 512
+max_description_size: 512
+max_indexed_links_count: 5
+max_headings_count: 5
+
+elasticsearch:
+  host: http://localhost:9200
+  username: elastic
+  password: changeme
+  bulk_api:
+    max_items: 10
+    max_size_bytes: 1_048_576
