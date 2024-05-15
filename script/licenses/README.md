@@ -1,6 +1,13 @@
 # 3rd Party :tada: dependencies
 
 This directory contains scripts and files for generating a `NOTICE.txt` file containing all licenses for the third-party dependencies that Crawler uses.
+It will look at the SPDX license for Ruby gems.
+If this cannot be found, it will attempt to download the LICENSE file and add it to the project for future reference.
+When a LICENSE file doesn't exist (or is in an unexpected location or format), a manual override must be added.
+
+Downloaded license files are added to the directories `rubygems_licenses` or `misc_licneses`.
+
+All license texts are then added to the repository's [NOTICE.txt](../../NOTICE.txt) file.
 
 ## Types of dependencies
 
@@ -12,19 +19,3 @@ This directory contains scripts and files for generating a `NOTICE.txt` file con
 ```bash
 ./script/licenses/generate_notice_txt.rb
 ```
-
----
-
-# Full commands to use locally
-
-A few environment variables are needed to run these scripts locally.
-
-The generated files should not be committed to Git as the NOTICE.txt are generated automatically when building the package on CI and similarly the CSV dependency reports are triggered by the Release Manager when a new release candidate is built.
-
-## Generate NOTICE.txt
-
-    RAILS_ENV=production bundle exec ruby script/3rd_party/generate_notice_txt.rb --file ent-search-NOTICE.txt
-
-## Generate dependency report
-
-    RAILS_ENV=production bundle exec ruby script/3rd_party/generate_dependency_report.rb --csv ent-search-deps.csv
