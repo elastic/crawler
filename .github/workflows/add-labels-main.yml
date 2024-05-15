@@ -1,0 +1,23 @@
+name: Force backport labels for main
+
+on:
+  pull_request_target:
+    branches:
+      - main
+    types:
+      - opened
+
+jobs:
+  add_labels:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - id: version
+        uses: juliangruber/read-file-action@ebfa650188272343fef925480eb4d18c5d49b925
+        with:
+          path: ./connectors/VERSION
+      - uses: actions-ecosystem/action-add-labels@v1
+        with:
+          labels: |
+            auto-backport
+            v${{ steps.version.outputs.content }}
