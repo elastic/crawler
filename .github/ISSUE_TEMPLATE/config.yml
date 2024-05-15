@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or Discussion
+    url: https://discuss.elastic.co/c/search/
+    about: Please ask and answer questions here.
+  - name: Security Vulnerability
+    url: https://www.elastic.co/community/security
+    about: DO NOT file issues related to security. Instead, please follow our security policy here.
