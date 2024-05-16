@@ -47,7 +47,7 @@ module Crawler
       )
     end
 
-    def url_components(url) # rubocop:disable Metrics/MethodLength
+    def url_components(url)
       url = Crawler::Data::URL.parse(url.to_s) unless url.is_a?(Crawler::Data::URL)
       path_components = url.path.split('/')
       remove_empty_values(
