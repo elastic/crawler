@@ -39,8 +39,6 @@ module Utility
       config.merge!(configure_auth(es_config))
       config.deep_merge!(configure_ssl(es_config))
 
-      puts(config)
-      raise "fail!"
       config
     end
 
