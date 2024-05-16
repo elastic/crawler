@@ -15,7 +15,7 @@ jobs:
       - id: version
         uses: juliangruber/read-file-action@ebfa650188272343fef925480eb4d18c5d49b925
         with:
-          path: ./connectors/VERSION
+          path: ./product_version
       - uses: actions-ecosystem/action-add-labels@v1
         with:
           labels: |
