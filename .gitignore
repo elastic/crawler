@@ -67,4 +67,4 @@ config/*.yml
 coverage
 
 # Downloaded license files
-script/licenses/**/_downloaded*
+script/licenses/**/_downloaded_*-LICENSE.txt
