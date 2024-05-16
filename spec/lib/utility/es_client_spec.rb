@@ -34,25 +34,20 @@ RSpec.describe(Utility::EsClient) do
     allow(system_logger).to receive(:debug)
   end
 
-  xcontext 'when Elasticsearch::Client arguments are presented' do
+  context 'when Elasticsearch::Client arguments are presented' do
     before(:example) do
-      # TODO: implement when we support TLS options
-      remove api_key to force Elasticsearch::Client pickup TLS options
+      # remove api_key to force Elasticsearch::Client pickup TLS options
       config[:elasticsearch].delete(:api_key)
+      config[:elasticsearch][:ssl] = true
     end
 
-    context 'when transport_options is presented' do
-      # TODO: implement when we support transport options
-      let(:transport_options) { { ssl: { verify: false } } }
-
-      it 'configures Elasticsearch client with transport_options' do
-        config[:elasticsearch][:transport_options] = transport_options
-        expect(subject.transport.options[:transport_options][:ssl]).to eq(transport_options[:ssl])
+    context 'when elasticsearch.ssl is true' do
+      it 'configures Elasticsearch client with SSL transport_options' do
+        expect(subject.transport.options[:transport_options][:ssl]).to eq({ verify: false })
       end
     end
 
     context 'when ca_fingerprint is presented' do
-      # TODO: implement when we support transport ca_fingerprint
       let(:ca_fingerprint) { '64F2593F...' }
 
       it 'configures Elasticsearch client with ca_fingerprint' do
@@ -63,12 +58,12 @@ RSpec.describe(Utility::EsClient) do
     end
   end
 
-  describe '#connection_configs' do
+  describe '#connection_config' do
     context 'when API key is not present' do
       it 'initialises with username and password' do
         config[:elasticsearch][:api_key] = nil
 
-        result = subject.connection_configs(config[:elasticsearch], '0.0.0-foo')
+        result = subject.connection_config(config[:elasticsearch], '0.0.0-foo')
 
         expect(result[:url]).to eq('http://user:pw@notreallyaserver')
         expect(result[:host]).to be_nil
@@ -79,7 +74,7 @@ RSpec.describe(Utility::EsClient) do
 
     context 'when API key is present' do
       it 'overrides username and password' do
-        result = subject.connection_configs(config[:elasticsearch], '0.0.0-bar')
+        result = subject.connection_config(config[:elasticsearch], '0.0.0-bar')
 
         expect(result[:url]).to be_nil
         expect(result[:host]).to eq(host)
@@ -99,7 +94,7 @@ RSpec.describe(Utility::EsClient) do
       it 'configures Elasticsearch client with headers' do
         config[:elasticsearch]['headers'] = headers
 
-        result = subject.connection_configs(config[:elasticsearch], '0.0.0-test')
+        result = subject.connection_config(config[:elasticsearch], '0.0.0-test')
 
         expect(result['headers']).to eq(headers)
       end
@@ -109,7 +104,7 @@ RSpec.describe(Utility::EsClient) do
       it 'configures Elasticsearch client with no headers' do
         config[:elasticsearch][:headers] = nil
 
-        result = subject.connection_configs(config[:elasticsearch], '0.0.0-test')
+        result = subject.connection_config(config[:elasticsearch], '0.0.0-test')
 
         expect(result).to_not have_key(:headers)
       end
