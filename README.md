@@ -16,42 +16,94 @@ The crawl results can be output in 3 different modes:
 
 ### Setup
 
+#### Running from Docker
+
+Crawler has a Dockerfile that can be built and run locally.
+
+If you run from Docker, you will need to copy your configuration files into the docker container before running any crawls.
+
+execute CLI commands from outside of the container by prepending `docker exec -it <container>`.
+See [Crawling content](#crawling-content) for examples.
+
+1. Build the image `docker build -t crawler .`
+2. Run the container `docker run -i -d crawler crawler`
+   - `-i` allows the container to stay alive so CLI commands can be executed inside it
+   - `-d` allows the container to run "detached" so you don't have to dedicated a terminal window to it
+
 #### Running from source
 
-Crawler uses `jenv` and `rbenv` to manage both java and ruby versions.
+Crawler uses `jenv` and `rbenv` to manage both java and ruby versions when running from source.
 
 1. Install `jenv` and `rbenv`
     - [Official documentation for installing jenv](https://www.jenv.be/)
     - [Official documentation for installing rbenv](https://github.com/rbenv/rbenv?tab=readme-ov-file#installation)
-2. Install the required java version (check the file `.java-version`) and add it to `jenv`
+2. Install the required java version (check the file `.java-version`)
+   - Crawler was developed using OpenJDK, so we recommend using an OpenJDK version of Java
+     - [Instructions for installing OpenJDK](https://openjdk.org/install/)
+   - Mac users can also use `brew` to install
+        ```bash
+        # install with brew
+        $ brew install openjdk@21
+ 
+        # create symlink
+        $ sudo ln -sfn \
+            /opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk \
+            /Library/Java/JavaVirtualMachines/openjdk-21.jdk
+        ```
+3. Add Java version to `jenv`
     ```bash
-    # jenv is a little complicated to set up
-    # this is an example for openjdk@21 on mac using homebrew
-    # first install the java version
-    brew install openjdk@21
-
-    # create symlink 
-    sudo ln -sfn \
-      /opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk \
-      /Library/Java/JavaVirtualMachines/openjdk-21.jdk
-
     # add to jenv and update JAVA_HOME
-    jenv add /Library/Java/JavaVirtualMachines/openjdk-21.jdk/Contents/Home
-    export JAVA_HOME=$(/usr/libexec/java_home -v21)
+    $ jenv add /Library/Java/JavaVirtualMachines/openjdk-21.jdk/Contents/Home
+    $ export JAVA_HOME=$(/usr/libexec/java_home -v21)
 
-    # check java version, which should be set by `.java-version` file
-    java --version
+    # check java version has been correctly set by `.java-version` file
+    $ java --version
     ```
-3. Install the required jruby version
+4. Install the required jruby version
     ```bash
     # rbenv is easier to use and can install a version based on `.ruby-version` file
-    rbenv install
+    $ rbenv install
 
     # check ruby version
-    ruby --version
+    $ ruby --version
     ```
-4. Run `make install` to install Crawler dependencies
+5. Run `make install` to install Crawler dependencies
 
-### Configuring and running a crawl job
+Crawler should now be functional.
+See [Configuring Crawlers](#configuring-crawlers) to begin crawling web content.
 
-See [CONFIG.md](docs/CONFIG.md) for more details.
+### Configuring Crawlers
+
+See [CONFIG.md](docs/CONFIG.md) for in-depth details on Crawler configuration files.
+
+Once you have a Crawler configured, you can validate the domain(s) using the CLI.
+
+```bash
+$ bin/crawler validate config/my-crawler.yml
+```
+
+If you are running from docker, you will first need to copy the config file into the docker container.
+
+```bash
+# copy file (if you haven't already done so)
+$ docker cp /path/to/my-crawler.yml crawler:config/my-crawler.yml
+
+# run 
+$ docker exec -it crawler bin/crawler validate config/my-crawler.yml
+```
+
+See [Crawling content](#crawling-content).
+
+### Crawling content
+
+Use the following command to run a crawl based on the configuration provided.
+
+```bash
+$ bin/crawler crawl config/my-crawler.yml
+```
+
+And from Docker.
+
+```bash
+$ docker exec -it crawler bin/crawler crawl config/my-crawler.yml
+```

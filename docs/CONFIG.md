@@ -29,6 +29,15 @@ The crawler config is loaded after the Elasticsearch config, so any Elasticsearc
 
 These are provided in the CLI as an argument for the option `--es-config`.
 
+## Configuration files in Docker
+
+If you are running Crawler in docker, you will need to copy any configuration files into the container before you can crawl content.
+This will need to be done every time a change is made to these files, unless you are editing the file directly inside the Docker container.
+
+```bash
+$ docker cp /path/to/my-crawler.yml crawler:config/my-crawler.yml
+```
+
 ## Example usage
 
 The config files are provided via opts in the CLI.
