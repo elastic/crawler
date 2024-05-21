@@ -23,11 +23,11 @@ module Utility
 
     def initialize(es_config, system_logger, crawler_version, &)
       @system_logger = system_logger
-      super(connection_configs(es_config, crawler_version), &)
+      super(connection_config(es_config, crawler_version), &)
     end
 
-    def connection_configs(es_config, crawler_version) # rubocop:disable Metrics/MethodLength
-      configs = {
+    def connection_config(es_config, crawler_version)
+      config = {
         transport_options: {
           headers: {
             'user-agent': "#{USER_AGENT}#{crawler_version}",
@@ -36,19 +36,10 @@ module Utility
         }
       }
 
-      if es_config[:api_key]
-        configs[:host] = es_config[:host]
-        configs[:api_key] = es_config[:api_key]
-        @system_logger.info('Initializing ES client with API key...')
-      else
-        # create a URL with pattern http(s)://<username>:<password>@host.com
-        configs[:url] = es_config[:host].sub(%r{^https?://}) do |match|
-          "#{match}#{es_config[:username]}:#{es_config[:password]}@"
-        end
-        @system_logger.info('Initializing ES client with username and password...')
-      end
+      config.merge!(configure_auth(es_config))
+      config.deep_merge!(configure_ssl(es_config))
 
-      configs
+      config
     end
 
     def bulk(arguments = {})
@@ -56,6 +47,45 @@ module Utility
     end
 
     private
+
+    def configure_auth(es_config)
+      if es_config[:api_key]
+        @system_logger.info('ES connections will be authorized with configured API key')
+        {
+          host: "#{es_config[:host]}:#{es_config[:port]}",
+          api_key: es_config[:api_key]
+        }
+      else
+        @system_logger.info('ES connections will be authorized with configured username and password')
+        scheme, host = es_config[:host].split('://')
+        {
+          hosts: [
+            {
+              host:,
+              port: es_config[:port],
+              user: es_config[:username],
+              password: es_config[:password],
+              scheme:
+            }
+          ]
+        }
+      end
+    end
+
+    def configure_ssl(es_config)
+      if es_config[:ca_fingerprint]
+        @system_logger.info('ES connections will use SSL with ca_fingerprint')
+        return {
+          ca_fingerprint: es_config[:ca_fingerprint],
+          transport_options: {
+            ssl: { verify: false }
+          }
+        }
+      end
+
+      @system_logger.info('ES connections will use SSL without ca_fingerprint')
+      {}
+    end
 
     def raise_if_necessary(response) # rubocop:disable Metrics/MethodLength, Metrics/PerceivedComplexity
       if response['errors']

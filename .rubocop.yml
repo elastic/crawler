@@ -14,6 +14,9 @@ AllCops:
 Style/Documentation:
   Enabled: false
 
+Metrics/MethodLength:
+  CountAsOne: ['array', 'hash', 'heredoc', 'method_call']
+
 # Disable for specs
 Metrics/BlockLength:
   Exclude:

@@ -124,7 +124,7 @@ module Crawler
       # Returns a hash with crawl-specific status information
       # Note: This is used by the `EventGenerator` class for crawl-status events and by the Crawler Status API.
       #       Please update OpenAPI specs if you add any new fields here.
-      def status # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+      def status # rubocop:disable Metrics/AbcSize
         {
           queue_size: crawl_queue.length,
           pages_visited: stats.fetched_pages_count,

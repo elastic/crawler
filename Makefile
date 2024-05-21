@@ -1,4 +1,4 @@
-.phony: test lint autocorrect install install-ci install-gems install-jars clean build-docker-ci
+.phony: test lint autocorrect install install-ci install-gems install-jars clean notice build-docker-ci
 
 test:
 	script/rspec $(file)
@@ -26,6 +26,9 @@ install-jars:
 
 clean:
 	rm -rf Jars.lock vendor/jars
+
+notice:
+	script/licenses/generate_notice.rb
 
 build-docker-ci:
 	docker build -t crawler-ci .buildkite

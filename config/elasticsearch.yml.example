@@ -1,17 +1,77 @@
-## Elasticsearch connection settings. These can be defined individually for crawlers in `config/crawlers/{crawler-name}.yml`.
-##  If `api_key` is provided it will be used over `username` and `password`.
+## ================== Crawler Configuration - Elasticsearch ====================
 #
-#elasticsearch:
-#  host: http://localhost:9200
-#  username: elastic
-#  password: changeme
-#  api_key: 1234
-#  pipeline: ent-search-generic-ingestion
-#  pipeline_enabled: true
-#  pipeline_params:
-#    _reduce_whitespace: true
-#    _run_ml_inference: true
-#    _extract_binary_content: true
-#  bulk_api:
-#    max_items: 10
-#    max_size_bytes: 1_048_576
+##  Elasticsearch connection settings. These can be defined individually
+##    for a crawl in the crawl config file.
+#
+##  NOTE: Most Crawler configurations comes with reasonable defaults.
+##       Before adjusting the configuration, make sure you understand what you
+##       are trying to accomplish and the consequences.
+#
+## ------------------------------- Elasticsearch -------------------------------
+#
+## The host of the Elasticsearch deployment, excluding the port.
+#elasticsearch.host: http://localhost
+#
+#
+## The port of the Elasticsearch deployment host.
+#elasticsearch.port: 9200
+#
+#
+## The API key for Elasticsearch connection.
+##    Using `api_key` is recommended instead of `username`/`password`.
+#elasticsearch.api_key: 1234
+#
+#
+##  The username for the Elasticsearch connection.
+##    Using `username` requires `password` to also be configured.
+##    However, `elasticsearch.api_key` is the recommended configuration choice.
+#elasticsearch.username: elastic
+#
+#
+##  The password for the Elasticsearch connection.
+##    Using `password` requires `username` to also be configured.
+##    However, `elasticsearch.api_key` is the recommended configuration choice.
+#elasticsearch.password: changeme
+#
+#
+##  The SHA256 CA cert fingerprint used to verify SSL connection to Elasticsearch.
+##    SSL usage is configured by the presence of `https` in `elasticsearch.host`
+#elasticsearch.ca_fingerprint: null
+#
+#
+## ------------------------------- Bulk API -----------------------------------
+#
+##  The max size of the bulk queue
+#elasticsearch.bulk_api.max_items: 10
+#
+#
+##  The max size in bytes of the bulk queue.
+##    When it's reached, the Crawler performs a bulk index request to
+##    Elasticsearch, and the queue is flushed
+#elasticsearch.bulk_api.max_size_bytes: 1_048_576
+#
+#
+## ------------------------------- Pipelines ----------------------------------
+#
+#
+##  The name of the ingest pipeline
+##    If pipelines are enabled and this value is `null`,
+##    the pipeline `ent-search-generic-ingestion` will be used
+#elasticsearch.pipeline: ent-search-generic-ingestion
+#
+#
+##  Whether or not pipelines are enabled
+#elasticsearch.pipeline_enabled: true
+#
+#
+##  Enable for the pipeline to reduce whitespace on indexed docs
+#elasticsearch.pipeline_params._reduce_whitespace: true
+#
+#
+##  Enable for the pipeline to run ML inference on indexed docs
+#elasticsearch.pipeline_params._run_ml_inference: true
+#
+#
+##  Enable for the pipeline to extract binary content from
+##    the `_attachment` field of an indexed doc
+#elasticsearch.pipeline_params._extract_binary_content: true

@@ -315,7 +315,7 @@ module Crawler
 
     #-------------------------------------------------------------------------------------------------
     # Returns a proxy host object to be used for all connections
-    def proxy_host # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
+    def proxy_host # rubocop:disable Metrics/AbcSize
       return nil unless config.http_proxy_host
 
       logger.debug(<<~LOG.squish)
@@ -358,7 +358,7 @@ module Crawler
 
     #-------------------------------------------------------------------------------------------------
     # Checks the status of the connection pool and logs information about it
-    def check_connection_pool_stats! # rubocop:disable Metrics/MethodLength
+    def check_connection_pool_stats!
       stats = connection_pool_stats
       used_connections = stats.leased + stats.available
 
