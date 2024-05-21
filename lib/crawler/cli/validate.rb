@@ -11,18 +11,29 @@ require 'yaml'
 
 module Crawler
   module CLI
-    class Crawl < Dry::CLI::Command
-      desc 'Run a crawl of the site'
+    class Validate < Dry::CLI::Command
+      desc 'Validate crawler configuration'
 
       argument :crawl_config, required: true, desc: 'Path to crawl config file'
 
-      option :es_config, desc: 'Path to elasticsearch config file'
-
       def call(crawl_config:, es_config: nil, **)
         crawl_config = Crawler::CLI::Helpers.load_crawl_config(crawl_config, es_config)
-        crawl = Crawler::API::Crawl.new(crawl_config)
 
-        crawl.start!
+        crawl_config.domain_allowlist.each do |domain|
+          validator = Crawler::UrlValidator.new(
+            url: domain.raw_url,
+            crawl_config:
+          )
+
+          if validator.valid?
+            puts "Domain #{domain.raw_url} is valid"
+          else
+            puts "Domain #{domain.raw_url} is invalid:"
+            puts validator.failed_checks.map(&:comment).join("\n")
+          end
+        rescue Crawler::UrlValidator::Error => e
+          CLI.die(e.message)
+        end
       end
     end
   end
