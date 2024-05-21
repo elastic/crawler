@@ -36,7 +36,7 @@ module Crawler
         #-------------------------------------------------------------------------------------------
         # Checks the size of the queue before putting any more items on it
         # Raises an exception if the queue is full
-        def check_queue_size! # rubocop:disable Metrics/MethodLength
+        def check_queue_size!
           current_items = memory_queue.length
           if current_items >= memory_size_limit
             maybe_threshold_alert(
