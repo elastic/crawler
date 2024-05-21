@@ -9,8 +9,12 @@
 #
 ## ------------------------------- Elasticsearch -------------------------------
 #
-## The host of the Elasticsearch deployment.
-#elasticsearch.host: http://localhost:9200
+## The host of the Elasticsearch deployment, excluding the port.
+#elasticsearch.host: http://localhost
+#
+#
+## The port of the Elasticsearch deployment host.
+#elasticsearch.port: 9200
 #
 #
 ## The API key for Elasticsearch connection.
@@ -30,13 +34,8 @@
 #elasticsearch.password: changeme
 #
 #
-##  Whether SSL is used for the Elasticsearch connection.
-#elasticsearch.ssl: true
-#
-#
-##  The SHA256 CA cert fingerprint used to verify SSL connection
-##    If ssl is enabled and this value is `null`, Crawler will try to connect
-##    without verifying SSL.
+##  The SHA256 CA cert fingerprint used to verify SSL connection to Elasticsearch.
+##    SSL usage is configured by the presence of `https` in `elasticsearch.host`
 #elasticsearch.ca_fingerprint: null
 #
 #

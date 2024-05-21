@@ -50,39 +50,41 @@ module Utility
 
     def configure_auth(es_config)
       if es_config[:api_key]
-        @system_logger.info(
-          'ES connections will be authorized with configured API key'
-        )
+        @system_logger.info('ES connections will be authorized with configured API key')
         {
-          host: es_config[:host],
+          host: "#{es_config[:host]}:#{es_config[:port]}",
           api_key: es_config[:api_key]
         }
       else
         @system_logger.info('ES connections will be authorized with configured username and password')
-        # create a URL with pattern http(s)://<username>:<password>@host.com
-        url = es_config[:host].sub(%r{^https?://}) do |match|
-          "#{match}#{es_config[:username]}:#{es_config[:password]}@"
-        end
-        { url: }
+        scheme, host = es_config[:host].split('://')
+        {
+          hosts: [
+            {
+              host:,
+              port: es_config[:port],
+              user: es_config[:username],
+              password: es_config[:password],
+              scheme:
+            }
+          ]
+        }
       end
     end
 
     def configure_ssl(es_config)
-      unless es_config[:ssl]
-        @system_logger.info('ES connections will not use SSL')
-        return {}
+      if es_config[:ca_fingerprint]
+        @system_logger.info('ES connections will use SSL with ca_fingerprint')
+        return {
+          ca_fingerprint: es_config[:ca_fingerprint],
+          transport_options: {
+            ssl: { verify: false }
+          }
+        }
       end
 
-      ssl_config = {
-        transport_options: {
-          ssl: { verify: false }
-        }
-      }
-      ssl_config[:ca_fingerprint] = es_config[:ca_fingerprint] if es_config[:ca_fingerprint]
-      @system_logger.info(
-        "ES connections will use SSL #{es_config[:ca_fingerprint] ? 'with' : 'without'} ca_fingerprint"
-      )
-      ssl_config
+      @system_logger.info('ES connections will use SSL without ca_fingerprint')
+      {}
     end
 
     def raise_if_necessary(response) # rubocop:disable Metrics/MethodLength, Metrics/PerceivedComplexity

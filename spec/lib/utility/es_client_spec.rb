@@ -11,13 +11,15 @@ require 'elasticsearch'
 RSpec.describe(Utility::EsClient) do
   let(:system_logger) { double }
   let(:host) { 'http://notreallyaserver' }
+  let(:port) { '9200' }
   let(:config) do
     {
       elasticsearch: {
         username: 'user',
         password: 'pw',
         api_key: 'key',
-        host:
+        host:,
+        port:
       }
     }.deep_symbolize_keys
   end
@@ -25,29 +27,17 @@ RSpec.describe(Utility::EsClient) do
   let(:subject) { described_class.new(config[:elasticsearch], system_logger, '0.0.0-test') }
 
   before(:each) do
-    stub_request(:get, "#{host}:9200/")
+    stub_request(:get, "#{host}:#{port}/")
       .to_return(status: 403, body: '', headers: {})
-    stub_request(:get, "#{host}:9200/_cluster/health")
+    stub_request(:get, "#{host}:#{port}/_cluster/health")
 
     # TODO: make a factory or something for system_logger mocks
     allow(system_logger).to receive(:info)
     allow(system_logger).to receive(:debug)
   end
 
-  context 'when Elasticsearch::Client arguments are presented' do
-    before(:example) do
-      # remove api_key to force Elasticsearch::Client pickup TLS options
-      config[:elasticsearch].delete(:api_key)
-      config[:elasticsearch][:ssl] = true
-    end
-
-    context 'when elasticsearch.ssl is true' do
-      it 'configures Elasticsearch client with SSL transport_options' do
-        expect(subject.transport.options[:transport_options][:ssl]).to eq({ verify: false })
-      end
-    end
-
-    context 'when ca_fingerprint is presented' do
+  describe '#connection_config' do
+    context 'when ca_fingerprint is configured' do
       let(:ca_fingerprint) { '64F2593F...' }
 
       it 'configures Elasticsearch client with ca_fingerprint' do
@@ -56,16 +46,15 @@ RSpec.describe(Utility::EsClient) do
         expect(subject.instance_variable_get(:@transport).instance_variable_get(:@ca_fingerprint)).to eq(ca_fingerprint)
       end
     end
-  end
 
-  describe '#connection_config' do
     context 'when API key is not present' do
       it 'initialises with username and password' do
         config[:elasticsearch][:api_key] = nil
 
         result = subject.connection_config(config[:elasticsearch], '0.0.0-foo')
 
-        expect(result[:url]).to eq('http://user:pw@notreallyaserver')
+        expect(result[:hosts]).to eq([{ host: 'notreallyaserver', user: 'user', password: 'pw', port: '9200',
+                                        scheme: 'http' }])
         expect(result[:host]).to be_nil
         expect(result[:api_key]).to be_nil
         expect(result[:transport_options][:headers][:'user-agent']).to eq('elastic-web-crawler-0.0.0-foo')
@@ -76,8 +65,8 @@ RSpec.describe(Utility::EsClient) do
       it 'overrides username and password' do
         result = subject.connection_config(config[:elasticsearch], '0.0.0-bar')
 
-        expect(result[:url]).to be_nil
-        expect(result[:host]).to eq(host)
+        expect(result[:hosts]).to be_nil
+        expect(result[:host]).to eq("#{host}:#{port}")
         expect(result[:api_key]).to eq('key')
         expect(result[:transport_options][:headers][:'user-agent']).to eq('elastic-web-crawler-0.0.0-bar')
       end
