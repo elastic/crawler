@@ -10,7 +10,7 @@ require 'bson'
 require 'socket'
 require 'logger'
 
-# rubocop:disable Metrics/MethodLength, Metrics/ParameterLists
+# rubocop:disable Metrics/ParameterLists
 module Crawler
   class EventGenerator # rubocop:disable Metrics/ClassLength
     attr_reader :config
@@ -352,4 +352,4 @@ module Crawler
     end
   end
 end
-# rubocop:enable Metrics/MethodLength, Metrics/ParameterLists
+# rubocop:enable Metrics/ParameterLists

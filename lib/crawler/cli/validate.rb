@@ -25,15 +25,21 @@ module Crawler
             crawl_config:
           )
 
-          if validator.valid?
-            puts "Domain #{domain.raw_url} is valid"
-          else
-            puts "Domain #{domain.raw_url} is invalid:"
-            puts validator.failed_checks.map(&:comment).join("\n")
-          end
-        rescue Crawler::UrlValidator::Error => e
-          CLI.die(e.message)
+          print_validation_result(domain, validator)
         end
+      end
+
+      private
+
+      def print_validation_result(domain, validator)
+        if validator.valid?
+          puts "Domain #{domain.raw_url} is valid"
+        else
+          puts "Domain #{domain.raw_url} is invalid:"
+          puts validator.failed_checks.map(&:comment).join("\n")
+        end
+      rescue Crawler::UrlValidator::Error => e
+        puts "Error validating domain #{domain.raw_url}: #{e}"
       end
     end
   end

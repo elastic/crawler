@@ -37,7 +37,7 @@ RSpec.describe 'Request to a site that is sending the data back really slowly' d
       end
     end
 
-    def handle_request(req, sock) # rubocop:disable Metrics/MethodLength
+    def handle_request(req, sock)
       sock.print "HTTP/1.0 200 OK\r\n"
       sock.print "Content-Type: text/html\r\n"
       if req.start_with?('GET /timeout')

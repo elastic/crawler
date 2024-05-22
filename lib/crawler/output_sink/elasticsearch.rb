@@ -12,7 +12,7 @@ require_dependency File.join(__dir__, '..', '..', 'utility', 'bulk_queue')
 
 module Crawler
   module OutputSink
-    class Elasticsearch < OutputSink::Base # rubocop:disable Metrics/ClassLength
+    class Elasticsearch < OutputSink::Base
       DEFAULT_PIPELINE = 'ent-search-generic-ingestion'
       DEFAULT_PIPELINE_PARAMS = {
         _reduce_whitespace: true,

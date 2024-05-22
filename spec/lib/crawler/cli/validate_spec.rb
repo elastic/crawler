@@ -42,7 +42,8 @@ RSpec.describe(Crawler::CLI::Crawl) do
 
       context 'when validation is not successful' do
         it 'displays that the domain is not validated' do
-          allow(Crawler::UrlValidator).to receive(:new).and_return(double(valid?: false, failed_checks: [double(comment: 'error')]))
+          allow(Crawler::UrlValidator).to receive(:new).and_return(double(valid?: false,
+                                                                          failed_checks: [double(comment: 'error')]))
           output = capture_output { cli.call(arguments: ['validate', crawl_config]) }
           expect(output).to include('is invalid:')
           expect(output).to include('error')
