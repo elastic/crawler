@@ -67,9 +67,9 @@ module Crawler
     attr_reader :raw_url, :checks, :results, :url_crawl_result
 
     def initialize(url:, crawl_config:, checks: nil)
-      # if configuration && configuration.crawler_domains.empty?
-      #   raise InvalidCrawlConfigError, 'Please configure the crawler for this index by creating at least one domain'
-      # end
+      if configuration && configuration.crawler_domains.empty?
+        raise InvalidCrawlConfigError, 'Please configure at least one domain in the crawl config file.'
+      end
 
       @crawl_config = crawl_config
       # Default to running all checks for the given context
