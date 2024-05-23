@@ -18,4 +18,11 @@ require 'yaml'
 require_relative File.expand_path('../../lib/environment', __FILE__)
 require 'crawler/cli'
 
+java_import 'java.lang.System'
+
+# These opts are to prevent an intermittent `bad_record_mac` error when indexing into ES.
+# One workaround is to force use of SSLv3 only.
+System.setProperty('force.http.jre.executor', 'true')
+System.setProperty('https.protocols', 'SSLv3')
+
 Dry::CLI.new(Crawler::CLI).call
