@@ -177,7 +177,7 @@ module Crawler
 
     attr_reader :config, :client, :connection_manager, :logger, :finalizers
 
-    def new_http_client # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+    def new_http_client # rubocop:disable Metrics/AbcSize
       builder = HttpClientBuilder.create
       builder.set_user_agent(config.user_agent)
       builder.disable_cookie_management
@@ -219,7 +219,7 @@ module Crawler
     end
 
     #-------------------------------------------------------------------------------------------------
-    def ssl_trust_managers # rubocop:disable Metrics/MethodLength
+    def ssl_trust_managers
       if config.ssl_verification_mode == 'none'
         [Crawler::HttpUtils::AllTrustingTrustManager.new]
       else

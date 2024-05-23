@@ -38,7 +38,7 @@ module Crawler
         !!@private_networks_allowed
       end
 
-      def remove_private_addresses(host, resolved_addresses) # rubocop:disable Metrics/MethodLength
+      def remove_private_addresses(host, resolved_addresses)
         return resolved_addresses if resolved_addresses.blank?
 
         valid_addresses, invalid_addresses = resolved_addresses.partition do |a|

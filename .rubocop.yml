@@ -16,6 +16,13 @@ Style/Documentation:
 
 Metrics/MethodLength:
   CountAsOne: ['array', 'hash', 'heredoc', 'method_call']
+  Max: 15
+
+Metrics/ClassLength:
+  Max: 200
+
+Metrics/ModuleLength:
+  Max: 200
 
 # Disable for specs
 Metrics/BlockLength:

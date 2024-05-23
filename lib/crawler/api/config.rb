@@ -178,7 +178,7 @@ module Crawler
       attr_reader :system_logger # for free-text logging
       attr_reader :event_logger  # for structured logs
 
-      def initialize(params = {}) # rubocop:disable Metrics/MethodLength
+      def initialize(params = {})
         params = DEFAULTS.merge(params.symbolize_keys)
 
         # Make sure we don't have any unexpected parameters
