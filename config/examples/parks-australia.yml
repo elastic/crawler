@@ -1,7 +1,5 @@
 # This is a sample config file for crawling the parksaustralia.gov.au website writing output to an ES index
 
-crawler_id: 1234
-
 # Domains allowed for the crawl
 domain_allowlist:
   - https://parksaustralia.gov.au
