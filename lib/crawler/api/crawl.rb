@@ -20,7 +20,7 @@ module Crawler
       attr_reader :config, :crawl_queue, :seen_urls, :sink, :outcome, :outcome_message
       attr_accessor :executor
 
-      def initialize(config) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+      def initialize(config) # rubocop:disable Metrics/AbcSize
         raise ArgumentError, 'Invalid config' unless config.is_a?(Config)
         raise ArgumentError, 'Missing domain allowlist' if config.domain_allowlist.empty?
         raise ArgumentError, 'Seed URLs need to be an enumerator' unless config.seed_urls.is_a?(Enumerator)

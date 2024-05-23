@@ -92,7 +92,7 @@ module Crawler
     #-------------------------------------------------------------------------------------------------
     # Limits the size of a given string value down to a given limit (in bytes)
     # This is heavily inspired by https://github.com/rails/rails/pull/27319/files
-    def self.limit_bytesize(string, limit) # rubocop:disable Metrics/MethodLength
+    def self.limit_bytesize(string, limit)
       return string if string.nil? || string.bytesize <= limit
 
       real_limit = limit - OMISSION.bytesize

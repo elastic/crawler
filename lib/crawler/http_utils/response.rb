@@ -11,7 +11,7 @@ require_dependency File.join(__dir__, '..', 'http_client')
 
 module Crawler
   module HttpUtils
-    class Response # rubocop:disable Metrics/ClassLength
+    class Response
       java_import org.apache.hc.core5.util.ByteArrayBuffer
       java_import org.apache.hc.core5.http.ContentType
       java_import org.apache.hc.core5.http.message.StatusLine

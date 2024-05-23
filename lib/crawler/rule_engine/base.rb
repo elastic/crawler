@@ -34,7 +34,7 @@ module Crawler
         allowed_outcome
       end
 
-      def output_crawl_result_outcome(crawl_result) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength, Metrics/CyclomaticComplexity
+      def output_crawl_result_outcome(crawl_result) # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity
         unless crawl_result.is_a?(Crawler::Data::CrawlResult::Base)
           raise ArgumentError,
                 'Needs a Crawler::Data::CrawlResult::Base object'

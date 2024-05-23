@@ -19,33 +19,10 @@ module Crawler
       option :es_config, desc: 'Path to elasticsearch config file'
 
       def call(crawl_config:, es_config: nil, **)
-        config = load_yaml(crawl_config)
-        unless es_config.nil?
-          es_config = load_yaml(es_config)
-          config.merge!(es_config) unless es_config.empty?
-        end
-
-        crawl_config = Crawler::API::Config.new(**config.deep_symbolize_keys)
+        crawl_config = Crawler::CLI::Helpers.load_crawl_config(crawl_config, es_config)
         crawl = Crawler::API::Crawl.new(crawl_config)
 
         crawl.start!
-      end
-
-      private
-
-      def die(message)
-        puts "ERROR: #{message}"
-        exit(1)
-      end
-
-      #---------------------------------------------------------------------------------------------------
-      def load_yaml(file_path)
-        die("Config file #{file_path} does not exist!") unless File.readable?(file_path)
-        begin
-          YAML.load_file(file_path)
-        rescue StandardError => e
-          die("Failed to load config file #{file_path}: #{e}")
-        end
       end
     end
   end

@@ -40,7 +40,7 @@ module Crawler
       store[domain.to_s]
     end
 
-    def url_disallowed_outcome(url) # rubocop:disable Metrics/MethodLength
+    def url_disallowed_outcome(url)
       domain = url.domain
 
       unless registered?(domain)
