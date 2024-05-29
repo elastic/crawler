@@ -55,7 +55,8 @@
 ## Elasticsearch connection settings. These can be defined for all crawlers in `config/elasticsearch.yml`,
 ##
 #elasticsearch:
-#  host: http://localhost:9200
+#  host: http://localhost
+#  port: 9200
 #  username: elastic
 #  password: changeme
 #  api_key: 1234

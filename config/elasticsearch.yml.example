@@ -17,8 +17,10 @@
 #elasticsearch.port: 9200
 #
 #
-## The API key for Elasticsearch connection.
+## The encoded API key for Elasticsearch connection.
 ##    Using `api_key` is recommended instead of `username`/`password`.
+##    Ensure this API key has read and write access to the configured
+##    `output_index` in the Crawler config
 #elasticsearch.api_key: 1234
 #
 #

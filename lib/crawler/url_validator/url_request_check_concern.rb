@@ -123,7 +123,7 @@ module Crawler
       end
 
       # If we're running in a domain context, this is an inter-domain redirect that we cannot follow
-      unless configuration
+      unless @crawl_config
         return validation_fail(:url_request, <<~MESSAGE, details)
           The web server at #{url} redirected us to a different domain URL (#{location}).
           If you want to crawl this site, please use #{location.domain_name} as the domain name.

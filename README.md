@@ -1,7 +1,7 @@
 # Elastic Open Web Crawler
 
 This repository contains code for the Elastic Open Web Crawler.
-This is a tool to allow users to ingest content into Elasticsearch easily from the web.
+This is a tool to allow users to easily ingest content into Elasticsearch from the web.
 
 ## How it works
 
@@ -20,15 +20,13 @@ The crawl results can be output in 3 different modes:
 
 Crawler has a Dockerfile that can be built and run locally.
 
-If you run from Docker, you will need to copy your configuration files into the docker container before running any crawls.
-
-execute CLI commands from outside of the container by prepending `docker exec -it <container>`.
-See [Crawling content](#crawling-content) for examples.
-
-1. Build the image `docker build -t crawler .`
-2. Run the container `docker run -i -d crawler crawler`
+1. Build the image `docker build -t crawler-image .`
+2. Run the container `docker run -i -d --name crawler crawler-image`
    - `-i` allows the container to stay alive so CLI commands can be executed inside it
-   - `-d` allows the container to run "detached" so you don't have to dedicated a terminal window to it
+   - `-d` allows the container to run "detached" so you don't have to dedicate a terminal window to it
+3. Confirm that Crawler commands are working `docker exec -it crawler bin/crawler version`
+4. Execute other CLI commands from outside of the container by prepending `docker exec -it crawler <command>`.
+   - See [Crawling content](#crawling-content) for examples.
 
 #### Running from source
 
@@ -93,4 +91,39 @@ And from Docker.
 
 ```bash
 $ docker exec -it crawler bin/crawler crawl config/my-crawler.yml
+```
+
+### Connecting to Elasticsearch
+
+If you set the `output_sink` value to `elasticsearch`, Crawler will attempt to bulk index crawl results into Elasticsearch.
+To facilitate this connection, Crawler needs to have either an API key or a username/password configured to access the Elasticsearch instance.
+If using an API key, ensure that the API key has read and write permissions to access the index configured in `output_index`.
+
+- [Elasticsearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/security-api-create-api-key.html) for managing API keys for more details
+- [elasticsearch.yml.example](config/elasticsearch.yml.example) file for all of the available Elasticsearch configurations for Crawler
+
+Here is an example of creating an API key with minimal permissions for Crawler.
+This will return a JSON with an `encoded` key.
+The value of `encoded` is what Crawler can use in its configuration. 
+
+```bash
+POST /_security/api_key
+{
+  "name": "my-api-key",
+  "role_descriptors": { 
+    "my-crawler-role": {
+      "cluster": ["all"],
+      "indices": [
+        {
+          "names": ["my-crawler-index-name"],
+          "privileges": ["all"]
+        }
+      ]
+    }
+  },
+  "metadata": {
+    "application": "my-crawler"
+  }
+}
+
 ```
