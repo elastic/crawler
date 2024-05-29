@@ -23,6 +23,7 @@ items that may help during the review.-->
 - [ ] Added a label for each target release version (example: `v0.1.0`)
 - [ ] Considered corresponding documentation changes
 - [ ] Contributed any configuration settings changes to the configuration reference
+- [ ] Ran `make notice` if any dependencies have been added
 
 #### Changes Requiring Extra Attention
 
