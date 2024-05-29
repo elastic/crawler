@@ -32,42 +32,29 @@ See [Crawling content](#crawling-content) for examples.
 
 #### Running from source
 
-Crawler uses `jenv` and `rbenv` to manage both java and ruby versions when running from source.
+Crawler uses both JRuby and Java.
+We recommend using version managers for both.
+When developing Crawler we use `rbenv` and `jenv`.
+There are instructions for setting up these env managers here:
 
-1. Install `jenv` and `rbenv`
-    - [Official documentation for installing jenv](https://www.jenv.be/)
-    - [Official documentation for installing rbenv](https://github.com/rbenv/rbenv?tab=readme-ov-file#installation)
-2. Install the required java version (check the file `.java-version`)
-   - Crawler was developed using OpenJDK, so we recommend using an OpenJDK version of Java
-     - [Instructions for installing OpenJDK](https://openjdk.org/install/)
-   - Mac users can also use `brew` to install
-        ```bash
-        # install with brew
-        $ brew install openjdk@21
- 
-        # create symlink
-        $ sudo ln -sfn \
-            /opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk \
-            /Library/Java/JavaVirtualMachines/openjdk-21.jdk
-        ```
-3. Add Java version to `jenv`
-    ```bash
-    # add to jenv and update JAVA_HOME
-    $ jenv add /Library/Java/JavaVirtualMachines/openjdk-21.jdk/Contents/Home
-    $ export JAVA_HOME=$(/usr/libexec/java_home -v21)
+- [Official documentation for installing jenv](https://www.jenv.be/)
+- [Official documentation for installing rbenv](https://github.com/rbenv/rbenv?tab=readme-ov-file#installation)
 
-    # check java version has been correctly set by `.java-version` file
-    $ java --version
-    ```
-4. Install the required jruby version
-    ```bash
-    # rbenv is easier to use and can install a version based on `.ruby-version` file
-    $ rbenv install
+Go to the root of the Crawler directory and check the expected Java and Ruby versions are being used:
 
-    # check ruby version
-    $ ruby --version
-    ```
-5. Run `make install` to install Crawler dependencies
+```bash
+# should output the same version as `.ruby-version`
+$ ruby --version
+
+# should output the same version as `.java-version`
+$ java --version
+```
+
+If the versions seem correct, you can install dependencies:
+
+```bash
+$ make install
+```
 
 Crawler should now be functional.
 See [Configuring Crawlers](#configuring-crawlers) to begin crawling web content.

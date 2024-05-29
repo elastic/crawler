@@ -2,7 +2,7 @@
 # our java dependencies into vendor/jars (see https://github.com/mkristian/jar-dependencies for details)
 #
 # If you update this file, please run the following command to update the jars cache:
-#    rm -rf Jars.lock vendor/jars && script/development exec script/vendor_jars
+#    make clean install
 #
 # When adding a new dependency, please explain what it is and why we're adding it in a comment.
 #---------------------------------------------------------------------------------------------------

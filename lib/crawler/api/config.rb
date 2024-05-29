@@ -344,7 +344,7 @@ module Crawler
       # Receives a crawler event object and outputs it into relevant systems
       def output_event(event)
         # Log the event
-        event_logger << "#{event.to_json}\n"
+        # event_logger << "#{event.to_json}\n"
 
         # Count stats for the crawl
         stats.update_from_event(event)

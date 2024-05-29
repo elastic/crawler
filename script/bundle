@@ -16,7 +16,7 @@ function bundle_command() {
     set +x
     echo
     red_echo "ERROR: Bundle command failed!"
-    yellow_echo "Try to run ./script/setup-rubies and then retry this command"
+    yellow_echo "Try to run 'make install' and then retry this command"
     echo
     exit 42
   fi

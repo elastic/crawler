@@ -16,7 +16,6 @@ else
   RESET=$(tput sgr0)
 fi
 
-#---------------------------------------------------------------------------------------------------
 function yellow_echo() {
   echo "${YELLOW}${*}${RESET}"
 }
@@ -41,7 +40,6 @@ function green_echo_date() {
   green_echo "[$(date +"%Y-%m-%d %H:%M:%S")] ${*}"
 }
 
-#---------------------------------------------------------------------------------------------------
 function load_version_constraints() {
   if [[ -z "${PROJECT_ROOT}" ]]; then
     PROJECT_ROOT="$(dirname "${BASH_SOURCE[0]}")/.."
@@ -50,99 +48,21 @@ function load_version_constraints() {
   export BUNDLER_VERSION="$(cat "$PROJECT_ROOT/.bundler-version")"
   export BUNDLER_CONSTRAINT="~> $BUNDLER_VERSION"
 
-  export JRUBY_VERSION="$(cat "$PROJECT_ROOT/.ruby-version")"
+  export RUBY_VERSION="$(cat "$PROJECT_ROOT/.ruby-version")"
   export JAVA_VERSION="$(cat "$PROJECT_ROOT/.java-version")"
+
+  RUNNING_RUBY_VERSION=$(ruby --version)
+  RUNNING_JAVA_VERSION=$(java --version)
+
+  echo "----"
+  echo "Required Ruby version: ${RUBY_VERSION}"
+  echo "Running Ruby version: ${RUNNING_RUBY_VERSION}"
+  echo "----"
+  echo "Required Java version: ${JAVA_VERSION}"
+  echo "Running Java version: ${RUNNING_JAVA_VERSION}"
+  echo "----"
 }
 
-#---------------------------------------------------------------------------------------------------
-function rbenv_init() {
-  yellow_echo "Checking if rbenv is installed..."
-  if ! command -v rbenv; then
-    echo "ERROR: rbenv is not installed! Please install it by running 'brew install rbenv' (or use your OS-specific install methods)."
-    exit 2
-  fi
-  green_echo "rbenv: OK"
-  echo
-
-  yellow_echo "Enabling rbenv support..."
-  eval "$(rbenv init -)"
-  green_echo "Done!"
-  echo
-}
-
-#---------------------------------------------------------------------------------------------------
-function jenv_init() {
-  yellow_echo "Checking if jenv is installed..."
-  if ! command -v jenv; then
-    echo "ERROR: jenv is not installed! Please install it by running 'brew install jenv' (or use your OS-specific install methods)."
-    exit 2
-  fi
-  green_echo "jenv: OK"
-  echo
-
-  yellow_echo "Enabling jenv support..."
-  eval "$(jenv init -)"
-  green_echo "Done!"
-  echo
-}
-
-#---------------------------------------------------------------------------------------------------
-function nvm_init() {
-  yellow_echo "Checking if nvm is installed..."
-  if [ ! -s "$NVM_DIR/nvm.sh" ]; then
-    echo "WARNING: nvm is not installed! Skipping..."
-    return 0
-  fi
-  green_echo "nvm: OK"
-  echo
-
-  yellow_echo "Enabling nvm support..."
-  set +e
-  source "$NVM_DIR/nvm.sh"
-  nvm use
-  rt=$?
-  if [ $rt -eq 3 ]; then
-    try_then_error "Node version from .nvmrc is not installed" "nvm install"
-  elif [ $rt -ne 0 ]; then
-    red_echo "ERROR: something went wrong with 'nvm use'"
-    exit $rt
-  fi
-  set -e
-  green_echo "Done!"
-  echo
-}
-
-#---------------------------------------------------------------------------------------------------
-function ensure_java_installed() {
-  JAVA_VERSION="$1"
-  yellow_echo "Checking if JAVA $JAVA_VERSION is installed..."
-  set +e
-  if ! jenv prefix; then
-    red_echo "ERROR: Java version $JAVA_VERSION is not installed! Please install it from homebrew or use your OS-specific install methods."
-    echo
-    yellow_echo "If you are on a mac, you may need to add homebrew-installed java to jenv: "
-    echo
-    echo "  jenv add /Library/Java/JavaVirtualMachines/temurin-$JAVA_VERSION.jdk/Contents/Home && jenv rehash"
-    echo
-    exit 2
-  fi
-  set -e
-  green_echo "Done!"
-  echo
-}
-
-#---------------------------------------------------------------------------------------------------
-function ensure_jruby_installed() {
-  JRUBY_VERSION="$1"
-  yellow_echo "Checking if JRuby $JRUBY_VERSION is installed..."
-  if [ -z "$(rbenv versions --bare | grep "^$JRUBY_VERSION")" ]; then
-    try_then_error "JRuby version $JRUBY_VERSION is not installed" "script/setup-rubies"
-  fi
-  green_echo "Done!"
-  echo
-}
-
-#---------------------------------------------------------------------------------------------------
 function check_bundle() {
   yellow_echo "Checking for missing gems..."
   if ! bundle check > /dev/null; then
@@ -152,32 +72,6 @@ function check_bundle() {
   echo
 }
 
-#---------------------------------------------------------------------------------------------------
-function check_yarn() {
-  yellow_echo "Checking for missing NPM packages..."
-  if ! which yarn; then
-    red_echo "ERROR: yarn is not installed! Please install it by running 'brew install yarn' (or use your OS-specific install methods described here: https://legacy.yarnpkg.com/en/docs/install)."
-    exit 2
-  fi
-  if ! yarn check --integrity > /dev/null; then
-    try_then_error "NPM packages are missing" "yarn install"
-  fi
-  green_echo "Done!"
-  echo
-}
-
-#---------------------------------------------------------------------------------------------------
-function check_git() {
-  yellow_echo "Checking your git tags..."
-  if [ -n "$(git tag | grep -E '^(dal05|v0\.2|show)')" ]; then
-      yellow_echo "Pruning bad tags"
-      git fetch --prune-tags --prune origin
-      yellow_echo "Bad tags pruned"
-  fi
-  green_echo "Done!"
-}
-
-#---------------------------------------------------------------------------------------------------
 function try_then_error() {
   ISSUE="$1"
   COMMAND="$2"
@@ -190,7 +84,6 @@ function try_then_error() {
   fi
 }
 
-#---------------------------------------------------------------------------------------------------
 function __install_macosx_dev_deps() {
   local root_dir
 
@@ -202,7 +95,7 @@ function __install_macosx_dev_deps() {
       exit 1
     fi
 
-    # Doesn't matter where the calling script is called from, this is where we at yo
+    # Doesn't matter where the calling script is called from
     root_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )/../"
 
     # Only run homebrew if dependencies have changed since last time
@@ -217,16 +110,6 @@ function __install_macosx_dev_deps() {
       echo "${RED}If temurin11 (java) is being installed Homebrew may ask you for a password,"
       echo "this is fine as the temurin11 recipe needs to install files outside of /usr/local...${RESET}"
       echo
-
-      if [[ "$(uname -s)" == 'Darwin' ]] && [[ "$(arch)" == *'arm64'* ]]
-      then
-        echo "${RED}⚠️  Warning ⚠️"
-        echo "It looks like you're running on an Apple M1 (nice), so you'll need to install Mailhog manually:${RESET}"
-        echo "${BLUE}$ go get github.com/mailhog/MailHog${RESET}"
-	echo
-        echo "${RED}And run it like so:${RESET}"
-        echo "${BLUE}$ ~/go/bin/MailHog${RESET}"
-      fi
 
       sleep 2
 
