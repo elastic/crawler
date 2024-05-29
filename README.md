@@ -107,3 +107,38 @@ And from Docker.
 ```bash
 $ docker exec -it crawler bin/crawler crawl config/my-crawler.yml
 ```
+
+### Connecting to Elasticsearch
+
+If you set the `output_sink` value to `elasticsearch`, Crawler will attempt to bulk index crawl results into Elasticsearch.
+To facilitate this connection, Crawler needs to have either an API key or a username/password configured to access the Elasticsearch instance.
+If using an API key, ensure that the API key has read and write permissions to access the index configured in `output_index`.
+
+- [Elasticsearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/security-api-create-api-key.html) for managing API keys for more details
+- [elasticsearch.yml.example](config/elasticsearch.yml.example) file for all of the available Elasticsearch configurations for Crawler
+
+Here is an example of creating an API key with minimal permissions for Crawler.
+This will return a JSON with an `encoded` key.
+The value of `encoded` is what Crawler can use in its configuration. 
+
+```bash
+POST /_security/api_key
+{
+  "name": "my-api-key",
+  "role_descriptors": { 
+    "my-crawler-role": {
+      "cluster": ["all"],
+      "indices": [
+        {
+          "names": ["my-crawler-index-name"],
+          "privileges": ["all"]
+        }
+      ]
+    }
+  },
+  "metadata": {
+    "application": "my-crawler"
+  }
+}
+
+```

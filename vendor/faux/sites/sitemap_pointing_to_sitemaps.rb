@@ -1,3 +1,8 @@
+#
+# Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+# or more contributor license agreements. Licensed under the MIT License;
+# see LICENSE file in the project root for details
+#
 class SitemapPointingToSitemaps < Faux::Base
   robots do
     user_agent '*'
