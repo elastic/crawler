@@ -3,10 +3,10 @@
 Configuration files live in the [config]('../config') directory.
 There are two kinds of configuration files:
 
-1. Crawler configurations (provided in CLI with `--crawler-config`)
-2. Elasticsearch configurations (provided in CLI with `--es-config`)
+1. Crawler configurations (provided as a positional argument)
+2. Elasticsearch configurations (provided as an optional argument with `--es-config`)
 
-There are two configuration files to allow crawl jobs to share Elasticsearch instance configuration.
+There two configuration file arguments allow crawl jobs to share Elasticsearch instance configuration.
 There are no enforced pathing or naming for these files.
 They are differentiated only by how they are provided to the CLI when running a crawl.
 
@@ -16,7 +16,7 @@ Crawler configuration files are required for all crawl jobs.
 If `elasticsearch` is the output sink, the elasticsearch instance configuration can also be included in a crawler configuration file.
 If the elasticsearch configuration is provided this way, it will override any configuration provided in an elasticsearch configuration file.
 
-These are provided in the CLI as an argument for the option `--crawl-config`.
+These are provided in the CLI as a positional argument, e.g. `bin/crawler crawl path/to/config.yml`.
 
 ## Elasticsearch configuration files
 
@@ -27,7 +27,7 @@ This configuration is also optional.
 All of the configuration in this file can be provided in a crawler configuration file as well.
 The crawler config is loaded after the Elasticsearch config, so any Elasticsearch settings in the crawler config will take priority.
 
-These are provided in the CLI as an argument for the option `--es-config`.
+These are provided in the CLI as a named argument for the option `--es-config`, e.g. `bin/crawler crawl path/to/config.yml --es-config=/path/to/es-config.yml`
 
 ## Configuration files in Docker
 
@@ -46,13 +46,13 @@ The order of the opts is not important.
 When performing a crawl with only a crawl config:
 
 ```shell
-$ bin/crawl --crawl-config config/my-crawler.yml
+$ bin/crawler crawl config/my-crawler.yml
 ```
 
 When performing a crawl with only both a crawl config and an Elasticsearch config:
 
 ```shell
-$ bin/crawl --crawl-config config/my-crawler.yml --es-config config/elasticsearch.yml
+$ bin/crawler crawl config/my-crawler.yml --es-config config/elasticsearch.yml
 ```
 
 ## Example configurations
