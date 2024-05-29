@@ -27,7 +27,8 @@ max_indexed_links_count: 5
 max_headings_count: 5
 
 elasticsearch:
-  host: http://localhost:9200
+  host: http://localhost
+  port: 9200
   username: elastic
   password: changeme
   bulk_api:
