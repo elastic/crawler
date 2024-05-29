@@ -1,6 +1,6 @@
 # Configuration
 
-Configuration files live in the [config]('../config') directory.
+Configuration files live in the [config](../config) directory.
 There are two kinds of configuration files:
 
 1. Crawler configurations (provided as a positional argument)
@@ -57,4 +57,4 @@ $ bin/crawler crawl config/my-crawler.yml --es-config config/elasticsearch.yml
 
 ## Example configurations
 
-See [examples]('../config/examples') for example configurations.
+See [examples](../config/examples) for example configurations.
