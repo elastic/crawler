@@ -16,7 +16,7 @@ Crawler configuration files are required for all crawl jobs.
 If `elasticsearch` is the output sink, the elasticsearch instance configuration can also be included in a crawler configuration file.
 If the elasticsearch configuration is provided this way, it will override any configuration provided in an elasticsearch configuration file.
 
-These are provided in the CLI as a positional argument, e.g. `bin/crawler crawl path/to/config.yml`.
+These are provided in the CLI as a positional argument, e.g. `bin/crawler crawl path/to/my-crawler.yml`.
 
 ## Elasticsearch configuration files
 
@@ -27,7 +27,7 @@ This configuration is also optional.
 All of the configuration in this file can be provided in a crawler configuration file as well.
 The crawler config is loaded after the Elasticsearch config, so any Elasticsearch settings in the crawler config will take priority.
 
-These are provided in the CLI as a named argument for the option `--es-config`, e.g. `bin/crawler crawl path/to/config.yml --es-config=/path/to/es-config.yml`
+These are provided in the CLI as a named argument for the option `--es-config`, e.g. `bin/crawler crawl path/to/my-crawler.yml --es-config=/path/to/elasticsearch.yml`
 
 ## Configuration files in Docker
 
