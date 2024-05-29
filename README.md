@@ -20,15 +20,13 @@ The crawl results can be output in 3 different modes:
 
 Crawler has a Dockerfile that can be built and run locally.
 
-If you run from Docker, you will need to copy your configuration files into the docker container before running any crawls.
-
-execute CLI commands from outside of the container by prepending `docker exec -it <container>`.
-See [Crawling content](#crawling-content) for examples.
-
-1. Build the image `docker build -t crawler .`
-2. Run the container `docker run -i -d crawler crawler`
+1. Build the image `docker build -t crawler-image .`
+2. Run the container `docker run -i -d --name crawler crawler-image`
    - `-i` allows the container to stay alive so CLI commands can be executed inside it
    - `-d` allows the container to run "detached" so you don't have to dedicated a terminal window to it
+3. Confirm that Crawler commands are working `docker exec -it crawler bin/crawl version`
+4. Execute other CLI commands from outside of the container by prepending `docker exec -it crawler <command>`.
+   - See [Crawling content](#crawling-content) for examples.
 
 #### Running from source
 
