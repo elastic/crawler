@@ -52,6 +52,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
 
     allow(system_logger).to receive(:debug)
     allow(system_logger).to receive(:info)
+    allow(system_logger).to receive(:warn)
 
     allow(Elasticsearch::API).to receive(:serializer).and_return(serializer)
     allow(serializer).to receive(:dump).and_return('')
@@ -295,8 +296,8 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       it 'returns empty stats' do
         stats = subject.ingestion_stats
 
-        expect(stats[:indexed_document_count]).to eq(0)
-        expect(stats[:indexed_document_volume]).to eq(0)
+        expect(stats[:completed][:docs_count]).to eq(0)
+        expect(stats[:failed][:docs_volume]).to eq(0)
       end
     end
 
@@ -311,8 +312,8 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
         it 'returns empty stats' do
           stats = subject.ingestion_stats
 
-          expect(stats[:indexed_document_count]).to eq(0)
-          expect(stats[:indexed_document_volume]).to eq(0)
+          expect(stats[:completed][:docs_count]).to eq(0)
+          expect(stats[:failed][:docs_volume]).to eq(0)
         end
       end
 
@@ -330,16 +331,48 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
           subject.flush
         end
 
-        it 'returns expected indexed_document_count' do
+        it 'returns expected docs_count' do
           stats = subject.ingestion_stats
 
-          expect(stats[:indexed_document_count]).to eq(document_count)
+          expect(stats[:completed][:docs_count]).to eq(document_count)
+          expect(stats[:failed][:docs_count]).to eq(0)
         end
 
-        it 'returns expected indexed_document_volume' do
+        it 'returns expected docs_volume' do
           stats = subject.ingestion_stats
 
-          expect(stats[:indexed_document_volume]).to eq(document_count * serialized_object.bytesize)
+          expect(stats[:completed][:docs_volume]).to eq(document_count * serialized_object.bytesize)
+          expect(stats[:failed][:docs_volume]).to eq(0)
+        end
+      end
+
+      context 'when some documents failed to be ingested' do
+        let(:document_count) { 5 }
+        let(:serialized_object) { 'doesnt matter' }
+
+        before(:each) do
+          allow(bulk_queue).to receive(:bytesize).and_return(serialized_object.bytesize)
+          allow(es_client).to receive(:bulk).and_raise(Utility::EsClient::IndexingFailedError)
+
+          document_count.times.each do |x|
+            subject.write(FactoryBot.build(:html_crawl_result, url: "http://real.com/#{x}"))
+          end
+
+          subject.flush
+        end
+
+        it 'returns expected docs_count' do
+          stats = subject.ingestion_stats
+
+          expect(stats[:failed][:docs_count]).to eq(document_count)
+          expect(stats[:completed][:docs_count]).to eq(0)
+        end
+
+        it 'returns expected docs_volume' do
+          stats = subject.ingestion_stats
+
+          expect(stats[:failed][:docs_volume]).to eq(document_count * serialized_object.bytesize)
+          expect(stats[:completed][:docs_volume]).to eq(0)
         end
       end
     end

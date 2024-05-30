@@ -11,6 +11,8 @@ require 'elasticsearch'
 module Utility
   class EsClient < ::Elasticsearch::Client
     USER_AGENT = 'elastic-web-crawler-'
+    MAX_RETRIES = 3
+    REQUEST_TIMEOUT = 30 # seconds
 
     class IndexingFailedError < StandardError
       def initialize(message, error = nil)
@@ -32,6 +34,9 @@ module Utility
           headers: {
             'user-agent': "#{USER_AGENT}#{crawler_version}",
             'X-elastic-product-origin': 'crawler'
+          },
+          request: {
+            timeout: REQUEST_TIMEOUT
           }
         }
       }
@@ -43,7 +48,19 @@ module Utility
     end
 
     def bulk(arguments = {})
-      raise_if_necessary(super(arguments))
+      retries = 0
+      begin
+        raise_if_necessary(super(arguments))
+      rescue StandardError => e
+        retries += 1
+        if retries <= MAX_RETRIES
+          @system_logger.info("Bulk index attempt #{retries} failed: #{e.message}. Retrying...")
+          sleep(1.second)
+          retry
+        else
+          @system_logger.warn("Bulk index failed after #{retries} attempts: #{e.message}.")
+        end
+      end
     end
 
     private
@@ -102,7 +119,7 @@ module Utility
           end
         end
 
-        @system_logger.debug("Errors found in bulk response. Full response: #{response}")
+        @system_logger.warn("Errors found in bulk response. Full response: #{response}")
         if first_error
           # TODO: add trace logging
           # TODO: consider logging all errors instead of just first

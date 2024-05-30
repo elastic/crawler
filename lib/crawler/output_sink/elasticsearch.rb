@@ -55,7 +55,12 @@ module Crawler
 
       def close
         flush
-        system_logger.info(ingestion_stats)
+        msg = <<~LOG.squish
+          All indexing operations completed.
+          Successfully indexed #{@completed[:docs_count]} docs with a volume of #{@completed[:docs_volume]} bytes.
+          Failed to index #{@failed[:docs_count]} docs with a volume of #{@failed[:docs_volume]} bytes.
+        LOG
+        system_logger.info(msg)
       end
 
       def flush # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
@@ -65,25 +70,25 @@ module Crawler
           return
         end
 
-        system_logger.debug("Sending bulk request with #{data.size} items and flushing queue...")
+        # a single doc needs two items in a bulk request, so halving the count makes logs clearer
+        indexing_docs_count = data.size / 2
+        system_logger.info("Sending bulk request with #{indexing_docs_count} items and flushing queue...")
 
         begin
           client.bulk(body: data, pipeline:) # TODO: parse response
+          system_logger.info("Successfully indexed #{indexing_docs_count} docs.")
+          reset_ingestion_stats_success
         rescue Utility::EsClient::IndexingFailedError => e
           system_logger.warn("Bulk index failed: #{e}")
+          reset_ingestion_stats_failure
         rescue StandardError => e
           system_logger.warn("Bulk index failed for unexpected reason: #{e}")
-          raise e
+          reset_ingestion_stats_failure
         end
-
-        system_logger.debug("Bulk request containing #{data.size} items sent!")
-        reset_ingestion_stats
-
-        nil
       end
 
       def ingestion_stats
-        @completed.dup
+        { completed: @completed.dup, failed: @failed.dup }
       end
 
       def operation_queue
@@ -133,27 +138,38 @@ module Crawler
 
       def init_ingestion_stats
         @queued = {
-          indexed_document_count: 0,
-          indexed_document_volume: 0
+          docs_count: 0,
+          docs_volume: 0
         }
         @completed = {
-          indexed_document_count: 0,
-          indexed_document_volume: 0
+          docs_count: 0,
+          docs_volume: 0
+        }
+        @failed = {
+          docs_count: 0,
+          docs_volume: 0
         }
       end
 
       def increment_ingestion_stats(doc)
-        @queued[:indexed_document_count] += 1
-        @queued[:indexed_document_volume] += operation_queue.bytesize(doc)
+        @queued[:docs_count] += 1
+        @queued[:docs_volume] += operation_queue.bytesize(doc)
       end
 
-      def reset_ingestion_stats
-        # TODO: this count isn't accurate, need to look into it
-        @completed[:indexed_document_count] += @queued[:indexed_document_count]
-        @completed[:indexed_document_volume] += @queued[:indexed_document_volume]
+      def reset_ingestion_stats_success
+        @completed[:docs_count] += @queued[:docs_count]
+        @completed[:docs_volume] += @queued[:docs_volume]
 
-        @queued[:indexed_document_count] = 0
-        @queued[:indexed_document_volume] = 0
+        @queued[:docs_count] = 0
+        @queued[:docs_volume] = 0
+      end
+
+      def reset_ingestion_stats_failure
+        @failed[:docs_count] += @queued[:docs_count]
+        @failed[:docs_volume] += @queued[:docs_volume]
+
+        @queued[:docs_count] = 0
+        @queued[:docs_volume] = 0
       end
     end
   end
