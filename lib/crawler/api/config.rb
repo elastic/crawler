@@ -22,7 +22,18 @@ java_import java.security.cert.X509Certificate
 module Crawler
   module API
     class Config # rubocop:disable Metrics/ClassLength
+      LOG_LEVELS = {
+        debug: Logger::DEBUG,
+        info: Logger::INFO,
+        warn: Logger::WARN,
+        error: Logger::ERROR,
+        fatal: Logger::FATAL
+      }.stringify_keys.freeze
+
       CONFIG_FIELDS = [
+        :log_level,            # Log level set in config file, defaults to `info`
+        :event_logs,           # Whether event logs are output to the shell, defaults to `false`
+
         :crawl_id,             # Unique identifier of the crawl (used in logs, etc)
         :crawl_stage,          # Stage name for multi-stage crawls
 
@@ -111,6 +122,9 @@ module Crawler
       # and in the `Crawler::HttpUtils::Config` class.
       # Make sure to check those before renaming or removing any defaults.
       DEFAULTS = {
+        log_level: 'info',
+        event_logs: false,
+
         crawl_stage: :primary,
 
         sitemap_urls: [],
@@ -192,7 +206,7 @@ module Crawler
         configure_crawl_id!
 
         # Setup logging for free-text and structured events
-        configure_logging!
+        configure_logging!(params[:log_level], params[:event_logs])
 
         # Normalize and validate parameters
         confugure_ssl_ca_certificates!
@@ -315,12 +329,15 @@ module Crawler
       end
 
       #---------------------------------------------------------------------------------------------
-      def configure_logging!
-        @event_logger = Logger.new($stdout)
+      def configure_logging!(log_level, event_logs_enabled)
+        @event_logger = Logger.new($stdout) if event_logs_enabled
+
+        system_logger = Logger.new($stdout)
+        system_logger.level = LOG_LEVELS[log_level]
 
         # Add crawl id and stage to all logging events produced by this crawl
-        base_system_logger = StaticallyTaggedLogger.new(Logger.new($stdout))
-        @system_logger = base_system_logger.tagged("crawl:#{crawl_id}", crawl_stage)
+        tagged_system_logger = StaticallyTaggedLogger.new(system_logger)
+        @system_logger = tagged_system_logger.tagged("crawl:#{crawl_id}", crawl_stage)
       end
 
       #---------------------------------------------------------------------------------------------
@@ -344,7 +361,7 @@ module Crawler
       # Receives a crawler event object and outputs it into relevant systems
       def output_event(event)
         # Log the event
-        event_logger << "#{event.to_json}\n"
+        event_logger << "#{event.to_json}\n" if event_logger
 
         # Count stats for the crawl
         stats.update_from_event(event)
