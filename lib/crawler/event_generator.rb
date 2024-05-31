@@ -61,7 +61,7 @@ module Crawler
         else
           'Starting a crawl'
         end
-      system_logger.info("#{action} with the following configuration: #{config}")
+      system_logger.debug("#{action} with the following configuration: #{config}")
 
       log_crawl_event(
         'event.type' => 'start',
@@ -72,7 +72,7 @@ module Crawler
     end
 
     def crawl_end(outcome:, message:, resume_possible:)
-      system_logger.info("Finished a crawl. Result: #{outcome}: #{message}")
+      system_logger.info("Finished a crawl. Result: #{outcome}; #{message}")
       log_crawl_event(
         'event.type' => 'end',
         'event.action' => 'crawl-end',
@@ -127,7 +127,7 @@ module Crawler
     # URL Life-cycle Events
     #-----------------------------------------------------------------------------------------------
     def url_seed(url:, source_url:, type:, crawl_depth:, source_type:)
-      system_logger.info(
+      system_logger.debug(
         "Added a new URL to the crawl queue: '#{url}' (type: #{type}, source: #{source_type}, depth: #{crawl_depth})"
       )
       log_url_event(
@@ -146,7 +146,7 @@ module Crawler
     def url_fetch(url:, crawl_result:, auth_type: nil) # rubocop:disable Metrics/AbcSize
       status_code = crawl_result.status_code
       outcome = outcome_from_status_code(status_code)
-      system_logger.info("Fetched a page '#{url}' with a status code #{status_code} and an outcome of '#{outcome}'")
+      system_logger.debug("Fetched a page '#{url}' with a status code #{status_code} and an outcome of '#{outcome}'")
 
       event = {
         'crawler.url.auth.type' => auth_type,

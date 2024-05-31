@@ -131,7 +131,7 @@ module Crawler
       elsif crawl_result.error?
         system_logger.warn("Error while fetching robots.txt for #{domain}: #{crawl_result.error}")
       else
-        system_logger.info("Fetched robots.txt for #{domain} from '#{crawl_result.url}'")
+        system_logger.debug("Fetched robots.txt for #{domain} from '#{crawl_result.url}'")
       end
 
       crawl_result
@@ -140,7 +140,7 @@ module Crawler
     #-----------------------------------------------------------------------------------------------
     # Seed the crawler with configured URLs
     def enqueue_seed_urls
-      system_logger.info("Seeding the crawl with #{config.seed_urls.size} URLs...")
+      system_logger.debug("Seeding the crawl with #{config.seed_urls.size} URLs...")
       add_urls_to_backlog(
         urls: config.seed_urls,
         type: :content,
@@ -153,7 +153,7 @@ module Crawler
     # Seed the crawler with pre-configured sitemaps
     def enqueue_sitemaps
       if config.sitemap_urls.any?
-        system_logger.info("Seeding the crawl with #{config.sitemap_urls.count} Sitemap URLs...")
+        system_logger.debug("Seeding the crawl with #{config.sitemap_urls.count} Sitemap URLs...")
         add_urls_to_backlog(
           urls: config.sitemap_urls,
           type: :sitemap,
@@ -167,7 +167,7 @@ module Crawler
       valid_auto_discovered_sitemap_urls = fetch_valid_auto_discovered_sitemap_urls!
       return unless valid_auto_discovered_sitemap_urls.any?
 
-      system_logger.info(
+      system_logger.debug(
         "Seeding the crawl with #{valid_auto_discovered_sitemap_urls.count} " \
         'auto-discovered (via robots.txt) Sitemap URLs...'
       )
@@ -511,7 +511,7 @@ module Crawler
       # Seeding complete, log about it
       return unless added_urls_count.positive?
 
-      system_logger.info("Added #{added_urls_count} URLs from a #{source_type} source to the queue...")
+      system_logger.debug("Added #{added_urls_count} URLs from a #{source_type} source to the queue...")
       events.crawl_seed(added_urls_count, type: :content) if source_type == SEED_LIST
     end
 
