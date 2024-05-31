@@ -54,6 +54,13 @@ If the versions seem correct, you can install dependencies:
 $ make install
 ```
 
+You can also use the env variable `CRAWLER_MANAGE_ENV` to have the install script automatically check whether `rbenv` and `jenv` are installed, and that the correct versions are running on both:
+Doing this requires that you use both `rbenv` and `jenv` in your local setup.
+
+```bash
+$ CRAWLER_MANAGE_ENV=true make install
+```
+
 Crawler should now be functional.
 See [Configuring Crawlers](#configuring-crawlers) to begin crawling web content.
 
