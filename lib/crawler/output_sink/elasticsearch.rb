@@ -81,11 +81,9 @@ module Crawler
         rescue Utility::EsClient::IndexingFailedError => e
           system_logger.warn("Bulk index failed: #{e}")
           reset_ingestion_stats(false)
-
         rescue StandardError => e
           system_logger.warn("Bulk index failed for unexpected reason: #{e}")
           reset_ingestion_stats(false)
-
         end
       end
 

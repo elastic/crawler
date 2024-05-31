@@ -12,7 +12,7 @@ RSpec.describe(Utility::EsClient) do
   let(:system_logger) { double }
   let(:host) { 'http://notreallyaserver' }
   let(:port) { '9200' }
-  let(:elastic_product_headers) { { 'x-elastic-product': 'Elasticsearch'} }
+  let(:elastic_product_headers) { { 'x-elastic-product': 'Elasticsearch' } }
   let(:config) do
     {
       elasticsearch: {
@@ -125,19 +125,22 @@ RSpec.describe(Utility::EsClient) do
 
     context 'when there is an error in the first attempt' do
       before :each do
-        stub_request(:post, "#{host}:#{port}/_bulk").to_return({ status: 404, exception: 'Intermittent failure' }, {status: 200, headers: elastic_product_headers})
+        stub_request(:post, "#{host}:#{port}/_bulk").to_return({ status: 404, exception: 'Intermittent failure' },
+                                                               { status: 200, headers: elastic_product_headers })
       end
 
       it 'succeeds on the retry' do
         result = subject.bulk(payload)
         expect(result.status).to eq(200)
-        expect(system_logger).to have_received(:info).with("Bulk index attempt 1 failed: 'Intermittent failure'. Retrying in 2 seconds...")
+        expect(system_logger).to have_received(:info).with(
+          "Bulk index attempt 1 failed: 'Intermittent failure'. Retrying in 2 seconds..."
+        )
       end
     end
 
     context 'when there is an error in every attempt' do
       let(:fixed_time) { Time.new(2024, 1, 1, 0, 0, 0) }
-      let(:file_double) { double("File", puts: nil, close: nil) }
+      let(:file_double) { double('File', puts: nil, close: nil) }
 
       before :each do
         stub_const('Utility::EsClient::MAX_RETRIES', 1)
@@ -149,10 +152,16 @@ RSpec.describe(Utility::EsClient) do
       it 'raises an error after exhausting retries' do
         expect { subject.bulk(payload) }.to raise_error(StandardError)
 
-        expect(system_logger).to have_received(:info).with("Bulk index attempt 1 failed: 'Consistent failure'. Retrying in 2 seconds...")
-        expect(system_logger).to have_received(:warn).with("Bulk index failed after 2 attempts: 'Consistent failure'. Writing payload to file...")
+        expect(system_logger).to have_received(:info).with(
+          "Bulk index attempt 1 failed: 'Consistent failure'. Retrying in 2 seconds..."
+        )
+        expect(system_logger).to have_received(:warn).with(
+          "Bulk index failed after 2 attempts: 'Consistent failure'. Writing payload to file..."
+        )
 
-        expect(File).to have_received(:open).with("#{Utility::EsClient::FAILED_BULKS_DIR}/crawl-id/#{fixed_time.strftime('%Y%m%d%H%M%S')}", 'w')
+        expect(File).to have_received(:open).with(
+          "#{Utility::EsClient::FAILED_BULKS_DIR}/crawl-id/#{fixed_time.strftime('%Y%m%d%H%M%S')}", 'w'
+        )
 
         expect(file_double).to have_received(:puts).with(payload[:body].first)
         expect(file_double).to have_received(:puts).with(payload[:body].second)

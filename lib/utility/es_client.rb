@@ -58,10 +58,14 @@ module Utility
         retries += 1
         if retries <= MAX_RETRIES
           wait_time = 2**retries
-          @system_logger.info("Bulk index attempt #{retries} failed: '#{e.message}'. Retrying in #{wait_time} seconds...")
+          @system_logger.info(<<~LOG.squish)
+            Bulk index attempt #{retries} failed: '#{e.message}'. Retrying in #{wait_time} seconds...
+          LOG
           sleep(wait_time.seconds) && retry
         else
-          @system_logger.warn("Bulk index failed after #{retries} attempts: '#{e.message}'. Writing payload to file...")
+          @system_logger.warn(<<~LOG.squish)
+            Bulk index failed after #{retries} attempts: '#{e.message}'. Writing payload to file...
+          LOG
           store_failed_payload(payload)
           raise e
         end
