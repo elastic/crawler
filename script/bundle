@@ -25,10 +25,10 @@ function bundle_command() {
 BUNDLER_VERSION="$(cat .bundler-version)"
 BUNDLER_CONSTRAINT="~> $BUNDLER_VERSION"
 
-yellow_echo "Bundling jruby gems..."
+blue_echo "Bundling jruby gems..."
 bundle_command config cache_all true
 
-yellow_echo "Running the bundle command..."
+blue_echo "Running the bundle command..."
 bundle_command "$@"
 
 green_echo "Done!"
