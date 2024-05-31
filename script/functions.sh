@@ -20,24 +20,16 @@ function yellow_echo() {
   echo "${YELLOW}${*}${RESET}"
 }
 
-function yellow_echo_date() {
-  yellow_echo "[$(date +"%Y-%m-%d %H:%M:%S")] ${*}"
-}
-
 function red_echo()    {
   echo "${RED}${*}${RESET}"
-}
-
-function red_echo_date() {
-  red_echo "[$(date +"%Y-%m-%d %H:%M:%S")] ${*}"
 }
 
 function green_echo()  {
   echo "${GREEN}${*}${RESET}"
 }
 
-function green_echo_date() {
-  green_echo "[$(date +"%Y-%m-%d %H:%M:%S")] ${*}"
+function blue_echo() {
+  echo "${BLUE}${*}${RESET}"
 }
 
 function load_version_constraints() {
@@ -51,7 +43,7 @@ function load_version_constraints() {
   export RUBY_VERSION="$(cat "$PROJECT_ROOT/.ruby-version")"
   export JAVA_VERSION="$(cat "$PROJECT_ROOT/.java-version")"
 
-  yellow_echo "Checking version constraints..."
+  blue_echo "Checking version constraints..."
   green_echo "Required Ruby version: ${RUBY_VERSION}"
   green_echo "Required Java version: ${JAVA_VERSION}"
   echo
@@ -59,6 +51,7 @@ function load_version_constraints() {
   if [ "$CRAWLER_MANAGE_ENV" = "true" ]; then
     rbenv_init
     ensure_jruby_installed "$RUBY_VERSION"
+    ensure_bundler_version "$RUBY_VERSION"
     jenv_init
     ensure_java_installed "$JAVA_VERSION"
   fi
@@ -66,7 +59,7 @@ function load_version_constraints() {
   RUNNING_RUBY_VERSION=$(ruby --version)
   RUNNING_JAVA_VERSION=$(java --version)
 
-  yellow_echo "Checking running versions..."
+  blue_echo "Checking running versions..."
   echo "Running Ruby version: ${RUNNING_RUBY_VERSION}"
   echo "Running Java version: ${RUNNING_JAVA_VERSION}"
   green_echo "Done!"
@@ -74,7 +67,7 @@ function load_version_constraints() {
 }
 
 function check_bundle() {
-  yellow_echo "Checking for missing gems..."
+  blue_echo "Checking for missing gems..."
   if ! bundle check > /dev/null; then
     try_then_error "Bundle is missing gems" "script/bundle"
   fi
@@ -83,7 +76,7 @@ function check_bundle() {
 }
 
 function rbenv_init() {
-  yellow_echo "Checking if rbenv is installed..."
+  blue_echo "Checking if rbenv is installed..."
   if ! command -v rbenv; then
     echo "ERROR: rbenv is not installed! Please install it by running 'brew install rbenv' (or use your OS-specific install methods)."
     exit 2
@@ -91,14 +84,14 @@ function rbenv_init() {
   green_echo "rbenv: OK"
   echo
 
-  yellow_echo "Enabling rbenv support..."
+  blue_echo "Enabling rbenv support..."
   eval "$(rbenv init -)"
   green_echo "Done!"
   echo
 }
 
 function jenv_init() {
-  yellow_echo "Checking if jenv is installed..."
+  blue_echo "Checking if jenv is installed..."
   if ! command -v jenv; then
     echo "ERROR: jenv is not installed! Please install it by running 'brew install jenv' (or use your OS-specific install methods)."
     exit 2
@@ -106,7 +99,7 @@ function jenv_init() {
   green_echo "jenv: OK"
   echo
 
-  yellow_echo "Enabling jenv support..."
+  blue_echo "Enabling jenv support..."
   eval "$(jenv init -)"
   green_echo "Done!"
   echo
@@ -114,7 +107,7 @@ function jenv_init() {
 
 function ensure_java_installed() {
   JAVA_VERSION="$1"
-  yellow_echo "Checking if JAVA $JAVA_VERSION is installed..."
+  blue_echo "Checking if JAVA $JAVA_VERSION is installed..."
   set +e
   if ! jenv prefix; then
     red_echo "ERROR: Java version $JAVA_VERSION is not installed! Please install it from homebrew or use your OS-specific install methods."
@@ -132,18 +125,77 @@ function ensure_java_installed() {
 
 function ensure_jruby_installed() {
   RUBY_VERSION="$1"
-  yellow_echo "Checking if Ruby $RUBY_VERSION is installed..."
+
+  blue_echo "Checking if RBENV_VERSION has a value..."
+  if [ -z "${RBENV_VERSION+x}" ]; then
+    green_echo "RBENV_VERSION is unset, everything looks good!"
+  else
+    if [ "$RBENV_VERSION" != "$RUBY_VERSION" ]; then
+      red_echo "RBENV_VERSION is set in env to version '$RBENV_VERSION', which is incompatible with '$RUBY_VERSION'"
+      red_echo "Please unset this variable and try again."
+      exit 2
+    else
+      yellow_echo "RBENV_VERSION is set in env to '$RBENV_VERSION', which is the same as the version in '.ruby-version'."
+      yellow_echo "This should not cause issues, however if dependency installation fails, please try unsetting this variable."
+    fi
+  fi
+  unset RBENV_VERSION
+  green_echo "Done!"
+  echo
+
+
+  blue_echo "Checking if Ruby $RUBY_VERSION is installed..."
   if [ -z "$(rbenv versions --bare | grep "^$RUBY_VERSION")" ]; then
-    try_then_error "Ruby version $RUBY_VERSION is not installed" "script/setup-rubies"
+    try_then_error "Ruby version $RUBY_VERSION is not installed" "rbenv install --skip-existing"
   fi
   green_echo "Done!"
   echo
 }
 
+function ensure_bundler_version() {
+  RUBY_VERSION="$1"
+
+  blue_echo "Checking bundler version in $RUBY_VERSION..."
+  rbenv shell "$RUBY_VERSION"
+  rbenv rehash
+
+  if ! bundler_installed; then
+    red_echo "No bundler found in $RUBY_VERSION!"
+    install_bundler
+  elif ! check_bundler_version; then
+    red_echo "ERROR: $RUBY_VERSION bundler version does not satisfy the constraint: ${BUNDLER_CONSTRAINT}! Installed version: $(bundler --version)"
+    reinstall_bundler
+  fi
+
+  bundler --version
+  green_echo "Done!"
+  echo
+}
+
+function bundler_installed() {
+  ruby -r bundler -e true 2> /dev/null
+}
+
+function check_bundler_version() {
+  ruby -r bundler -e "exit Gem::Requirement.new('${BUNDLER_CONSTRAINT}').satisfied_by?(Gem::Version.new(Bundler::VERSION))"
+}
+
+function install_bundler() {
+  blue_echo "Installing bundler version ${BUNDLER_VERSION}"
+  gem install bundler --clear-sources --source=https://rubygems.org -v="${BUNDLER_VERSION}"
+}
+
+function reinstall_bundler() {
+  blue_echo "Removing all installed bundler versions and installing bundler version ${BUNDLER_VERSION}..."
+  gem uninstall bundler --force --all --ignore-dependencies --executables
+  echo
+  install_bundler
+}
+
 function try_then_error() {
   ISSUE="$1"
   COMMAND="$2"
-  yellow_echo "$ISSUE. Running: '$COMMAND'"
+  blue_echo "$ISSUE. Running: '$COMMAND'"
   eval "$2"
   rt=$?
   if [[ $rt -ne 0 ]] ; then
