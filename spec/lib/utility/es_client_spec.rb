@@ -12,6 +12,7 @@ RSpec.describe(Utility::EsClient) do
   let(:system_logger) { double }
   let(:host) { 'http://notreallyaserver' }
   let(:port) { '9200' }
+  let(:elastic_product_headers) { { 'x-elastic-product': 'Elasticsearch'} }
   let(:config) do
     {
       elasticsearch: {
@@ -24,7 +25,7 @@ RSpec.describe(Utility::EsClient) do
     }.deep_symbolize_keys
   end
 
-  let(:subject) { described_class.new(config[:elasticsearch], system_logger, '0.0.0-test') }
+  let(:subject) { described_class.new(config[:elasticsearch], system_logger, '0.0.0-test', 'crawl-id') }
 
   before(:each) do
     stub_request(:get, "#{host}:#{port}/")
@@ -34,6 +35,7 @@ RSpec.describe(Utility::EsClient) do
     # TODO: make a factory or something for system_logger mocks
     allow(system_logger).to receive(:info)
     allow(system_logger).to receive(:debug)
+    allow(system_logger).to receive(:warn)
   end
 
   describe '#connection_config' do
@@ -96,6 +98,64 @@ RSpec.describe(Utility::EsClient) do
         result = subject.connection_config(config[:elasticsearch], '0.0.0-test')
 
         expect(result).to_not have_key(:headers)
+      end
+    end
+  end
+
+  describe '#bulk' do
+    let(:payload) do
+      {
+        body: [
+          { index: { _index: 'my_index', _id: '123' } },
+          { id: '123', title: 'Foo', body_content: 'bar' }
+        ]
+      }
+    end
+
+    context 'when successful' do
+      before :each do
+        stub_request(:post, "#{host}:#{port}/_bulk").to_return(status: 200, headers: elastic_product_headers)
+      end
+
+      it 'sends bulk request without error' do
+        result = subject.bulk(payload)
+        expect(result.status).to eq(200)
+      end
+    end
+
+    context 'when there is an error in the first attempt' do
+      before :each do
+        stub_request(:post, "#{host}:#{port}/_bulk").to_return({ status: 404, exception: 'Intermittent failure' }, {status: 200, headers: elastic_product_headers})
+      end
+
+      it 'succeeds on the retry' do
+        result = subject.bulk(payload)
+        expect(result.status).to eq(200)
+        expect(system_logger).to have_received(:info).with("Bulk index attempt 1 failed: 'Intermittent failure'. Retrying in 2 seconds...")
+      end
+    end
+
+    context 'when there is an error in every attempt' do
+      let(:fixed_time) { Time.new(2024, 1, 1, 0, 0, 0) }
+      let(:file_double) { double("File", puts: nil, close: nil) }
+
+      before :each do
+        stub_const('Utility::EsClient::MAX_RETRIES', 1)
+        allow(File).to receive(:open).and_yield(file_double)
+        allow(Time).to receive(:now).and_return(fixed_time)
+        stub_request(:post, "#{host}:#{port}/_bulk").to_return({ status: 404, exception: 'Consistent failure' })
+      end
+
+      it 'raises an error after exhausting retries' do
+        expect { subject.bulk(payload) }.to raise_error(StandardError)
+
+        expect(system_logger).to have_received(:info).with("Bulk index attempt 1 failed: 'Consistent failure'. Retrying in 2 seconds...")
+        expect(system_logger).to have_received(:warn).with("Bulk index failed after 2 attempts: 'Consistent failure'. Writing payload to file...")
+
+        expect(File).to have_received(:open).with("#{Utility::EsClient::FAILED_BULKS_DIR}/crawl-id/#{fixed_time.strftime('%Y%m%d%H%M%S')}", 'w')
+
+        expect(file_double).to have_received(:puts).with(payload[:body].first)
+        expect(file_double).to have_received(:puts).with(payload[:body].second)
       end
     end
   end

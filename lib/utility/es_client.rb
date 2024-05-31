@@ -6,6 +6,7 @@
 
 # frozen_string_literal: true
 
+require 'fileutils'
 require 'elasticsearch'
 
 module Utility
@@ -13,6 +14,7 @@ module Utility
     USER_AGENT = 'elastic-web-crawler-'
     MAX_RETRIES = 3
     REQUEST_TIMEOUT = 30 # seconds
+    FAILED_BULKS_DIR = 'output/failed_payloads' # directory that failed bulk payloads are output to
 
     class IndexingFailedError < StandardError
       def initialize(message, error = nil)
@@ -23,8 +25,9 @@ module Utility
       attr_reader :cause
     end
 
-    def initialize(es_config, system_logger, crawler_version, &)
+    def initialize(es_config, system_logger, crawler_version, crawl_id, &)
       @system_logger = system_logger
+      @crawl_id = crawl_id
       super(connection_config(es_config, crawler_version), &)
     end
 
@@ -47,18 +50,20 @@ module Utility
       config
     end
 
-    def bulk(arguments = {})
+    def bulk(payload = {})
       retries = 0
       begin
-        raise_if_necessary(super(arguments))
+        raise_if_necessary(super(payload))
       rescue StandardError => e
         retries += 1
         if retries <= MAX_RETRIES
-          @system_logger.info("Bulk index attempt #{retries} failed: #{e.message}. Retrying...")
-          sleep(1.second)
-          retry
+          wait_time = 2**retries
+          @system_logger.info("Bulk index attempt #{retries} failed: '#{e.message}'. Retrying in #{wait_time} seconds...")
+          sleep(wait_time.seconds) && retry
         else
-          @system_logger.warn("Bulk index failed after #{retries} attempts: #{e.message}.")
+          @system_logger.warn("Bulk index failed after #{retries} attempts: '#{e.message}'. Writing payload to file...")
+          store_failed_payload(payload)
+          raise e
         end
       end
     end
@@ -133,6 +138,20 @@ module Utility
         @system_logger.debug('No errors found in bulk response.')
       end
       response
+    end
+
+    def store_failed_payload(payload)
+      dir = "#{FAILED_BULKS_DIR}/#{@crawl_id}"
+      FileUtils.mkdir_p(dir) unless File.directory?(dir)
+
+      filename = Time.now.strftime('%Y%m%d%H%M%S')
+      full_path = File.join(dir, filename)
+      File.open(full_path, 'w') do |file|
+        payload[:body].each do |item|
+          file.puts(item)
+        end
+      end
+      @system_logger.warn("Saved failed bulk payload to #{full_path}")
     end
   end
 end

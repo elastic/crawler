@@ -64,18 +64,18 @@ module Crawler
       end
 
       def flush # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
-        data = operation_queue.pop_all
-        if data.empty?
+        payload = operation_queue.pop_all
+        if payload.empty?
           system_logger.debug('Queue was empty when attempting to flush.')
           return
         end
 
         # a single doc needs two items in a bulk request, so halving the count makes logs clearer
-        indexing_docs_count = data.size / 2
+        indexing_docs_count = payload.size / 2
         system_logger.info("Sending bulk request with #{indexing_docs_count} items and flushing queue...")
 
         begin
-          client.bulk(body: data, pipeline:) # TODO: parse response
+          client.bulk(body: payload, pipeline:) # TODO: parse response
           system_logger.info("Successfully indexed #{indexing_docs_count} docs.")
           reset_ingestion_stats_success
         rescue Utility::EsClient::IndexingFailedError => e
@@ -104,7 +104,7 @@ module Crawler
       end
 
       def client
-        @client ||= Utility::EsClient.new(es_config, system_logger, Crawler.version)
+        @client ||= Utility::EsClient.new(es_config, system_logger, Crawler.version, crawl_id)
       end
 
       def index_name
