@@ -77,13 +77,15 @@ module Crawler
         begin
           client.bulk(body: payload, pipeline:) # TODO: parse response
           system_logger.info("Successfully indexed #{indexing_docs_count} docs.")
-          reset_ingestion_stats_success
+          reset_ingestion_stats(true)
         rescue Utility::EsClient::IndexingFailedError => e
           system_logger.warn("Bulk index failed: #{e}")
-          reset_ingestion_stats_failure
+          reset_ingestion_stats(false)
+
         rescue StandardError => e
           system_logger.warn("Bulk index failed for unexpected reason: #{e}")
-          reset_ingestion_stats_failure
+          reset_ingestion_stats(false)
+
         end
       end
 
@@ -156,17 +158,14 @@ module Crawler
         @queued[:docs_volume] += operation_queue.bytesize(doc)
       end
 
-      def reset_ingestion_stats_success
-        @completed[:docs_count] += @queued[:docs_count]
-        @completed[:docs_volume] += @queued[:docs_volume]
-
-        @queued[:docs_count] = 0
-        @queued[:docs_volume] = 0
-      end
-
-      def reset_ingestion_stats_failure
-        @failed[:docs_count] += @queued[:docs_count]
-        @failed[:docs_volume] += @queued[:docs_volume]
+      def reset_ingestion_stats(success)
+        if success
+          @completed[:docs_count] += @queued[:docs_count]
+          @completed[:docs_volume] += @queued[:docs_volume]
+        else
+          @failed[:docs_count] += @queued[:docs_count]
+          @failed[:docs_volume] += @queued[:docs_volume]
+        end
 
         @queued[:docs_count] = 0
         @queued[:docs_volume] = 0
