@@ -1,8 +1,19 @@
-## Domains allowed for the crawl
+## ================== Crawler Configuration - Elasticsearch ====================
+#
+##  Crawler configuration settings. One configuration file can be used to
+##       define one crawler/crawl job
+#
+##  NOTE: Most Crawler configurations comes with reasonable defaults.
+##       Before adjusting the configuration, make sure you understand what you
+##       are trying to accomplish and the consequences.
+#
+## ------------------------------- Crawler ------------------------------------
+#
+## The domain(s) that Crawler will crawl.
 #domain_allowlist:
 #  - http://localhost:8000
 #
-## URLs used to seed the crawl
+## The URLs used to seed the crawl. Must have the same host(s) as `domain_allowlist`
 #seed_urls:
 #  - http://localhost:8000
 #
@@ -15,7 +26,7 @@
 ## Local directory to output crawl results. Required if output_sink is file
 #output_dir: output/local-site
 #
-## Crawl tuning
+## The maximum depth that Crawler will follow links to.
 #max_crawl_depth: 2
 #
 ## Crawl result field size limits
@@ -26,7 +37,9 @@
 #max_indexed_links_count: 10
 #max_headings_count: 10
 #
-## Enable local proxy
+## ------------------------------- Crawler - Advanced --------------------------
+#
+## Proxy configurations.
 #http_proxy_host: localhost
 #http_proxy_port: 8888
 #http_proxy_protocol: http
@@ -35,15 +48,14 @@
 #loopback_allowed: true
 #ssl_verification_mode: none
 #
-## Enable auth
-#auth:
-#  -
-#  domain: https://parksaustralia.gov.au
-#  type: basic
-#  username: user
-#  password: pass
+## Authorization configurations. Only required if a site has some form of authorization.
+#auth.domain: https://parksaustralia.gov.au
+#auth.type: basic
+#auth.username: user
+#auth.password: pass
 #
-## Enable content extraction (from files)
+## Whether document metadata from certain content types will be indexed or not.
+##     This does not allow binary content to be indexed from these files, only metadata.
 #content_extraction_enabled: true
 #content_extraction_mime_types:
 #  - application/pdf
@@ -52,7 +64,21 @@
 #  - application/vnd.ms-powerpoint
 #  - application/vnd.openxmlformats-officedocument.presentationml.presentation
 #
-## Elasticsearch connection settings. These can be defined for all crawlers in `config/elasticsearch.yml`,
+## ------------------------------- Logging -------------------------------------
+#
+# The log level for system logs. Defaults to `info`
+#log_level: info
+#
+# Whether or not event logging is enabled for output to the shell running Crawler.
+#     Event logs are incredibly noisy but have a lot of granularity, these can
+#     be useful for debugging failing Crawlers.
+#     Defaults to `false`
+#event_logs: false
+#
+## ------------------------------- Elasticsearch -------------------------------
+#
+## Elasticsearch connection settings for this specific crawler/crawl job.
+##     See elasticsearch.yml.example for detailed configurations.
 ##
 #elasticsearch:
 #  host: http://localhost
