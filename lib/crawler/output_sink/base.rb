@@ -13,7 +13,7 @@ module Crawler
     class Base
       attr_reader :config, :rule_engine
 
-      delegate :document_mapper, :events, :system_logger, to: :config
+      delegate :crawl_id, :document_mapper, :events, :system_logger, to: :config
 
       def initialize(config)
         @config = config
