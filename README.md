@@ -7,7 +7,7 @@ The crawler enables users to easily ingest web content into Elasticsearch.
 Tech-preview features are subject to change and are not covered by the support SLA of generally available (GA) features.
 Elastic plans to promote this feature to GA in a future release.
 
-## How it works
+### How it works
 
 Crawler runs crawl jobs on command based on config files in the `config` directory.
 1 URL endpoint on a site will correlate with 1 result output.
@@ -18,14 +18,14 @@ The crawl results can be output in 3 different modes:
 - As files to a specified directory
 - Directly to the terminal
 
-## Prerequisites
+### Setup
+
+#### Prerequisites
 
 If you are using the Crawler to index documents into Elasticsearch, you will require a running instance of Elasticsearch to index documents into.
 If you don't have this set up yet, you can sign up for an [Elastic Cloud free trial](https://www.elastic.co/cloud/cloud-trial-overview) or check out the [quickstart guide for Elasticsearch](https://www.elastic.co/guide/en/elasticsearch/reference/master/quickstart.html).
 
 _Open Crawler `v0.1` is confirmed to be compatible with Elasticsearch `v8.13.0` and above._
-
-### Setup
 
 #### Running from Docker
 
