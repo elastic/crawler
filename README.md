@@ -12,7 +12,7 @@ _Open Crawler `v0.1` is confirmed to be compatible with Elasticsearch `v8.13.0` 
 
 ### User workflow
 
-The full process from setup to indexing requires:
+Indexing web content with the Open Crawler requires:
 
 1. Running an instance of Elasticsearch (on-prem, cloud, or serverless)
 2. Cloning of the Open Crawler repository (see [Setup](#setup))
