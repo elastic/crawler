@@ -85,7 +85,7 @@ To avoid complications caused by different operating systems and managing ruby a
 ### Configuring Crawlers
 
 See [CONFIG.md](docs/CONFIG.md) for in-depth details on Crawler configuration files.
-                               
+
 ### CLI Commands
 
 Open Crawler has no UI.
