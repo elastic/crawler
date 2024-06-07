@@ -1,7 +1,7 @@
 # Elastic Open Web Crawler
 
 This repository contains code for the Elastic Open Web Crawler.
-This is a tool to allow users to easily ingest content into Elasticsearch from the web.
+The crawler enables users to easily ingest web content into Elasticsearch.
 
 ⚠️ _The Open Crawler is currently in **tech-preview**_.
 Tech-preview features are subject to change and are not covered by the support SLA of generally available (GA) features.
@@ -36,7 +36,7 @@ Crawler has a Dockerfile that can be built and run locally.
    - `-i` allows the container to stay alive so CLI commands can be executed inside it
    - `-d` allows the container to run "detached" so you don't have to dedicate a terminal window to it
 4. Confirm that Crawler commands are working `docker exec -it crawler bin/crawler version`
-5. Execute other CLI commands from outside of the container by prepending `docker exec -it crawler <command>`.
+5. Execute other CLI commands from outside of the container by prepending `docker exec -it crawler <command>`
    - See [Crawling content](#crawling-content) for examples.
 
 #### Running from source

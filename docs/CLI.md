@@ -32,7 +32,7 @@ If you are running a dockerized version of Crawler, you can run CLI commands in 
 
 ## Available commands
 ### Getting help
-Crawler CLI provides a `--help`/`-h` argument that can be used with any command to get more information.
+Use the `--help or -h` option with any command to get more information.
 
 For example:
 ```bash
