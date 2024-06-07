@@ -7,25 +7,30 @@ The crawler enables users to easily ingest web content into Elasticsearch.
 Tech-preview features are subject to change and are not covered by the support SLA of generally available (GA) features.
 Elastic plans to promote this feature to GA in a future release.
 
+_Open Crawler `v0.1` is confirmed to be compatible with Elasticsearch `v8.13.0` and above._
+
 ### How it works
 
 Crawler runs crawl jobs on command based on config files in the `config` directory.
-1 URL endpoint on a site will correlate with 1 result output.
+Each URL endpoint found during the crawl will result in one document to be indexed into Elasticsearch.
 
-The crawl results can be output in 3 different modes:
+Crawler performs crawl jobs in a multithreaded environment, where one thread will be used to visit one URL endpoint.
+The crawl results from these are added to a pool of results.
+These are indexed into Elasticsearch using the `_bulk` API once the pool reaches a configurable threshold.
 
-- As docs to an Elasticsearch index
-- As files to a specified directory
-- Directly to the terminal
+The full process required from setup to indexing requires;
+
+1. Running an instance of Elasticsearch (on-prem, cloud, or serverless)
+2. Cloning of the Open Crawler repository (see [Setup](#setup))
+3. Configuring a crawler config file (see [Configuring crawlers](#configuring-crawlers))
+4. Using the CLI to begin a crawl job (see [CLI commands](#cli-commands))
 
 ### Setup
 
 #### Prerequisites
 
-If you are using the Crawler to index documents into Elasticsearch, you will require a running instance of Elasticsearch to index documents into.
+A running instance of Elasticsearch is required to index documents into.
 If you don't have this set up yet, you can sign up for an [Elastic Cloud free trial](https://www.elastic.co/cloud/cloud-trial-overview) or check out the [quickstart guide for Elasticsearch](https://www.elastic.co/guide/en/elasticsearch/reference/master/quickstart.html).
-
-_Open Crawler `v0.1` is confirmed to be compatible with Elasticsearch `v8.13.0` and above._
 
 #### Running from Docker
 
@@ -80,7 +85,7 @@ To avoid complications caused by different operating systems and managing ruby a
 ### Configuring Crawlers
 
 See [CONFIG.md](docs/CONFIG.md) for in-depth details on Crawler configuration files.
-
+                               
 ### CLI Commands
 
 Open Crawler has no UI.
