@@ -7,10 +7,6 @@ The crawler enables users to easily ingest web content into Elasticsearch.
 Tech-preview features are subject to change and are not covered by the support SLA of generally available (GA) features.
 Elastic plans to promote this feature to GA in a future release.
 
-ℹ️ The Open Crawler requires a running instance of Elasticsearch to index documents into.
-If you don't have this set up yet, check out the [quickstart guide for Elasticsearch](https://www.elastic.co/guide/en/elasticsearch/reference/master/quickstart.html) to get started.
-_Open Crawler `v0.1` is confirmed to be compatible with Elasticsearch `v8.13.0` and above._
-
 ## How it works
 
 Crawler runs crawl jobs on command based on config files in the `config` directory.
@@ -22,9 +18,14 @@ The crawl results can be output in 3 different modes:
 - As files to a specified directory
 - Directly to the terminal
 
-### Setup
+## Prerequisites
 
-In order to index crawl results into an Elasticsearch instance, you must first have one up and running.
+If you are using the Crawler to index documents into Elasticsearch, you will require a running instance of Elasticsearch to index documents into.
+If you don't have this set up yet, you can sign up for an [Elastic Cloud free trial](https://www.elastic.co/cloud/cloud-trial-overview) or check out the [quickstart guide for Elasticsearch](https://www.elastic.co/guide/en/elasticsearch/reference/master/quickstart.html).
+
+_Open Crawler `v0.1` is confirmed to be compatible with Elasticsearch `v8.13.0` and above._
+
+### Setup
 
 #### Running from Docker
 
@@ -36,49 +37,56 @@ Crawler has a Dockerfile that can be built and run locally.
    - `-i` allows the container to stay alive so CLI commands can be executed inside it
    - `-d` allows the container to run "detached" so you don't have to dedicate a terminal window to it
 4. Confirm that Crawler commands are working `docker exec -it crawler bin/crawler version`
-5. Execute other CLI commands from outside of the container by prepending `docker exec -it crawler <command>`
-   - See [Crawling content](#crawling-content) for examples.
+5. Execute other CLI commands from outside of the container by prepending `docker exec -it crawler <command>`.
+6. See [Configuring crawlers](#configuring-crawlers) for next steps.
 
 #### Running from source
 
-_Note: Crawler uses both JRuby and Java.
-We recommend using version managers for both.
-When developing Crawler we use `rbenv` and `jenv`.
-There are instructions for setting up these env managers here:_
+To avoid complications caused by different operating systems and managing ruby and java versions, we recommend running from source only if you are actively developing Open Crawler.
 
-- [Official documentation for installing jenv](https://www.jenv.be/)
-- [Official documentation for installing rbenv](https://github.com/rbenv/rbenv?tab=readme-ov-file#installation)
+<details>
+  <summary>Instructions for running from source</summary>
+  ℹ️ Crawler uses both JRuby and Java.
+  We recommend using version managers for both.
+  When developing Crawler we use <b>rbenv</b> and <b>jenv</b>.
+  There are instructions for setting up these env managers here:
 
-1. Clone the repository
-2. Go to the root of the Crawler directory and check the expected Java and Ruby versions are being used:
-    ```bash
-    # should output the same version as `.ruby-version`
-    $ ruby --version
+  - [Official documentation for installing jenv](https://www.jenv.be/)
+  - [Official documentation for installing rbenv](https://github.com/rbenv/rbenv?tab=readme-ov-file#installation)
 
-    # should output the same version as `.java-version`
-    $ java --version
-    ```
+  1. Clone the repository
+  2. Go to the root of the Crawler directory and check the expected Java and Ruby versions are being used:
+      ```bash
+      # should output the same version as `.ruby-version`
+      $ ruby --version
 
-3. If the versions seem correct, you can install dependencies:
-    ```bash
-    $ make install
-    ```
+      # should output the same version as `.java-version`
+      $ java --version
+      ```
 
-    You can also use the env variable `CRAWLER_MANAGE_ENV` to have the install script automatically check whether `rbenv` and `jenv` are installed, and that the correct versions are running on both:
-    Doing this requires that you use both `rbenv` and `jenv` in your local setup.
+  3. If the versions seem correct, you can install dependencies:
+      ```bash
+      $ make install
+      ```
 
-    ```bash
-    $ CRAWLER_MANAGE_ENV=true make install
-    ```
+     You can also use the env variable `CRAWLER_MANAGE_ENV` to have the install script automatically check whether `rbenv` and `jenv` are installed, and that the correct versions are running on both:
+     Doing this requires that you use both `rbenv` and `jenv` in your local setup.
 
-Crawler should now be functional.
-See [Configuring Crawlers](#configuring-crawlers) to begin crawling web content.
+      ```bash
+      $ CRAWLER_MANAGE_ENV=true make install
+      ```
+</details>
 
 ### Configuring Crawlers
 
 See [CONFIG.md](docs/CONFIG.md) for in-depth details on Crawler configuration files.
 
 ### CLI Commands
+
+Open Crawler has no UI.
+All interactions with Crawler take place through the CLI.
+When given a command, Crawler will run until the process is finished.
+Crawler is not kept alive in any way between commands.
 
 See [CLI.md](docs/CLI.md) for a full list of CLI commands available for Crawler.
 

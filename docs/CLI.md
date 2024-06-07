@@ -1,6 +1,7 @@
 # CLI
 
 Crawler CLI is a command-line interface for use in the terminal or scripts.
+This is the only user interface for interacting with Crawler.
 
 ## Installation and Configuration
 
