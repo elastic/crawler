@@ -77,11 +77,6 @@ module Crawler
         end
       end
 
-      # No errors should be retried by default (see App Search subclass for a version with retries)
-      def retryable_error?(_error)
-        false
-      end
-
       #---------------------------------------------------------------------------------------------
       def coordinator
         @coordinator ||= Crawler::Coordinator.new(self)

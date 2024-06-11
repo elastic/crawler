@@ -9,6 +9,7 @@
 require_dependency File.join(__dir__, 'base')
 require_dependency File.join(__dir__, '..', '..', 'utility', 'es_client')
 require_dependency File.join(__dir__, '..', '..', 'utility', 'bulk_queue')
+require_dependency File.join(__dir__, '..', '..', 'errors')
 
 module Crawler
   module OutputSink
@@ -31,6 +32,7 @@ module Crawler
         # initialize client now to fail fast if config is bad
         client
 
+        @processing = false
         init_ingestion_stats
         system_logger.info(
           "Elasticsearch sink initialized for index [#{index_name}] with pipeline [#{pipeline}]"
@@ -38,10 +40,13 @@ module Crawler
       end
 
       def write(crawl_result)
+        # prevent overloading the bulk queue
+        raise Errors::BulkQueueProcessingError if @processing
+
         doc = parametrized_doc(crawl_result)
         index_op = { 'index' => { '_index' => index_name, '_id' => doc['id'] } }
 
-        flush unless operation_queue.will_fit?(index_op, doc)
+        process unless operation_queue.will_fit?(index_op, doc)
 
         operation_queue.add(
           index_op,
@@ -50,11 +55,11 @@ module Crawler
         system_logger.debug("Added doc #{doc['id']} to bulk queue. Current stats: #{operation_queue.current_stats}")
 
         increment_ingestion_stats(doc)
-        success
+        success("Successfully added #{doc['id']} to the bulk queue")
       end
 
       def close
-        flush
+        process
         msg = <<~LOG.squish
           All indexing operations completed.
           Successfully indexed #{@completed[:docs_count]} docs with a volume of #{@completed[:docs_volume]} bytes.
@@ -63,16 +68,18 @@ module Crawler
         system_logger.info(msg)
       end
 
-      def flush # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+      def process # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+        @processing = true
+
         payload = operation_queue.pop_all
         if payload.empty?
-          system_logger.debug('Queue was empty when attempting to flush.')
+          system_logger.debug('Queue was empty when attempting to process.')
           return
         end
 
         # a single doc needs two items in a bulk request, so halving the count makes logs clearer
         indexing_docs_count = payload.size / 2
-        system_logger.info("Sending bulk request with #{indexing_docs_count} items and flushing queue...")
+        system_logger.info("Sending bulk request with #{indexing_docs_count} items and resetting queue...")
 
         begin
           client.bulk(body: payload, pipeline:) # TODO: parse response
@@ -84,6 +91,8 @@ module Crawler
         rescue StandardError => e
           system_logger.warn("Bulk index failed for unexpected reason: #{e}")
           reset_ingestion_stats(false)
+        ensure
+          @processing = false
         end
       end
 

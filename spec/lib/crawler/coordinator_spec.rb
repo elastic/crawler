@@ -76,7 +76,7 @@ RSpec.describe(Crawler::Coordinator) do
       )
     end
 
-    def process_crawl_result # rubocop:disable Metrics/AbcSize
+    def process_crawl_result
       allow(events).to receive(:url_output)
       allow(events).to receive(:url_discover)
       allow(events).to receive(:url_seed)
@@ -125,7 +125,6 @@ RSpec.describe(Crawler::Coordinator) do
       it 'should capture exceptions coming from the output module and generate a failure url-extracted event' do
         error = RuntimeError.new('BOOM')
         expect(crawl.sink).to receive(:write).and_raise(error)
-        expect(crawl).to receive(:retryable_error?).with(error).and_return(false)
         expect(events).to receive(:url_extracted).with(
           hash_including(
             url: crawl_result.url,
@@ -141,7 +140,7 @@ RSpec.describe(Crawler::Coordinator) do
       end
 
       it 'should retry exceptions if possible' do
-        error = RuntimeError.new('BOOM')
+        error = Errors::BulkQueueProcessingError.new
         expect(crawl.sink).to receive(:write).twice.and_wrap_original do |method, *args|
           unless @called_before
             @called_before = true
@@ -150,9 +149,7 @@ RSpec.describe(Crawler::Coordinator) do
           method.call(*args)
         end
 
-        expect(crawl).to receive(:retryable_error?).with(error).and_return(true)
         expect(crawl).to receive(:interruptible_sleep)
-
         expect(events).to receive(:url_extracted).with(
           hash_including(
             url: crawl_result.url,

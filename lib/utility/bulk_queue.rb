@@ -8,14 +8,14 @@
 
 require 'elasticsearch/api'
 
+require_dependency File.join(__dir__, '..', 'errors')
+
 module Utility
   class BulkQueue
     # Maximum number of operations in BULK Elasticsearch operation that will ingest the data
     DEFAULT_OP_COUNT_THRESHOLD = 100
     # Maximum size of either whole BULK Elasticsearch operation or one document in it
     DEFAULT_SIZE_THRESHOLD = 1 * 1024 * 1024 # 1 megabyte
-
-    class QueueOverflowError < StandardError; end
 
     def initialize(op_count_threshold, size_threshold, system_logger)
       @op_count_threshold = (op_count_threshold || DEFAULT_OP_COUNT_THRESHOLD).freeze
@@ -41,7 +41,7 @@ module Utility
     end
 
     def add(operation, payload = nil)
-      raise QueueOverflowError unless will_fit?(operation, payload)
+      raise Errors::BulkQueueOverflowError unless will_fit?(operation, payload)
 
       operation_size = bytesize(operation)
       payload_size = bytesize(payload)

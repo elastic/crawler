@@ -10,6 +10,8 @@ require 'set'
 require 'benchmark'
 require 'concurrent/set'
 
+require_dependency File.join(__dir__, '..', 'errors')
+
 # There are too many lint issues here to individually disable
 # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity
 module Crawler
@@ -454,13 +456,15 @@ module Crawler
           raise ArgumentError, error
         end
       end
+    rescue Errors::BulkQueueProcessingError
+      log = <<~LOG.squish
+        Crawl result could not be added to queue because an indexing operation is in process.
+        Retrying in #{RETRY_INTERVAL} seconds...
+      LOG
+      system_logger.debug(log)
+      interruptible_sleep(RETRY_INTERVAL)
+      retry
     rescue StandardError => e
-      if crawl.retryable_error?(e) && !shutdown_started?
-        system_logger.warn("Retryable error during content ingestion: #{e}. Going to retry in #{RETRY_INTERVAL}s...")
-        interruptible_sleep(RETRY_INTERVAL)
-        retry
-      end
-
       sink.failure("Unexpected exception while sending crawl results to the output sink: #{e}")
     end
 
