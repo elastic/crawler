@@ -12,7 +12,7 @@ class Errors
   # This error is raised to prevent overloading the queue if Elasticsearch indexing is failing repeatedly
   #   and performing exponential backoff.
   # This error should be treated as retryable.
-  class BulkQueueProcessingError < StandardError; end
+  class BulkQueueLockedError < StandardError; end
 
   # Raised only if the queue item added somehow overflows the queue threshold.
   # The queue threshold is checked before an item is added so this error shouldn't occur.

@@ -140,7 +140,7 @@ RSpec.describe(Crawler::Coordinator) do
       end
 
       it 'should retry exceptions if possible' do
-        error = Errors::BulkQueueProcessingError.new
+        error = Errors::BulkQueueLockedError.new
         expect(crawl.sink).to receive(:write).twice.and_wrap_original do |method, *args|
           unless @called_before
             @called_before = true

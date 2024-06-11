@@ -15,7 +15,8 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       output_sink: 'elasticsearch',
       output_index: index_name,
       elasticsearch: {
-        host: 'http://localhost:1234',
+        host: 'http://localhost',
+        port: 1234,
         api_key: 'key'
       }
     )
@@ -113,7 +114,8 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
           output_sink: 'elasticsearch',
           output_index: index_name,
           elasticsearch: {
-            host: 'http://localhost:1234',
+            host: 'http://localhost',
+            port: 1234,
             api_key: 'key',
             pipeline: 'my-pipeline'
           }
@@ -137,7 +139,8 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
           output_sink: 'elasticsearch',
           output_index: index_name,
           elasticsearch: {
-            host: 'http://localhost:1234',
+            host: 'http://localhost',
+            port: 1234,
             api_key: 'key',
             pipeline: 'my-pipeline',
             pipeline_params: {
@@ -171,7 +174,8 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
           output_sink: 'elasticsearch',
           output_index: index_name,
           elasticsearch: {
-            host: 'http://localhost:1234',
+            host: 'http://localhost',
+            port: 1234,
             api_key: 'key',
             pipeline_enabled: false
           }
@@ -267,24 +271,68 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
         subject.write(crawl_result_two)
       end
     end
+
+    context 'when bulk queue is locked' do
+      before :each do
+        allow(subject).to receive(:lock_queue).and_call_original
+        allow(subject).to receive(:unlock_queue).and_call_original
+        subject.instance_variable_set(:@queue_locked, true)
+      end
+
+      it 'raises BulkQueueLockedError' do
+        expect { subject.write({ foo: 'bar' }) }.to raise_error(Errors::BulkQueueLockedError)
+
+        expect(subject).not_to have_received(:lock_queue)
+        expect(subject).not_to have_received(:unlock_queue)
+      end
+    end
   end
 
-  describe '#flush' do
-    let(:operation) { 'bulk: delete something \n insert something else' }
+  describe '#process' do
+    let(:operation) do
+      [
+        { index: { _index: 'my-index', _id: '1234' } },
+        { id: '202d2df297ed4e62b51dff33ee1418330a93a622', title: 'foo' }
+      ]
+    end
 
     before(:each) do
+      allow(subject).to receive(:lock_queue).and_call_original
+      allow(subject).to receive(:unlock_queue).and_call_original
       allow(bulk_queue).to receive(:pop_all).and_return(operation)
     end
 
-    it 'sends data from bulk queue to elasticsearch' do
+    it 'sends data from bulk queue to elasticsearch and unlocks queue' do
       expect(es_client).to receive(:bulk).with(hash_including(body: operation, pipeline: default_pipeline))
+      expect(system_logger).to receive(:info).with('Successfully indexed 1 docs.')
 
-      subject.flush
+      subject.process
+
+      expect(subject).to have_received(:lock_queue).once
+      expect(subject).to have_received(:unlock_queue).once
+      expect(subject.instance_variable_get(:@queue_locked)).to eq(false)
+    end
+
+    context('when an error occurs during indexing') do
+      before(:each) do
+        allow(es_client).to receive(:bulk).and_raise(Utility::EsClient::IndexingFailedError.new('BOOM'))
+      end
+
+      it 'logs error and unlocks queue' do
+        expect(es_client).to receive(:bulk).with(hash_including(body: operation, pipeline: default_pipeline))
+        expect(system_logger).to receive(:warn).with('Bulk index failed: BOOM')
+
+        subject.process
+
+        expect(subject).to have_received(:lock_queue).once
+        expect(subject).to have_received(:unlock_queue).once
+        expect(subject.instance_variable_get(:@queue_locked)).to eq(false)
+      end
     end
   end
 
   describe '#ingestion_stats' do
-    context 'when flush was not triggered' do
+    context 'when process was not triggered' do
       let(:crawl_result) { FactoryBot.build(:html_crawl_result) }
       before(:each) do
         allow(bulk_queue).to receive(:bytesize).and_return(10) # arbitrary
@@ -301,7 +349,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       end
     end
 
-    context 'when flush was triggered' do
+    context 'when process was triggered' do
       let(:operation) { 'bulk: delete something \n insert something else' }
 
       before(:each) do
@@ -328,7 +376,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
             subject.write(FactoryBot.build(:html_crawl_result, url: "http://real.com/#{x}"))
           end
 
-          subject.flush
+          subject.process
         end
 
         it 'returns expected docs_count' do
@@ -352,13 +400,13 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
 
         before(:each) do
           allow(bulk_queue).to receive(:bytesize).and_return(serialized_object.bytesize)
-          allow(es_client).to receive(:bulk).and_raise(Utility::EsClient::IndexingFailedError)
+          allow(es_client).to receive(:bulk).and_raise(Utility::EsClient::IndexingFailedError.new('BOOM'))
 
           document_count.times.each do |x|
             subject.write(FactoryBot.build(:html_crawl_result, url: "http://real.com/#{x}"))
           end
 
-          subject.flush
+          subject.process
         end
 
         it 'returns expected docs_count' do
@@ -366,6 +414,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
 
           expect(stats[:failed][:docs_count]).to eq(document_count)
           expect(stats[:completed][:docs_count]).to eq(0)
+          expect(system_logger).to have_received(:warn).with('Bulk index failed: BOOM')
         end
 
         it 'returns expected docs_volume' do
@@ -373,6 +422,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
 
           expect(stats[:failed][:docs_volume]).to eq(document_count * serialized_object.bytesize)
           expect(stats[:completed][:docs_volume]).to eq(0)
+          expect(system_logger).to have_received(:warn).with('Bulk index failed: BOOM')
         end
       end
     end

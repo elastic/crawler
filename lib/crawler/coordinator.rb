@@ -456,7 +456,7 @@ module Crawler
           raise ArgumentError, error
         end
       end
-    rescue Errors::BulkQueueProcessingError
+    rescue Errors::BulkQueueLockedError
       log = <<~LOG.squish
         Crawl result could not be added to queue because an indexing operation is in process.
         Retrying in #{RETRY_INTERVAL} seconds...

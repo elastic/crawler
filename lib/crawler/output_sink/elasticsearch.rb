@@ -32,7 +32,7 @@ module Crawler
         # initialize client now to fail fast if config is bad
         client
 
-        @processing = false
+        @queue_locked = false
         init_ingestion_stats
         system_logger.info(
           "Elasticsearch sink initialized for index [#{index_name}] with pipeline [#{pipeline}]"
@@ -41,7 +41,7 @@ module Crawler
 
       def write(crawl_result)
         # prevent overloading the bulk queue
-        raise Errors::BulkQueueProcessingError if @processing
+        raise Errors::BulkQueueLockedError if @queue_locked
 
         doc = parametrized_doc(crawl_result)
         index_op = { 'index' => { '_index' => index_name, '_id' => doc['id'] } }
@@ -69,20 +69,20 @@ module Crawler
       end
 
       def process # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
-        @processing = true
+        lock_queue
 
-        payload = operation_queue.pop_all
-        if payload.empty?
+        body = operation_queue.pop_all
+        if body.empty?
           system_logger.debug('Queue was empty when attempting to process.')
           return
         end
 
         # a single doc needs two items in a bulk request, so halving the count makes logs clearer
-        indexing_docs_count = payload.size / 2
+        indexing_docs_count = body.size / 2
         system_logger.info("Sending bulk request with #{indexing_docs_count} items and resetting queue...")
 
         begin
-          client.bulk(body: payload, pipeline:) # TODO: parse response
+          client.bulk(body:, pipeline:) # TODO: parse response
           system_logger.info("Successfully indexed #{indexing_docs_count} docs.")
           reset_ingestion_stats(true)
         rescue Utility::EsClient::IndexingFailedError => e
@@ -92,7 +92,7 @@ module Crawler
           system_logger.warn("Bulk index failed for unexpected reason: #{e}")
           reset_ingestion_stats(false)
         ensure
-          @processing = false
+          unlock_queue
         end
       end
 
@@ -135,6 +135,14 @@ module Crawler
 
       def pipeline_params
         @pipeline_params ||= DEFAULT_PIPELINE_PARAMS.merge(es_config[:pipeline_params] || {}).deep_stringify_keys
+      end
+
+      def lock_queue
+        @queue_locked = true
+      end
+
+      def unlock_queue
+        @queue_locked = false
       end
 
       private
