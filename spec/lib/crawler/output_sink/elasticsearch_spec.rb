@@ -321,7 +321,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
     end
   end
 
-  describe '#process' do
+  describe '#flush' do
     let(:operation) do
       [
         { index: { _index: 'my-index', _id: '1234' } },
@@ -337,7 +337,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       expect(es_client).to receive(:bulk).with(hash_including(body: operation, pipeline: default_pipeline))
       expect(system_logger).to receive(:info).with('Successfully indexed 1 docs.')
 
-      subject.process
+      subject.flush
     end
 
     context('when an error occurs during indexing') do
@@ -349,13 +349,13 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
         expect(es_client).to receive(:bulk).with(hash_including(body: operation, pipeline: default_pipeline))
         expect(system_logger).to receive(:warn).with('Bulk index failed: BOOM')
 
-        subject.process
+        subject.flush
       end
     end
   end
 
   describe '#ingestion_stats' do
-    context 'when process was not triggered' do
+    context 'when flush was not triggered' do
       let(:crawl_result) { FactoryBot.build(:html_crawl_result) }
       before(:each) do
         allow(bulk_queue).to receive(:bytesize).and_return(10) # arbitrary
@@ -372,7 +372,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       end
     end
 
-    context 'when process was triggered' do
+    context 'when flush was triggered' do
       let(:operation) { 'bulk: delete something \n insert something else' }
 
       before(:each) do
@@ -399,7 +399,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
             subject.write(FactoryBot.build(:html_crawl_result, url: "http://real.com/#{x}"))
           end
 
-          subject.process
+          subject.flush
         end
 
         it 'returns expected docs_count' do
@@ -429,7 +429,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
             subject.write(FactoryBot.build(:html_crawl_result, url: "http://real.com/#{x}"))
           end
 
-          subject.process
+          subject.flush
         end
 
         it 'returns expected docs_count' do
