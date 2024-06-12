@@ -45,7 +45,7 @@ module Crawler
           doc = parametrized_doc(crawl_result)
           index_op = { 'index' => { '_index' => index_name, '_id' => doc['id'] } }
 
-          process unless operation_queue.will_fit?(index_op, doc)
+          flush unless operation_queue.will_fit?(index_op, doc)
 
           operation_queue.add(
             index_op,
@@ -59,7 +59,7 @@ module Crawler
       end
 
       def close
-        process
+        flush
         msg = <<~LOG.squish
           All indexing operations completed.
           Successfully indexed #{@completed[:docs_count]} docs with a volume of #{@completed[:docs_volume]} bytes.
@@ -68,10 +68,10 @@ module Crawler
         system_logger.info(msg)
       end
 
-      def process # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+      def flush # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
         body = operation_queue.pop_all
         if body.empty?
-          system_logger.debug('Queue was empty when attempting to process.')
+          system_logger.debug('Queue was empty when attempting to flush.')
           return
         end
 
