@@ -258,8 +258,12 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       it 'sends a bulk request with data returned from bulk queue' do
         expect(es_client).to receive(:bulk).once
 
-        subject.write(crawl_result_one)
-        subject.write(crawl_result_two)
+        threads = [crawl_result_one, crawl_result_two].map do |crawl_result|
+          Thread.new do
+            subject.write(crawl_result)
+          end
+        end
+        threads.each(&:join)
       end
 
       it 'pops existing documents before adding a new one' do
@@ -267,23 +271,52 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
         expect(bulk_queue).to receive(:pop_all).ordered
         expect(bulk_queue).to receive(:add).with(anything, hash_including(doc_two)).ordered
 
-        subject.write(crawl_result_one)
-        subject.write(crawl_result_two)
+        threads = [crawl_result_one, crawl_result_two].map do |crawl_result|
+          Thread.new do
+            subject.write(crawl_result)
+          end
+        end
+        threads.each(&:join)
       end
     end
 
-    context 'when bulk queue is locked' do
-      before :each do
-        allow(subject).to receive(:lock_queue).and_call_original
-        allow(subject).to receive(:unlock_queue).and_call_original
-        subject.instance_variable_set(:@queue_locked, true)
+    context 'when many threads are attempting to write' do
+      let(:crawl_results) do
+        Array.new(100) do |x|
+          FactoryBot.build(:html_crawl_result, url: "http://example.com/#{x}", content: "page #{x}")
+        end
+      end
+      let(:docs) do
+        crawl_results.map do |crawl_result|
+          { id: crawl_result.url_hash, body_content: crawl_result.content }.stringify_keys
+        end
       end
 
-      it 'raises BulkQueueLockedError' do
-        expect { subject.write({ foo: 'bar' }) }.to raise_error(Errors::BulkQueueLockedError)
+      before(:each) do
+        # Because mutex doesn't queue tasks we don't know what order docs are processed.
+        # We randomize for each test to simulate a real multi-threaded execution.
+        allow(bulk_queue).to receive(:pop_all).and_return(docs.shuffle)
 
-        expect(subject).not_to have_received(:lock_queue)
-        expect(subject).not_to have_received(:unlock_queue)
+        # pop on the final doc
+        allow(bulk_queue).to receive(:will_fit?).and_return(*(([true] * 99) + [false]))
+      end
+
+      it 'correctly processes concurrent crawl results' do
+        # simulate 10 threads each performing 10 writes
+        max_threads = 10
+        chunks = crawl_results.each_slice((crawl_results.size.to_f / max_threads).ceil).to_a
+        threads = chunks.map do |chunk|
+          Thread.new do
+            chunk.each do |crawl_result|
+              subject.write(crawl_result)
+            end
+          end
+        end
+        threads.each(&:join)
+
+        expect(bulk_queue).to have_received(:add).exactly(100).times
+        expect(bulk_queue).to have_received(:pop_all).once
+        expect(es_client).to have_received(:bulk).with(hash_including(body: array_including(docs))).once
       end
     end
   end
@@ -297,20 +330,14 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
     end
 
     before(:each) do
-      allow(subject).to receive(:lock_queue).and_call_original
-      allow(subject).to receive(:unlock_queue).and_call_original
       allow(bulk_queue).to receive(:pop_all).and_return(operation)
     end
 
-    it 'sends data from bulk queue to elasticsearch and unlocks queue' do
+    it 'sends data from bulk queue to elasticsearch' do
       expect(es_client).to receive(:bulk).with(hash_including(body: operation, pipeline: default_pipeline))
       expect(system_logger).to receive(:info).with('Successfully indexed 1 docs.')
 
       subject.process
-
-      expect(subject).to have_received(:lock_queue).once
-      expect(subject).to have_received(:unlock_queue).once
-      expect(subject.instance_variable_get(:@queue_locked)).to eq(false)
     end
 
     context('when an error occurs during indexing') do
@@ -318,15 +345,11 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
         allow(es_client).to receive(:bulk).and_raise(Utility::EsClient::IndexingFailedError.new('BOOM'))
       end
 
-      it 'logs error and unlocks queue' do
+      it 'logs error' do
         expect(es_client).to receive(:bulk).with(hash_including(body: operation, pipeline: default_pipeline))
         expect(system_logger).to receive(:warn).with('Bulk index failed: BOOM')
 
         subject.process
-
-        expect(subject).to have_received(:lock_queue).once
-        expect(subject).to have_received(:unlock_queue).once
-        expect(subject.instance_variable_get(:@queue_locked)).to eq(false)
       end
     end
   end

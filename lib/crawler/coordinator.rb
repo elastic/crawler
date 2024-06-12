@@ -18,9 +18,7 @@ module Crawler
   # The Coordinator is responsible for running an entire crawl from start to finish.
   class Coordinator # rubocop:disable Metrics/ClassLength
     SEED_LIST = 'seed-list'
-
-    # How long to wait before retrying ingestion after a retryable error (like a r/o mode write)
-    RETRY_INTERVAL = 10.seconds
+    SINK_LOCK_TIMEOUT = 60 # seconds
 
     attr_reader :crawl, :seen_urls, :crawl_outcome, :outcome_message, :started_at, :task_executors
 
@@ -449,23 +447,23 @@ module Crawler
     #-----------------------------------------------------------------------------------------------
     # Outputs the results of a single URL processing to an output module configured for the crawl
     def output_crawl_result(crawl_result)
-      sink.write(crawl_result).tap do |outcome|
-        # Make sure we have an outcome of the right type (helps troubleshoot sink implementations)
-        unless outcome.is_a?(Hash)
-          error = "Expected to return an outcome object from the sink, returned #{outcome.inspect} instead"
-          raise ArgumentError, error
+      Timeout.timeout(SINK_LOCK_TIMEOUT) do
+        sink.write(crawl_result).tap do |outcome|
+          # Make sure we have an outcome of the right type (helps troubleshoot sink implementations)
+          unless outcome.is_a?(Hash)
+            error = "Expected to return an outcome object from the sink, returned #{outcome.inspect} instead"
+            raise ArgumentError, error
+          end
         end
       end
-    rescue Errors::BulkQueueLockedError
-      log = <<~LOG.squish
-        Crawl result could not be added to queue because an indexing operation is in process.
-        Retrying in #{RETRY_INTERVAL} seconds...
-      LOG
-      system_logger.debug(log)
-      interruptible_sleep(RETRY_INTERVAL)
-      retry
+    rescue Timeout::Error
+      log = "Executor waited #{SINK_LOCK_TIMEOUT} seconds for output sink lock but timed out."
+      system_logger.error(log)
+      sink.failure(log)
     rescue StandardError => e
-      sink.failure("Unexpected exception while sending crawl results to the output sink: #{e}")
+      log = "Unexpected exception while sending crawl results to the output sink: #{e}"
+      system_logger.fatal(log)
+      sink.failure(log)
     end
 
     #-----------------------------------------------------------------------------------------------

@@ -41,7 +41,14 @@ module Utility
     end
 
     def add(operation, payload = nil)
-      raise Errors::BulkQueueOverflowError unless will_fit?(operation, payload)
+      unless will_fit?(operation, payload)
+        log = <<~LOG.squish
+          Operation failed to add to bulk queue. Current operation count is #{@current_op_count}.
+          Operation payload was #{bytesize(payload)} bytes, current buffer size is #{@current_buffer_size} bytes.
+        LOG
+        @system_logger.error(log)
+        raise Errors::BulkQueueOverflowError
+      end
 
       operation_size = bytesize(operation)
       payload_size = bytesize(payload)

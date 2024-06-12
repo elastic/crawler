@@ -139,29 +139,50 @@ RSpec.describe(Crawler::Coordinator) do
         coordinator.send(:process_crawl_result, crawl_task, crawl_result)
       end
 
-      it 'should retry exceptions if possible' do
-        error = Errors::BulkQueueLockedError.new
-        expect(crawl.sink).to receive(:write).twice.and_wrap_original do |method, *args|
-          unless @called_before
-            @called_before = true
-            raise error
-          end
-          method.call(*args)
+      context 'when it the output sink has a lock' do
+        before :each do
+          stub_const('Crawler::Coordinator::SINK_LOCK_TIMEOUT', 3)
         end
 
-        expect(crawl).to receive(:interruptible_sleep)
-        expect(events).to receive(:url_extracted).with(
-          hash_including(
-            url: crawl_result.url,
-            type: :allowed,
-            start_time: kind_of(Time),
-            end_time: kind_of(Time),
-            duration: kind_of(Benchmark::Tms),
-            outcome: :success,
-            message: 'Successfully ingested crawl result'
+        it 'should wait for the lock' do
+          expect(crawl.sink).to receive(:write).and_wrap_original do |method, *args|
+            sleep(0.5.seconds)
+            method.call(*args)
+          end
+
+          expect(events).to receive(:url_extracted).with(
+            hash_including(
+              url: crawl_result.url,
+              type: :allowed,
+              start_time: kind_of(Time),
+              end_time: kind_of(Time),
+              duration: kind_of(Benchmark::Tms),
+              outcome: :success,
+              message: 'Successfully ingested crawl result'
+            )
           )
-        )
-        coordinator.send(:process_crawl_result, crawl_task, crawl_result)
+          coordinator.send(:process_crawl_result, crawl_task, crawl_result)
+        end
+
+        it 'should fail if the lock acquisition times out' do
+          expect(crawl.sink).to receive(:write).and_wrap_original do |method, *args|
+            sleep(10.seconds)
+            method.call(*args)
+          end
+
+          expect(events).to receive(:url_extracted).with(
+            hash_including(
+              url: crawl_result.url,
+              type: :allowed,
+              start_time: kind_of(Time),
+              end_time: kind_of(Time),
+              duration: kind_of(Benchmark::Tms),
+              outcome: :failure,
+              message: 'Executor waited 3 seconds for output sink lock but timed out.'
+            )
+          )
+          coordinator.send(:process_crawl_result, crawl_task, crawl_result)
+        end
       end
     end
 

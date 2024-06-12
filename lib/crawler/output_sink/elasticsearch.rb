@@ -32,7 +32,7 @@ module Crawler
         # initialize client now to fail fast if config is bad
         client
 
-        @queue_locked = false
+        @queue_lock = Mutex.new
         init_ingestion_stats
         system_logger.info(
           "Elasticsearch sink initialized for index [#{index_name}] with pipeline [#{pipeline}]"
@@ -40,22 +40,22 @@ module Crawler
       end
 
       def write(crawl_result)
-        # prevent overloading the bulk queue
-        raise Errors::BulkQueueLockedError if @queue_locked
+        # make additions to the bulk queue thread-safe
+        @queue_lock.synchronize do
+          doc = parametrized_doc(crawl_result)
+          index_op = { 'index' => { '_index' => index_name, '_id' => doc['id'] } }
 
-        doc = parametrized_doc(crawl_result)
-        index_op = { 'index' => { '_index' => index_name, '_id' => doc['id'] } }
+          process unless operation_queue.will_fit?(index_op, doc)
 
-        process unless operation_queue.will_fit?(index_op, doc)
+          operation_queue.add(
+            index_op,
+            doc
+          )
+          system_logger.debug("Added doc #{doc['id']} to bulk queue. Current stats: #{operation_queue.current_stats}")
 
-        operation_queue.add(
-          index_op,
-          doc
-        )
-        system_logger.debug("Added doc #{doc['id']} to bulk queue. Current stats: #{operation_queue.current_stats}")
-
-        increment_ingestion_stats(doc)
-        success("Successfully added #{doc['id']} to the bulk queue")
+          increment_ingestion_stats(doc)
+          success("Successfully added #{doc['id']} to the bulk queue")
+        end
       end
 
       def close
@@ -69,8 +69,6 @@ module Crawler
       end
 
       def process # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
-        lock_queue
-
         body = operation_queue.pop_all
         if body.empty?
           system_logger.debug('Queue was empty when attempting to process.')
@@ -91,8 +89,6 @@ module Crawler
         rescue StandardError => e
           system_logger.warn("Bulk index failed for unexpected reason: #{e}")
           reset_ingestion_stats(false)
-        ensure
-          unlock_queue
         end
       end
 
@@ -135,14 +131,6 @@ module Crawler
 
       def pipeline_params
         @pipeline_params ||= DEFAULT_PIPELINE_PARAMS.merge(es_config[:pipeline_params] || {}).deep_stringify_keys
-      end
-
-      def lock_queue
-        @queue_locked = true
-      end
-
-      def unlock_queue
-        @queue_locked = false
       end
 
       private
