@@ -11,4 +11,11 @@ class Errors
   # The queue threshold is checked before an item is added so this error shouldn't occur.
   # If this error occurs, something is wrong with the interaction between the Elasticsearch sink and BulkQueue.
   class BulkQueueOverflowError < StandardError; end
+
+  # Raised when attempting to add a crawl result to the sink, but it is currently locked.
+  # This is specific for Elasticsearch sink. Basically the sink is single-threaded but
+  # receives crawl results from multi-threaded processes. This error is raised to prevent
+  # overloading the queue if Elasticsearch indexing is failing repeatedly and performing
+  # exponential backoff. This error should be treated as retryable.
+  class SinkLockedError < StandardError; end
 end

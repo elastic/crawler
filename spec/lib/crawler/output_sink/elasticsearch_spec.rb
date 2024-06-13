@@ -258,65 +258,31 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       it 'sends a bulk request with data returned from bulk queue' do
         expect(es_client).to receive(:bulk).once
 
-        threads = [crawl_result_one, crawl_result_two].map do |crawl_result|
-          Thread.new do
-            subject.write(crawl_result)
-          end
-        end
-        threads.each(&:join)
+        subject.write(crawl_result_one)
+        subject.write(crawl_result_two)
       end
 
-      it 'pops existing documents before adding a new one' do
+      it 'blocks simultaneous threads with locking' do
+        # this will call write 3 times
+        # first call will take the lock and add crawl_result_one's doc
+        # second call will be rejected due to locking
+        # third call (retry of second call) will take the lock and add crawl_result_two's doc
+        # we can test this by using `ordered` on the spies
         expect(bulk_queue).to receive(:add).with(anything, hash_including(doc_one)).ordered
         expect(bulk_queue).to receive(:pop_all).ordered
         expect(bulk_queue).to receive(:add).with(anything, hash_including(doc_two)).ordered
 
+        # initially send multi-threaded to engage lock
         threads = [crawl_result_one, crawl_result_two].map do |crawl_result|
           Thread.new do
             subject.write(crawl_result)
           end
         end
-        threads.each(&:join)
-      end
-    end
+        # second call will fail, but we can't differentiate that here
+        expect { threads.each(&:join) }.to raise_error(Errors::SinkLockedError)
 
-    context 'when many threads are attempting to write' do
-      let(:crawl_results) do
-        Array.new(100) do |x|
-          FactoryBot.build(:html_crawl_result, url: "http://example.com/#{x}", content: "page #{x}")
-        end
-      end
-      let(:docs) do
-        crawl_results.map do |crawl_result|
-          { id: crawl_result.url_hash, body_content: crawl_result.content }.stringify_keys
-        end
-      end
-
-      before(:each) do
-        # Because mutex doesn't queue tasks we don't know what order docs are processed.
-        # We randomize for each test to simulate a real multi-threaded execution.
-        allow(bulk_queue).to receive(:pop_all).and_return(docs.shuffle)
-
-        # pop on the final doc
-        allow(bulk_queue).to receive(:will_fit?).and_return(*(([true] * 99) + [false]))
-      end
-
-      it 'correctly processes concurrent crawl results' do
-        # simulate 10 threads each performing 10 writes
-        max_threads = 10
-        chunks = crawl_results.each_slice((crawl_results.size.to_f / max_threads).ceil).to_a
-        threads = chunks.map do |chunk|
-          Thread.new do
-            chunk.each do |crawl_result|
-              subject.write(crawl_result)
-            end
-          end
-        end
-        threads.each(&:join)
-
-        expect(bulk_queue).to have_received(:add).exactly(100).times
-        expect(bulk_queue).to have_received(:pop_all).once
-        expect(es_client).to have_received(:bulk).with(hash_including(body: array_including(docs))).once
+        # mock reattempting after failed lock acquisition
+        subject.write(crawl_result_two)
       end
     end
   end

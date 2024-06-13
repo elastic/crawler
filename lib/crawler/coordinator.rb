@@ -18,7 +18,9 @@ module Crawler
   # The Coordinator is responsible for running an entire crawl from start to finish.
   class Coordinator # rubocop:disable Metrics/ClassLength
     SEED_LIST = 'seed-list'
-    SINK_LOCK_TIMEOUT = 60 # seconds
+
+    SINK_LOCK_RETRY_INTERVAL = 1.second
+    SINK_LOCK_MAX_RETRIES = 120
 
     attr_reader :crawl, :seen_urls, :crawl_outcome, :outcome_message, :started_at, :task_executors
 
@@ -447,7 +449,8 @@ module Crawler
     #-----------------------------------------------------------------------------------------------
     # Outputs the results of a single URL processing to an output module configured for the crawl
     def output_crawl_result(crawl_result)
-      Timeout.timeout(SINK_LOCK_TIMEOUT) do
+      retries = 0
+      begin
         sink.write(crawl_result).tap do |outcome|
           # Make sure we have an outcome of the right type (helps troubleshoot sink implementations)
           unless outcome.is_a?(Hash)
@@ -455,15 +458,26 @@ module Crawler
             raise ArgumentError, error
           end
         end
+      rescue Errors::SinkLockedError
+        # Adding a debug log here is incredibly noisy, so instead we should rely on logging from the sink
+        # and only log here if the SINK_LOCK_MAX_RETRIES threshold is reached.
+        retries += 1
+        unless retries >= SINK_LOCK_MAX_RETRIES
+          interruptible_sleep(SINK_LOCK_RETRY_INTERVAL)
+          retry
+        end
+
+        log = <<~LOG.squish
+          Sink lock couldn't be acquired after #{retries} attempts, so crawl result for URL
+          [#{crawl_result.url}] was dropped.
+        LOG
+        system_logger.warn(log)
+        sink.failure(log)
+      rescue StandardError => e
+        log = "Unexpected exception while sending crawl results to the output sink: #{e}"
+        system_logger.fatal(log)
+        sink.failure(log)
       end
-    rescue Timeout::Error
-      log = "Executor waited #{SINK_LOCK_TIMEOUT} seconds for output sink lock but timed out."
-      system_logger.error(log)
-      sink.failure(log)
-    rescue StandardError => e
-      log = "Unexpected exception while sending crawl results to the output sink: #{e}"
-      system_logger.fatal(log)
-      sink.failure(log)
     end
 
     #-----------------------------------------------------------------------------------------------

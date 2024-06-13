@@ -40,8 +40,10 @@ module Crawler
       end
 
       def write(crawl_result)
-        # make additions to the bulk queue thread-safe
-        @queue_lock.synchronize do
+        # make additions to the operation queue thread-safe
+        raise Errors::SinkLockedError unless @queue_lock.try_lock
+
+        begin
           doc = parametrized_doc(crawl_result)
           index_op = { 'index' => { '_index' => index_name, '_id' => doc['id'] } }
 
@@ -55,6 +57,8 @@ module Crawler
 
           increment_ingestion_stats(doc)
           success("Successfully added #{doc['id']} to the bulk queue")
+        ensure
+          @queue_lock.unlock
         end
       end
 

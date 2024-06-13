@@ -139,17 +139,22 @@ RSpec.describe(Crawler::Coordinator) do
         coordinator.send(:process_crawl_result, crawl_task, crawl_result)
       end
 
-      context 'when it the output sink has a lock' do
+      context 'when the output sink has a lock' do
         before :each do
-          stub_const('Crawler::Coordinator::SINK_LOCK_TIMEOUT', 3)
+          stub_const('Crawler::Coordinator::SINK_LOCK_MAX_RETRIES', 2)
         end
 
         it 'should wait for the lock' do
-          expect(crawl.sink).to receive(:write).and_wrap_original do |method, *args|
-            sleep(0.5.seconds)
+          # Sink locked on first call but open on second
+          expect(crawl.sink).to receive(:write).twice.and_wrap_original do |method, *args|
+            unless @called_before
+              @called_before = true
+              raise Errors::SinkLockedError
+            end
             method.call(*args)
           end
 
+          expect(crawl).to receive(:interruptible_sleep).once
           expect(events).to receive(:url_extracted).with(
             hash_including(
               url: crawl_result.url,
@@ -165,11 +170,11 @@ RSpec.describe(Crawler::Coordinator) do
         end
 
         it 'should fail if the lock acquisition times out' do
-          expect(crawl.sink).to receive(:write).and_wrap_original do |method, *args|
-            sleep(10.seconds)
-            method.call(*args)
+          expect(crawl.sink).to receive(:write).twice.and_wrap_original do |_, *_|
+            raise Errors::SinkLockedError
           end
 
+          expect(crawl).to receive(:interruptible_sleep).once
           expect(events).to receive(:url_extracted).with(
             hash_including(
               url: crawl_result.url,
@@ -178,7 +183,7 @@ RSpec.describe(Crawler::Coordinator) do
               end_time: kind_of(Time),
               duration: kind_of(Benchmark::Tms),
               outcome: :failure,
-              message: 'Executor waited 3 seconds for output sink lock but timed out.'
+              message: start_with("Sink lock couldn't be acquired after 2 attempts")
             )
           )
           coordinator.send(:process_crawl_result, crawl_task, crawl_result)
