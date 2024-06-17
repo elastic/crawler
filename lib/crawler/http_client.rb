@@ -197,7 +197,7 @@ module Crawler
     end
 
     #-------------------------------------------------------------------------------------------------
-    def new_connection_manager # rubocop:disable Metrics/AbcSize
+    def new_connection_manager
       builder = PoolingHttpClientConnectionManagerBuilder.create
       builder.set_ssl_socket_factory(https_socket_factory)
       builder.set_dns_resolver(dns_resolver)
@@ -315,7 +315,7 @@ module Crawler
 
     #-------------------------------------------------------------------------------------------------
     # Returns a proxy host object to be used for all connections
-    def proxy_host # rubocop:disable Metrics/AbcSize
+    def proxy_host
       return nil unless config.http_proxy_host
 
       logger.debug(<<~LOG.squish)

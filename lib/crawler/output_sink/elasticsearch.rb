@@ -9,6 +9,7 @@
 require_dependency File.join(__dir__, 'base')
 require_dependency File.join(__dir__, '..', '..', 'utility', 'es_client')
 require_dependency File.join(__dir__, '..', '..', 'utility', 'bulk_queue')
+require_dependency File.join(__dir__, '..', '..', 'errors')
 
 module Crawler
   module OutputSink
@@ -31,6 +32,7 @@ module Crawler
         # initialize client now to fail fast if config is bad
         client
 
+        @queue_lock = Mutex.new
         init_ingestion_stats
         system_logger.info(
           "Elasticsearch sink initialized for index [#{index_name}] with pipeline [#{pipeline}]"
@@ -38,19 +40,26 @@ module Crawler
       end
 
       def write(crawl_result)
-        doc = parametrized_doc(crawl_result)
-        index_op = { 'index' => { '_index' => index_name, '_id' => doc['id'] } }
+        # make additions to the operation queue thread-safe
+        raise Errors::SinkLockedError unless @queue_lock.try_lock
 
-        flush unless operation_queue.will_fit?(index_op, doc)
+        begin
+          doc = parametrized_doc(crawl_result)
+          index_op = { 'index' => { '_index' => index_name, '_id' => doc['id'] } }
 
-        operation_queue.add(
-          index_op,
-          doc
-        )
-        system_logger.debug("Added doc #{doc['id']} to bulk queue. Current stats: #{operation_queue.current_stats}")
+          flush unless operation_queue.will_fit?(index_op, doc)
 
-        increment_ingestion_stats(doc)
-        success
+          operation_queue.add(
+            index_op,
+            doc
+          )
+          system_logger.debug("Added doc #{doc['id']} to bulk queue. Current stats: #{operation_queue.current_stats}")
+
+          increment_ingestion_stats(doc)
+          success("Successfully added #{doc['id']} to the bulk queue")
+        ensure
+          @queue_lock.unlock
+        end
       end
 
       def close
@@ -64,18 +73,18 @@ module Crawler
       end
 
       def flush # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
-        payload = operation_queue.pop_all
-        if payload.empty?
+        body = operation_queue.pop_all
+        if body.empty?
           system_logger.debug('Queue was empty when attempting to flush.')
           return
         end
 
         # a single doc needs two items in a bulk request, so halving the count makes logs clearer
-        indexing_docs_count = payload.size / 2
-        system_logger.info("Sending bulk request with #{indexing_docs_count} items and flushing queue...")
+        indexing_docs_count = body.size / 2
+        system_logger.info("Sending bulk request with #{indexing_docs_count} items and resetting queue...")
 
         begin
-          client.bulk(body: payload, pipeline:) # TODO: parse response
+          client.bulk(body:, pipeline:) # TODO: parse response
           system_logger.info("Successfully indexed #{indexing_docs_count} docs.")
           reset_ingestion_stats(true)
         rescue Utility::EsClient::IndexingFailedError => e

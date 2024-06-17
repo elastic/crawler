@@ -10,6 +10,8 @@ require 'set'
 require 'benchmark'
 require 'concurrent/set'
 
+require_dependency File.join(__dir__, '..', 'errors')
+
 # There are too many lint issues here to individually disable
 # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity
 module Crawler
@@ -17,8 +19,8 @@ module Crawler
   class Coordinator # rubocop:disable Metrics/ClassLength
     SEED_LIST = 'seed-list'
 
-    # How long to wait before retrying ingestion after a retryable error (like a r/o mode write)
-    RETRY_INTERVAL = 10.seconds
+    SINK_LOCK_RETRY_INTERVAL = 1.second
+    SINK_LOCK_MAX_RETRIES = 120
 
     attr_reader :crawl, :seen_urls, :crawl_outcome, :outcome_message, :started_at, :task_executors
 
@@ -447,21 +449,35 @@ module Crawler
     #-----------------------------------------------------------------------------------------------
     # Outputs the results of a single URL processing to an output module configured for the crawl
     def output_crawl_result(crawl_result)
-      sink.write(crawl_result).tap do |outcome|
-        # Make sure we have an outcome of the right type (helps troubleshoot sink implementations)
-        unless outcome.is_a?(Hash)
-          error = "Expected to return an outcome object from the sink, returned #{outcome.inspect} instead"
-          raise ArgumentError, error
+      retries = 0
+      begin
+        sink.write(crawl_result).tap do |outcome|
+          # Make sure we have an outcome of the right type (helps troubleshoot sink implementations)
+          unless outcome.is_a?(Hash)
+            error = "Expected to return an outcome object from the sink, returned #{outcome.inspect} instead"
+            raise ArgumentError, error
+          end
         end
-      end
-    rescue StandardError => e
-      if crawl.retryable_error?(e) && !shutdown_started?
-        system_logger.warn("Retryable error during content ingestion: #{e}. Going to retry in #{RETRY_INTERVAL}s...")
-        interruptible_sleep(RETRY_INTERVAL)
-        retry
-      end
+      rescue Errors::SinkLockedError
+        # Adding a debug log here is incredibly noisy, so instead we should rely on logging from the sink
+        # and only log here if the SINK_LOCK_MAX_RETRIES threshold is reached.
+        retries += 1
+        unless retries >= SINK_LOCK_MAX_RETRIES
+          interruptible_sleep(SINK_LOCK_RETRY_INTERVAL)
+          retry
+        end
 
-      sink.failure("Unexpected exception while sending crawl results to the output sink: #{e}")
+        log = <<~LOG.squish
+          Sink lock couldn't be acquired after #{retries} attempts, so crawl result for URL
+          [#{crawl_result.url}] was dropped.
+        LOG
+        system_logger.warn(log)
+        sink.failure(log)
+      rescue StandardError => e
+        log = "Unexpected exception while sending crawl results to the output sink: #{e}"
+        system_logger.fatal(log)
+        sink.failure(log)
+      end
     end
 
     #-----------------------------------------------------------------------------------------------
