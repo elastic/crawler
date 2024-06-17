@@ -15,7 +15,8 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       output_sink: 'elasticsearch',
       output_index: index_name,
       elasticsearch: {
-        host: 'http://localhost:1234',
+        host: 'http://localhost',
+        port: 1234,
         api_key: 'key'
       }
     )
@@ -113,7 +114,8 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
           output_sink: 'elasticsearch',
           output_index: index_name,
           elasticsearch: {
-            host: 'http://localhost:1234',
+            host: 'http://localhost',
+            port: 1234,
             api_key: 'key',
             pipeline: 'my-pipeline'
           }
@@ -137,7 +139,8 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
           output_sink: 'elasticsearch',
           output_index: index_name,
           elasticsearch: {
-            host: 'http://localhost:1234',
+            host: 'http://localhost',
+            port: 1234,
             api_key: 'key',
             pipeline: 'my-pipeline',
             pipeline_params: {
@@ -171,7 +174,8 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
           output_sink: 'elasticsearch',
           output_index: index_name,
           elasticsearch: {
-            host: 'http://localhost:1234',
+            host: 'http://localhost',
+            port: 1234,
             api_key: 'key',
             pipeline_enabled: false
           }
@@ -258,19 +262,38 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
         subject.write(crawl_result_two)
       end
 
-      it 'pops existing documents before adding a new one' do
+      it 'blocks simultaneous threads with locking' do
+        # this will call write 3 times
+        # first call will take the lock and add crawl_result_one's doc
+        # second call will be rejected due to locking
+        # third call (retry of second call) will take the lock and add crawl_result_two's doc
+        # we can test this by using `ordered` on the spies
         expect(bulk_queue).to receive(:add).with(anything, hash_including(doc_one)).ordered
         expect(bulk_queue).to receive(:pop_all).ordered
         expect(bulk_queue).to receive(:add).with(anything, hash_including(doc_two)).ordered
 
-        subject.write(crawl_result_one)
+        # initially send multi-threaded to engage lock
+        threads = [crawl_result_one, crawl_result_two].map do |crawl_result|
+          Thread.new do
+            subject.write(crawl_result)
+          end
+        end
+        # second call will fail, but we can't differentiate that here
+        expect { threads.each(&:join) }.to raise_error(Errors::SinkLockedError)
+
+        # mock reattempting after failed lock acquisition
         subject.write(crawl_result_two)
       end
     end
   end
 
   describe '#flush' do
-    let(:operation) { 'bulk: delete something \n insert something else' }
+    let(:operation) do
+      [
+        { index: { _index: 'my-index', _id: '1234' } },
+        { id: '202d2df297ed4e62b51dff33ee1418330a93a622', title: 'foo' }
+      ]
+    end
 
     before(:each) do
       allow(bulk_queue).to receive(:pop_all).and_return(operation)
@@ -278,8 +301,22 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
 
     it 'sends data from bulk queue to elasticsearch' do
       expect(es_client).to receive(:bulk).with(hash_including(body: operation, pipeline: default_pipeline))
+      expect(system_logger).to receive(:info).with('Successfully indexed 1 docs.')
 
       subject.flush
+    end
+
+    context('when an error occurs during indexing') do
+      before(:each) do
+        allow(es_client).to receive(:bulk).and_raise(Utility::EsClient::IndexingFailedError.new('BOOM'))
+      end
+
+      it 'logs error' do
+        expect(es_client).to receive(:bulk).with(hash_including(body: operation, pipeline: default_pipeline))
+        expect(system_logger).to receive(:warn).with('Bulk index failed: BOOM')
+
+        subject.flush
+      end
     end
   end
 
@@ -352,7 +389,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
 
         before(:each) do
           allow(bulk_queue).to receive(:bytesize).and_return(serialized_object.bytesize)
-          allow(es_client).to receive(:bulk).and_raise(Utility::EsClient::IndexingFailedError)
+          allow(es_client).to receive(:bulk).and_raise(Utility::EsClient::IndexingFailedError.new('BOOM'))
 
           document_count.times.each do |x|
             subject.write(FactoryBot.build(:html_crawl_result, url: "http://real.com/#{x}"))
@@ -366,6 +403,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
 
           expect(stats[:failed][:docs_count]).to eq(document_count)
           expect(stats[:completed][:docs_count]).to eq(0)
+          expect(system_logger).to have_received(:warn).with('Bulk index failed: BOOM')
         end
 
         it 'returns expected docs_volume' do
@@ -373,6 +411,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
 
           expect(stats[:failed][:docs_volume]).to eq(document_count * serialized_object.bytesize)
           expect(stats[:completed][:docs_volume]).to eq(0)
+          expect(system_logger).to have_received(:warn).with('Bulk index failed: BOOM')
         end
       end
     end

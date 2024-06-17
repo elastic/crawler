@@ -13,7 +13,7 @@ module Utility
   class EsClient < ::Elasticsearch::Client
     USER_AGENT = 'elastic-web-crawler-'
     MAX_RETRIES = 3
-    REQUEST_TIMEOUT = 30 # seconds
+    REQUEST_TIMEOUT = 10 # seconds
     FAILED_BULKS_DIR = 'output/failed_payloads' # directory that failed bulk payloads are output to
 
     class IndexingFailedError < StandardError

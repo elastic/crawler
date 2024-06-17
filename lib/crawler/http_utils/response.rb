@@ -72,7 +72,7 @@ module Crawler
         v.is_a?(Array) ? v.first : v
       end
 
-      def headers # rubocop:disable Metrics/AbcSize
+      def headers
         @headers ||= apache_response.headers.each_with_object({}) do |h, o|
           key = h.get_name.downcase
 

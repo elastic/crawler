@@ -20,7 +20,7 @@ module Crawler
       attr_reader :config, :crawl_queue, :seen_urls, :sink, :outcome, :outcome_message
       attr_accessor :executor
 
-      def initialize(config) # rubocop:disable Metrics/AbcSize
+      def initialize(config)
         raise ArgumentError, 'Invalid config' unless config.is_a?(Config)
         raise ArgumentError, 'Missing domain allowlist' if config.domain_allowlist.empty?
         raise ArgumentError, 'Seed URLs need to be an enumerator' unless config.seed_urls.is_a?(Enumerator)
@@ -77,11 +77,6 @@ module Crawler
         end
       end
 
-      # No errors should be retried by default (see App Search subclass for a version with retries)
-      def retryable_error?(_error)
-        false
-      end
-
       #---------------------------------------------------------------------------------------------
       def coordinator
         @coordinator ||= Crawler::Coordinator.new(self)
@@ -124,7 +119,7 @@ module Crawler
       # Returns a hash with crawl-specific status information
       # Note: This is used by the `EventGenerator` class for crawl-status events and by the Crawler Status API.
       #       Please update OpenAPI specs if you add any new fields here.
-      def status # rubocop:disable Metrics/AbcSize
+      def status
         {
           queue_size: crawl_queue.length,
           pages_visited: stats.fetched_pages_count,
