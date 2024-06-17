@@ -76,7 +76,7 @@ RSpec.describe(Crawler::Coordinator) do
       )
     end
 
-    def process_crawl_result # rubocop:disable Metrics/AbcSize
+    def process_crawl_result
       allow(events).to receive(:url_output)
       allow(events).to receive(:url_discover)
       allow(events).to receive(:url_seed)
@@ -125,7 +125,6 @@ RSpec.describe(Crawler::Coordinator) do
       it 'should capture exceptions coming from the output module and generate a failure url-extracted event' do
         error = RuntimeError.new('BOOM')
         expect(crawl.sink).to receive(:write).and_raise(error)
-        expect(crawl).to receive(:retryable_error?).with(error).and_return(false)
         expect(events).to receive(:url_extracted).with(
           hash_including(
             url: crawl_result.url,
@@ -140,31 +139,55 @@ RSpec.describe(Crawler::Coordinator) do
         coordinator.send(:process_crawl_result, crawl_task, crawl_result)
       end
 
-      it 'should retry exceptions if possible' do
-        error = RuntimeError.new('BOOM')
-        expect(crawl.sink).to receive(:write).twice.and_wrap_original do |method, *args|
-          unless @called_before
-            @called_before = true
-            raise error
-          end
-          method.call(*args)
+      context 'when the output sink has a lock' do
+        before :each do
+          stub_const('Crawler::Coordinator::SINK_LOCK_MAX_RETRIES', 2)
         end
 
-        expect(crawl).to receive(:retryable_error?).with(error).and_return(true)
-        expect(crawl).to receive(:interruptible_sleep)
+        it 'should wait for the lock' do
+          # Sink locked on first call but open on second
+          expect(crawl.sink).to receive(:write).twice.and_wrap_original do |method, *args|
+            unless @called_before
+              @called_before = true
+              raise Errors::SinkLockedError
+            end
+            method.call(*args)
+          end
 
-        expect(events).to receive(:url_extracted).with(
-          hash_including(
-            url: crawl_result.url,
-            type: :allowed,
-            start_time: kind_of(Time),
-            end_time: kind_of(Time),
-            duration: kind_of(Benchmark::Tms),
-            outcome: :success,
-            message: 'Successfully ingested crawl result'
+          expect(crawl).to receive(:interruptible_sleep).once
+          expect(events).to receive(:url_extracted).with(
+            hash_including(
+              url: crawl_result.url,
+              type: :allowed,
+              start_time: kind_of(Time),
+              end_time: kind_of(Time),
+              duration: kind_of(Benchmark::Tms),
+              outcome: :success,
+              message: 'Successfully ingested crawl result'
+            )
           )
-        )
-        coordinator.send(:process_crawl_result, crawl_task, crawl_result)
+          coordinator.send(:process_crawl_result, crawl_task, crawl_result)
+        end
+
+        it 'should fail if the lock acquisition times out' do
+          expect(crawl.sink).to receive(:write).twice.and_wrap_original do |_, *_|
+            raise Errors::SinkLockedError
+          end
+
+          expect(crawl).to receive(:interruptible_sleep).once
+          expect(events).to receive(:url_extracted).with(
+            hash_including(
+              url: crawl_result.url,
+              type: :allowed,
+              start_time: kind_of(Time),
+              end_time: kind_of(Time),
+              duration: kind_of(Benchmark::Tms),
+              outcome: :failure,
+              message: start_with("Sink lock couldn't be acquired after 2 attempts")
+            )
+          )
+          coordinator.send(:process_crawl_result, crawl_task, crawl_result)
+        end
       end
     end
 

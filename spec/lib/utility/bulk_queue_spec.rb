@@ -14,6 +14,7 @@ RSpec.describe(Utility::BulkQueue) do
 
   before(:each) do
     allow(system_logger).to receive(:debug)
+    allow(system_logger).to receive(:error)
   end
 
   describe '#add' do
@@ -29,7 +30,7 @@ RSpec.describe(Utility::BulkQueue) do
       end
 
       it 'raises an error' do
-        expect { subject.add('some-op') }.to raise_error(Utility::BulkQueue::QueueOverflowError)
+        expect { subject.add('some-op') }.to raise_error(Errors::BulkQueueOverflowError)
       end
     end
 
