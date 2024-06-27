@@ -296,13 +296,13 @@ module Crawler
       #---------------------------------------------------------------------------------------------
       def configure_seed_urls!
         # use the main url if no seed_urls were configured
-        seed_urls = domains.map do |domain|
+        seed_urls = domains.flat_map do |domain|
           if domain[:seed_urls]&.any?
             domain[:seed_urls]
           else
             ["#{domain[:url]}/"]
           end
-        end.flatten
+        end
 
         # Convert seed URLs into an enumerator if needed
         @seed_urls = seed_urls.each unless seed_urls.is_a?(Enumerator)
