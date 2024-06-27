@@ -7,13 +7,14 @@
 # frozen_string_literal: true
 
 RSpec.describe(Crawler::API::Crawl) do
-  let(:seed_url) { 'http://example.com/' }
-  let(:parsed_url) { Crawler::Data::URL.parse(seed_url) }
+  let(:url) { 'http://example.com' }
+  let(:parsed_url) { Crawler::Data::URL.parse(url) }
 
   let(:crawl_config) do
     Crawler::API::Config.new(
-      domain_allowlist: ['http://example.com'],
-      seed_urls: [seed_url]
+      domains: [
+        { url: },
+      ]
     )
   end
 
@@ -24,7 +25,7 @@ RSpec.describe(Crawler::API::Crawl) do
       content: mock_seed_body
     )
   end
-  let(:executor) { Crawler::MockExecutor.new(seed_url => mock_crawl_result) }
+  let(:executor) { Crawler::MockExecutor.new(url => mock_crawl_result) }
 
   subject do
     described_class.new(crawl_config).tap do |crawl|
@@ -39,7 +40,7 @@ RSpec.describe(Crawler::API::Crawl) do
 
   #-------------------------------------------------------------------------------------------------
   it 'has a config' do
-    expect(subject.config.seed_urls.map(&:to_s).to_a).to eq([seed_url])
+    expect(subject.config.seed_urls.map(&:to_s).to_a).to eq([url])
     expect(subject.config.output_sink).to eq(:console)
   end
 

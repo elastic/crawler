@@ -153,9 +153,13 @@ class FauxCrawl # rubocop:disable Metrics/ClassLength
       crawl_id: crawl_id,
       auth: auth,
       user_agent: user_agent,
-      seed_urls: seed_urls,
-      sitemap_urls: sitemap_urls,
-      domain_allowlist: domain_allowlist,
+      domains: [
+        {
+          url: Settings.faux_url,
+          seed_urls: seed_urls,
+          sitemap_urls: sitemap_urls
+        }
+      ],
       content_extraction_enabled: content_extraction.fetch(:enabled),
       content_extraction_mime_types: content_extraction.fetch(:mime_types),
       output_sink: :mock,

@@ -7,8 +7,7 @@
 # frozen_string_literal: true
 
 RSpec.describe(Crawler::OutputSink::File) do
-  let(:domains) { ['http://example.com'] }
-  let(:seed_urls) { ['http://example.com/'] }
+  let(:domains) { [{ url: 'http://example.com' }] }
 
   context '#initialize' do
     def new_sink(config)
@@ -17,8 +16,7 @@ RSpec.describe(Crawler::OutputSink::File) do
 
     it 'should require an output directory' do
       config = Crawler::API::Config.new(
-        domain_allowlist: domains,
-        seed_urls:,
+        domains:,
         output_sink: 'file'
       )
 
@@ -28,8 +26,7 @@ RSpec.describe(Crawler::OutputSink::File) do
     it 'should create the output directory' do
       dir = '/some/directory'
       config = Crawler::API::Config.new(
-        domain_allowlist: domains,
-        seed_urls:,
+        domains:,
         output_sink: 'file',
         output_dir: dir
       )

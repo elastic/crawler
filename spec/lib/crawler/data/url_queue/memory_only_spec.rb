@@ -7,13 +7,11 @@
 # frozen_string_literal: true
 
 RSpec.describe(Crawler::Data::UrlQueue::MemoryOnly) do
-  let(:domains) { ['http://example.com'] }
-  let(:seed_urls) { ['http://example.com/'] }
+  let(:domains) { [{ url: 'http://example.com' }] }
 
   let(:config) do
     Crawler::API::Config.new(
-      domain_allowlist: domains,
-      seed_urls:,
+      domains:,
       url_queue: :memory_only
     )
   end

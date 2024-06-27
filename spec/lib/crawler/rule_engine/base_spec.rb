@@ -7,10 +7,9 @@
 # frozen_string_literal: true
 
 RSpec.describe(Crawler::RuleEngine::Base) do
-  let(:domains) { ['http://example.com'] }
-  let(:seed_urls) { ['http://example.com/'] }
+  let(:domains) { [{ url: 'http://example.com' }] }
   let(:config) do
-    Crawler::API::Config.new(domain_allowlist: domains, seed_urls:,
+    Crawler::API::Config.new(domains:,
                              robots_txt_service: Crawler::RobotsTxtService.always_allow)
   end
   subject(:rule_engine) { described_class.new(config) }
@@ -35,8 +34,9 @@ RSpec.describe(Crawler::RuleEngine::Base) do
 
     context 'robots.txt' do
       let(:domain) { Crawler::Data::Domain.new('http://example.com') }
+      let(:domains) { [{ url: domain.to_s }] }
       let(:config) do
-        Crawler::API::Config.new(domain_allowlist: [domain.to_s], seed_urls:,
+        Crawler::API::Config.new(domains:,
                                  robots_txt_service: @robots_txt_service)
       end
 

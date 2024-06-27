@@ -7,12 +7,10 @@
 # frozen_string_literal: true
 
 RSpec.describe(Crawler::EventGenerator) do
-  let(:domains) { ['http://example.com'] }
-  let(:seed_urls) { ['http://example.com/'] }
+  let(:domains) { [{ url: 'http://example.com' }] }
   let(:config) do
     Crawler::API::Config.new(
-      domain_allowlist: domains,
-      seed_urls:
+      domains:
     )
   end
 
