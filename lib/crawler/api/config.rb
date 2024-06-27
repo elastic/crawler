@@ -280,12 +280,8 @@ module Crawler
         @domain_allowlist = domains.map do |domain|
           raise ArgumentError, 'Each domain requires a url' unless domain[:url]
 
-          domain[:url]
-        end
-
-        @domain_allowlist.map! do |domain|
-          validate_domain!(domain)
-          Crawler::Data::Domain.new(domain)
+          validate_domain!(domain[:url])
+          Crawler::Data::Domain.new(domain[:url])
         end
       end
 
