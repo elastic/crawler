@@ -304,7 +304,7 @@ module Crawler
           if domain[:seed_urls]&.any?
             domain[:seed_urls]
           else
-            [domain[:url]]
+            ["#{domain[:url]}/"]
           end
         end.flatten
 

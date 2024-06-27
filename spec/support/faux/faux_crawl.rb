@@ -12,7 +12,7 @@ require_relative 'results_collection'
 class FauxCrawl # rubocop:disable Metrics/ClassLength
   module Settings
     def self.faux_url
-      "http://#{faux_ip}:#{faux_port}/"
+      "http://#{faux_ip}:#{faux_port}"
     end
 
     def self.faux_ip
@@ -56,7 +56,7 @@ class FauxCrawl # rubocop:disable Metrics/ClassLength
     @url_queue = options.fetch(:url_queue, enterprise_search? ? :esqueues_me : :memory_only)
     @user_agent = options.fetch(:user_agent, 'Faux Crawler')
     @auth = options.fetch(:auth, nil)
-    @seed_urls = coerce_to_absolute_urls(options[:seed_urls] || [Settings.faux_url])
+    @seed_urls = coerce_to_absolute_urls(options[:seed_urls] || ["#{Settings.faux_url}/"])
     @sitemap_urls = coerce_to_absolute_urls(options[:sitemap_urls] || [])
     @domain_allowlist = seed_urls.map { |url| Crawler::Data::URL.parse(url).site }
     @content_extraction = options.fetch(:content_extraction, { enabled: false, mime_types: [] })
