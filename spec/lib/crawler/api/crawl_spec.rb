@@ -13,7 +13,7 @@ RSpec.describe(Crawler::API::Crawl) do
   let(:crawl_config) do
     Crawler::API::Config.new(
       domains: [
-        { url: },
+        { url: }
       ]
     )
   end
