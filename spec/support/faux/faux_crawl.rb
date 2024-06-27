@@ -56,7 +56,8 @@ class FauxCrawl # rubocop:disable Metrics/ClassLength
     @url_queue = options.fetch(:url_queue, enterprise_search? ? :esqueues_me : :memory_only)
     @user_agent = options.fetch(:user_agent, 'Faux Crawler')
     @auth = options.fetch(:auth, nil)
-    @seed_urls = coerce_to_absolute_urls(options[:seed_urls] || ["#{Settings.faux_url}/"])
+    @url = options.fetch(:url, Settings.faux_url)
+    @seed_urls = coerce_to_absolute_urls(options[:seed_urls] || ["#{@url}/"])
     @sitemap_urls = coerce_to_absolute_urls(options[:sitemap_urls] || [])
     @domain_allowlist = seed_urls.map { |url| Crawler::Data::URL.parse(url).site }
     @content_extraction = options.fetch(:content_extraction, { enabled: false, mime_types: [] })
@@ -155,7 +156,7 @@ class FauxCrawl # rubocop:disable Metrics/ClassLength
       user_agent: user_agent,
       domains: [
         {
-          url: Settings.faux_url,
+          url: @url,
           seed_urls: seed_urls,
           sitemap_urls: sitemap_urls
         }

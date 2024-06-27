@@ -20,7 +20,7 @@ RSpec.describe(Crawler::API::Config) do
 
     # https on port 443, http on port 80
     let(:expected_allowlist) { %W[#{domain1[:url]}:443 #{domain2[:url]}:80] }
-    let(:expected_seed_urls) { [domain2[:url]] + "#{domain1[:seed_urls]}/" }
+    let(:expected_seed_urls) { ["#{domain2[:url]}/"] + domain1[:seed_urls] }
 
     let(:output_dir) { '/tmp/crawler/example.com/123' }
 

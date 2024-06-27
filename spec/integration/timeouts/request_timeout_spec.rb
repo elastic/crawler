@@ -77,7 +77,7 @@ RSpec.describe 'Request to a site that is sending the data back really slowly' d
     results = FauxCrawl.run(
       Faux.site, # This will never actually be called, since we seed the crawl with the slow site
       timeouts: { request_timeout: 2 },
-      seed_urls: [slow_server.root_url]
+      url: slow_server.root_url
     )
 
     # Should only have a single result (home page)

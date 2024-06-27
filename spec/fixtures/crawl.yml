@@ -1,11 +1,9 @@
 # Domains allowed for the crawl
-domain_allowlist:
-  - https://localhost:80
-
-# URLs used to seed the crawl
-seed_urls:
-  - https://localhost:80
-  - https://localhost:80/news/
+domains:
+  - url: https://localhost:80
+    seed_urls:
+      - https://localhost:80
+      - https://localhost:80/news/
 
 # Where to send the results. Possible values are console, file, or elasticsearch
 output_sink: elasticsearch
