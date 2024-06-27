@@ -44,7 +44,8 @@ class FauxCrawl # rubocop:disable Metrics/ClassLength
   START_TIMEOUT = 20.seconds
 
   attr_reader :options, :sites, :site_containers, :timeouts, :content_extraction, :default_encoding, :crawl_id,
-              :url_queue, :auth, :user_agent, :seed_urls, :sitemap_urls, :domain_allowlist, :results, :expect_success
+              :url_queue, :auth, :user_agent, :url, :seed_urls, :sitemap_urls, :domain_allowlist, :results,
+              :expect_success
 
   delegate :crawl, to: :results
 
@@ -156,7 +157,7 @@ class FauxCrawl # rubocop:disable Metrics/ClassLength
       user_agent: user_agent,
       domains: [
         {
-          url: @url,
+          url: url,
           seed_urls: seed_urls,
           sitemap_urls: sitemap_urls
         }
