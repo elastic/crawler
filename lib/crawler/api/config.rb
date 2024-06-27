@@ -37,9 +37,11 @@ module Crawler
         :crawl_id,             # Unique identifier of the crawl (used in logs, etc)
         :crawl_stage,          # Stage name for multi-stage crawls
 
+        :domains,              # Array of domains
         :domain_allowlist,     # Array of domain names for restricting which links to follow
         :seed_urls,            # An array or an enumerator of initial URLs to crawl
         :sitemap_urls,         # Array of sitemap URLs to be used for content discovery
+
         :robots_txt_service,   # Service to fetch robots.txt
         :output_sink,          # The type of output, either :console | :file | :elasticsearch
         :output_dir,           # If writing to the filesystem, the directory to write to
@@ -106,9 +108,6 @@ module Crawler
         :content_extraction_enabled, # Enable content extraction of non-HTML files found during a crawl
         :content_extraction_mime_types, # Extract files with the following MIME types
 
-        # Connector configuration
-        :connector_configuration, # Configuration settings taken from the crawler's connector document
-
         # Other crawler tuning settings
         :default_encoding, # Default encoding used for responses that do not specify a charset
         :compression_enabled, # Enable/disable HTTP content compression
@@ -118,8 +117,7 @@ module Crawler
         :domains_extraction_rules # Contains domains extraction rules
       ].freeze
 
-      # Please note: These defaults are used in Enterprise Search config parser
-      # and in the `Crawler::HttpUtils::Config` class.
+      # Please note: These defaults are used the `Crawler::HttpUtils::Config` class.
       # Make sure to check those before renaming or removing any defaults.
       DEFAULTS = {
         log_level: 'info',
@@ -277,9 +275,15 @@ module Crawler
 
       #---------------------------------------------------------------------------------------------
       def configure_domain_allowlist!
-        raise ArgumentError, 'Needs at least one domain' unless domain_allowlist&.any?
+        raise ArgumentError, 'Needs at least one domain' unless domains&.any?
 
-        domain_allowlist.map! do |domain|
+        @domain_allowlist = domains.map do |domain|
+          raise ArgumentError, 'Each domain requires a url' unless domain[:url]
+
+          domain[:url]
+        end
+
+        @domain_allowlist.map! do |domain|
           validate_domain!(domain)
           Crawler::Data::Domain.new(domain)
         end
@@ -289,13 +293,20 @@ module Crawler
       def validate_domain!(domain)
         url = URI.parse(domain)
         raise ArgumentError, "Domain #{domain.inspect} does not have a URL scheme" unless url.scheme
-        raise ArgumentError, "Domain #{domain.inspect} cannot have a path" unless url.path == ''
         raise ArgumentError, "Domain #{domain.inspect} is not an HTTP(S) site" unless url.is_a?(URI::HTTP)
+        raise ArgumentError, "Domain #{domain.inspect} cannot have a path" unless url.path == ''
       end
 
       #---------------------------------------------------------------------------------------------
       def configure_seed_urls!
-        raise ArgumentError, 'Need at least one seed URL' unless seed_urls&.any?
+        # use the main url if no seed_urls were configured
+        seed_urls = domains.map do |domain|
+          if domain[:seed_urls]&.any?
+            domain[:seed_urls]
+          else
+            [domain[:url]]
+          end
+        end.flatten
 
         # Convert seed URLs into an enumerator if needed
         @seed_urls = seed_urls.each unless seed_urls.is_a?(Enumerator)
@@ -321,7 +332,11 @@ module Crawler
       #---------------------------------------------------------------------------------------------
       def configure_sitemap_urls!
         # Parse and validate all URLs
-        sitemap_urls.map! do |sitemap_url|
+        @sitemap_urls = @domains.filter_map do |domain|
+          domain[:sitemap_urls] if domain[:sitemap_urls]&.any?
+        end.flatten
+
+        @sitemap_urls.map! do |sitemap_url|
           Crawler::Data::URL.parse(sitemap_url).tap do |url|
             raise ArgumentError, "Unsupported scheme for a sitemap URL: #{url}" unless url.supported_scheme?
           end
