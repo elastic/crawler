@@ -12,7 +12,7 @@ require_relative 'results_collection'
 class FauxCrawl # rubocop:disable Metrics/ClassLength
   module Settings
     def self.faux_url
-      "http://#{faux_ip}:#{faux_port}/"
+      "http://#{faux_ip}:#{faux_port}"
     end
 
     def self.faux_ip
@@ -44,7 +44,8 @@ class FauxCrawl # rubocop:disable Metrics/ClassLength
   START_TIMEOUT = 20.seconds
 
   attr_reader :options, :sites, :site_containers, :timeouts, :content_extraction, :default_encoding, :crawl_id,
-              :url_queue, :auth, :user_agent, :seed_urls, :sitemap_urls, :domain_allowlist, :results, :expect_success
+              :url_queue, :auth, :user_agent, :url, :seed_urls, :sitemap_urls, :domain_allowlist, :results,
+              :expect_success
 
   delegate :crawl, to: :results
 
@@ -56,7 +57,8 @@ class FauxCrawl # rubocop:disable Metrics/ClassLength
     @url_queue = options.fetch(:url_queue, enterprise_search? ? :esqueues_me : :memory_only)
     @user_agent = options.fetch(:user_agent, 'Faux Crawler')
     @auth = options.fetch(:auth, nil)
-    @seed_urls = coerce_to_absolute_urls(options[:seed_urls] || [Settings.faux_url])
+    @url = options.fetch(:url, Settings.faux_url)
+    @seed_urls = coerce_to_absolute_urls(options[:seed_urls] || ["#{@url}/"])
     @sitemap_urls = coerce_to_absolute_urls(options[:sitemap_urls] || [])
     @domain_allowlist = seed_urls.map { |url| Crawler::Data::URL.parse(url).site }
     @content_extraction = options.fetch(:content_extraction, { enabled: false, mime_types: [] })
@@ -153,9 +155,13 @@ class FauxCrawl # rubocop:disable Metrics/ClassLength
       crawl_id: crawl_id,
       auth: auth,
       user_agent: user_agent,
-      seed_urls: seed_urls,
-      sitemap_urls: sitemap_urls,
-      domain_allowlist: domain_allowlist,
+      domains: [
+        {
+          url: url,
+          seed_urls: seed_urls,
+          sitemap_urls: sitemap_urls
+        }
+      ],
       content_extraction_enabled: content_extraction.fetch(:enabled),
       content_extraction_mime_types: content_extraction.fetch(:mime_types),
       output_sink: :mock,

@@ -7,14 +7,12 @@
 # frozen_string_literal: true
 
 RSpec.describe(Crawler::OutputSink) do
-  let(:domains) { ['http://example.com'] }
-  let(:seed_urls) { ['http://example.com/'] }
+  let(:domains) { [{ url: 'http://example.com' }] }
 
   context '.create' do
     it 'should validate the sync name' do
       config = Crawler::API::Config.new(
-        domain_allowlist: domains,
-        seed_urls:,
+        domains:,
         output_sink: 'magnetic-tape'
       )
 
@@ -25,8 +23,7 @@ RSpec.describe(Crawler::OutputSink) do
 
     it 'should return a new sink object of a correct type' do
       config = Crawler::API::Config.new(
-        domain_allowlist: domains,
-        seed_urls:,
+        domains:,
         output_sink: 'console'
       )
 

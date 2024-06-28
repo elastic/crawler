@@ -9,13 +9,22 @@
 #
 ## ------------------------------- Crawler ------------------------------------
 #
-## The domain(s) that Crawler will crawl.
-#domain_allowlist:
-#  - http://localhost:8000
+## The domain(s) that Crawler will crawl. This is an array. All domains in this
+##   array will be crawled concurrently by the Crawler with a shared output.
+##   They are separated to allow for domain-specific configurations.
+##
+##   `domains[].url`           - (Required) The base URL for this domain
+##   `domains[].seed_urls`     - (Optional) The entry point(s) for crawl jobs.
+##								      If this is empty, the `url` will be used.
+##   `domains[].sitemap_urls`  - (Optional) the location(s) of sitemap files
 #
-## The URLs used to seed the crawl. Must have the same host(s) as `domain_allowlist`
-#seed_urls:
-#  - http://localhost:8000
+#domains:
+#  - url: http://localhost:8000
+#    seed_urls:
+#      - http://localhost:8000/foo
+#      - http://localhost:8000/bar
+#    sitemap_urls:
+#      - http://localhost:8000/sitemap.xml
 #
 ## Where to send the results. Possible values are console, file, or elasticsearch
 #output_sink: elasticsearch

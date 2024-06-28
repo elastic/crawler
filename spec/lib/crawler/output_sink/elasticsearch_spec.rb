@@ -10,8 +10,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
   let(:subject) { described_class.new(config) }
   let(:config) do
     Crawler::API::Config.new(
-      domain_allowlist: domains,
-      seed_urls:,
+      domains:,
       output_sink: 'elasticsearch',
       output_index: index_name,
       elasticsearch: {
@@ -22,8 +21,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
     )
   end
 
-  let(:domains) { ['http://example.com'] }
-  let(:seed_urls) { ['http://example.com/'] }
+  let(:domains) { [{ url: 'http://example.com' }] }
   let(:index_name) { 'my-index' }
 
   let(:index_name) { 'some-index-name' }
@@ -64,8 +62,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
     context 'when output index is missing' do
       let(:config) do
         Crawler::API::Config.new(
-          domain_allowlist: domains,
-          seed_urls:,
+          domains:,
           output_sink: 'elasticsearch'
         )
       end
@@ -78,8 +75,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
     context 'when elasticsearch config is missing' do
       let(:config) do
         Crawler::API::Config.new(
-          domain_allowlist: domains,
-          seed_urls:,
+          domains:,
           output_sink: 'elasticsearch',
           output_index: index_name
         )
@@ -109,8 +105,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
     context 'when elasticsearch.pipeline is not provided' do
       let(:config) do
         Crawler::API::Config.new(
-          domain_allowlist: domains,
-          seed_urls:,
+          domains:,
           output_sink: 'elasticsearch',
           output_index: index_name,
           elasticsearch: {
@@ -134,8 +129,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
     context 'when elasticsearch.pipeline_params are changed' do
       let(:config) do
         Crawler::API::Config.new(
-          domain_allowlist: domains,
-          seed_urls:,
+          domains:,
           output_sink: 'elasticsearch',
           output_index: index_name,
           elasticsearch: {
@@ -169,8 +163,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
     context 'when elasticsearch.pipeline_enabled is false' do
       let(:config) do
         Crawler::API::Config.new(
-          domain_allowlist: domains,
-          seed_urls:,
+          domains:,
           output_sink: 'elasticsearch',
           output_index: index_name,
           elasticsearch: {

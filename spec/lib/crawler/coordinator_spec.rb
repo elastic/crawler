@@ -13,12 +13,12 @@ RSpec.describe(Crawler::Coordinator) do
   let(:sitemap_url) { URI.join(domain, '/sitemap.xml') }
   let(:sitemap_urls) { [sitemap_url] }
 
+  let(:domains) { [{ url: domain, seed_urls:, sitemap_urls: }] }
+
   let(:results_collection) { ResultsCollection.new }
   let(:crawl_configuration) do
     {
-      domain_allowlist: [domain],
-      seed_urls:,
-      sitemap_urls:,
+      domains:,
       results_collection:
     }
   end

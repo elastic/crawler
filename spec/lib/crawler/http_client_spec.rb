@@ -279,11 +279,11 @@ RSpec.describe(Crawler::HttpClient) do
       let(:ca_certs) { [] }
       let(:ssl_mode) { 'full' }
       let(:url) { 'https://example.org' }
+      let(:domains) { [{ url: }] }
 
       let(:crawler_config) do
         Crawler::API::Config.new(
-          domain_allowlist: [url],
-          seed_urls: [url],
+          domains:,
           ssl_ca_certificates: ca_certs,
           ssl_verification_mode: ssl_mode
         )
