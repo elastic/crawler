@@ -47,12 +47,11 @@ module Crawler
         private
 
         def validate_ruleset
-          puts(@ruleset)
-          if @ruleset[:rules] && !@ruleset[:rules].is_a?(Array)
+          if !@ruleset[:rules].nil? && !@ruleset[:rules].is_a?(Array)
             raise ArgumentError, 'Extraction ruleset rules must be an array'
           end
 
-          return unless @ruleset[:url_filters] && !@ruleset[:url_filters].is_a?(Array)
+          return unless !@ruleset[:url_filters].nil? && !@ruleset[:url_filters].is_a?(Array)
 
           raise ArgumentError, 'Extraction ruleset url_filters must be an array'
         end

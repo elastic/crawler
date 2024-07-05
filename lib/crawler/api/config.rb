@@ -342,7 +342,10 @@ module Crawler
           raise ArgumentError, "Extraction rulesets for #{url} is not an array" unless rulesets.is_a?(Array)
 
           extra_rules = rulesets.flat_map(&:keys) - EXTRACTION_RULES_FIELDS
-          raise ArgumentError, "Unexpected extraction ruleset(s) for #{url}: #{extra_rules.join(', ')}" if extra_rules.any?
+          if extra_rules.any?
+            raise ArgumentError,
+                  "Unexpected extraction ruleset(s) for #{url}: #{extra_rules.join(', ')}"
+          end
 
           extraction_rules[url] = rulesets.map { |ruleset| Crawler::Data::Extraction::Ruleset.new(ruleset) }
         end

@@ -10,12 +10,12 @@ module Crawler
   module Data
     module Extraction
       class Rule
-        ACTION_TYPE_EXTRACT ||= 'extract'
-        ACTION_TYPE_SET ||= 'set'
-        ACTIONS ||= [ACTION_TYPE_EXTRACT, ACTION_TYPE_SET].freeze
-        JOINS ||= %w[array string].freeze
-        SOURCES ||= %w[url html].freeze
-        RESERVED_FIELD_NAMES ||= %w[body_content domains headings meta_description title url url_host url_path
+        ACTION_TYPE_EXTRACT = 'extract'
+        ACTION_TYPE_SET = 'set'
+        ACTIONS = [ACTION_TYPE_EXTRACT, ACTION_TYPE_SET].freeze
+        JOINS = %w[array string].freeze
+        SOURCES = %w[url html].freeze
+        RESERVED_FIELD_NAMES = %w[body_content domains headings meta_description title url url_host url_path
                                   url_path_dir1 url_path_dir2 url_path_dir3 url_port url_scheme].freeze
 
         attr_reader :action, :field_name, :selector, :join_as, :source, :value
@@ -46,13 +46,15 @@ module Crawler
                   "Extraction rule action `#{@action}` is invalid; value must be one of #{ACTIONS.join(', ')}"
           end
 
-          return unless @action == ACTION_TYPE_SET && @value.blank?
+          return unless @action == ACTION_TYPE_SET && @value.nil?
 
-          raise ArgumentError, "Extraction rule value can't be blank when action is #{ACTION_TYPE_SET}"
+          raise ArgumentError, "Extraction rule value can't be blank when action is `#{ACTION_TYPE_SET}`"
         end
 
         def validate_field_name
-          raise ArgumentError, "Extraction rule field_name can't be blank" if @field_name.blank?
+          raise ArgumentError, 'Extraction rule field_name must be a string' unless @field_name.is_a?(String)
+
+          raise ArgumentError, "Extraction rule field_name can't be blank" if @field_name == ''
 
           return unless RESERVED_FIELD_NAMES.include?(@field_name)
 
