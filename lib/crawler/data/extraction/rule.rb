@@ -6,6 +6,8 @@
 
 # frozen_string_literal: true
 
+require_dependency(File.join(__dir__, '..', '..', '..', 'constants'))
+
 module Crawler
   module Data
     module Extraction
@@ -15,8 +17,6 @@ module Crawler
         ACTIONS = [ACTION_TYPE_EXTRACT, ACTION_TYPE_SET].freeze
         JOINS = %w[array string].freeze
         SOURCES = %w[url html].freeze
-        RESERVED_FIELD_NAMES = %w[body_content domains headings meta_description title url url_host url_path
-                                  url_path_dir1 url_path_dir2 url_path_dir3 url_port url_scheme].freeze
 
         attr_reader :action, :field_name, :selector, :join_as, :source, :value
 
@@ -56,10 +56,10 @@ module Crawler
 
           raise ArgumentError, "Extraction rule field_name can't be blank" if @field_name == ''
 
-          return unless RESERVED_FIELD_NAMES.include?(@field_name)
+          return unless Constants::RESERVED_FIELD_NAMES.include?(@field_name)
 
           raise ArgumentError,
-                "Extraction rule field_name can't be a reserved field: #{RESERVED_FIELD_NAMES.join(', ')}"
+                "Extraction rule field_name can't be a reserved field: #{Constants::RESERVED_FIELD_NAMES.join(', ')}"
         end
 
         def validate_join_as

@@ -6,8 +6,8 @@
 
 # frozen_string_literal: true
 
-require_relative 'rule'
-require_relative 'url_filter'
+require_dependency(File.join(__dir__, 'rule'))
+require_dependency(File.join(__dir__, 'url_filter'))
 
 module Crawler
   module Data

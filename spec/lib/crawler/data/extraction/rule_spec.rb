@@ -100,10 +100,10 @@ RSpec.describe(Crawler::Data::Extraction::Rule) do
     end
 
     context 'when field_name is reserved' do
-      let(:reserved_field_names) { Crawler::Data::Extraction::Rule::RESERVED_FIELD_NAMES }
+      let(:reserved_field_names) { Constants::RESERVED_FIELD_NAMES }
 
       # can't use the above variable for this as it's used in the context block
-      Crawler::Data::Extraction::Rule::RESERVED_FIELD_NAMES.each do |reserved_field_name|
+      Constants::RESERVED_FIELD_NAMES.each do |reserved_field_name|
         let(:field_name) { reserved_field_name }
 
         it 'raises an error' do
