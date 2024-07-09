@@ -59,27 +59,13 @@ Possible values:
   - If multiple values are found, they will be concatenated according to the `join_as` value
 - `set`
   - Crawler will see if the HTML element configured in `selector` exists or not
-  - If it does exist, Crawler will add the configured `value` to the document using `field_name` as the doc's field name
+  - If one or multiple elements exist, Crawler will add the configured `value` to the document using `field_name` as the doc's field name
   - If it does not exist, Crawler will not add anything to the document
 
 ### `domains[].extraction_rulesets[].rules[].field_name`
 
 The document field name that Crawler will add the extracted content to.
-This can be any string value, as long as it is not one of the following reserved field names.
-
-- `body_content`
-- `domains`
-- `headings`
-- `meta_description`
-- `title`
-- `url`
-- `url_host`
-- `url_path`
-- `url_path_dir1`
-- `url_path_dir2`
-- `url_path_dir3`
-- `url_port`
-- `url_scheme`
+This can be any string value, as long as it is not one of the predefined field names in the [document schema](./DOCUMENT_SCHEMA.md).
 
 ### `domains[].extraction_rulesets[].rules[].selector`
 
