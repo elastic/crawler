@@ -8,27 +8,6 @@
 
 module Crawler
   class DocumentMapper
-    CRAWLER_DOC_SCHEMA = {
-      'url' => 'string',
-
-      # URL components
-      'url_scheme' => 'string',
-      'url_host' => 'string',
-      'url_port' => 'string',
-      'url_path' => 'string',
-      'url_path_dir1' => 'string',
-      'url_path_dir2' => 'string',
-      'url_path_dir3' => 'string',
-
-      'last_crawled_at' => 'date',
-      'title' => 'string',
-      'body_content' => 'string',
-      'meta_keywords' => 'string',
-      'meta_description' => 'string',
-      'links' => 'string',
-      'headings' => 'string'
-    }.freeze
-
     attr_reader :config
 
     def initialize(config)

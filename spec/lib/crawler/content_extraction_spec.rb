@@ -13,7 +13,7 @@ RSpec.describe(Crawler::ContentExtraction) do
 
     def document_body
       transformed_body_tag = described_class.transform(body_tag)
-      Crawler::ExtractionUtils.node_descendant_text(transformed_body_tag)
+      Crawler::Extraction::Utils.node_descendant_text(transformed_body_tag)
     end
 
     context 'simple inclusion rule' do
@@ -237,7 +237,7 @@ RSpec.describe(Crawler::ContentExtraction) do
     it 'does not modify doc' do
       body = doc.at_css('body')
       transformed_body = described_class.transform(body)
-      body_text = Crawler::ExtractionUtils.node_descendant_text(transformed_body)
+      body_text = Crawler::Extraction::Utils.node_descendant_text(transformed_body)
       expect(body_text).to eq('test1 test3')
 
       link = doc.at_css('a')
