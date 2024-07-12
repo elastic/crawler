@@ -129,6 +129,10 @@ Open Crawler has a Dockerfile that can be built and run locally.
 
 See [CONFIG.md](docs/CONFIG.md) for in-depth details on Open Crawler configuration files.
 
+### Crawler Document Schema and Mappings
+
+See [DOCUMENT_SCHEMA.md](docs/DOCUMENT_SCHEMA.md) for information regarding the Elasticsearch document schema and mappings.
+
 ### CLI Commands
 
 Open Crawler does not have a graphical user interface.

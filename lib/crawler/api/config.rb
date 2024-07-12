@@ -10,6 +10,7 @@ require 'active_support/core_ext/numeric/bytes'
 
 require_dependency(File.join(__dir__, '..', '..', 'statically_tagged_logger'))
 require_dependency(File.join(__dir__, '..', 'data', 'crawl_result', 'html'))
+require_dependency(File.join(__dir__, '..', 'data', 'extraction', 'ruleset'))
 require_dependency(File.join(__dir__, '..', 'document_mapper'))
 
 java_import java.io.ByteArrayInputStream
@@ -114,8 +115,10 @@ module Crawler
         :sitemap_discovery_disabled, # Enable/disable crawling of sitemaps defined in robots.txt
         :head_requests_enabled, # Fetching HEAD requests before GET requests enabled
 
-        :domains_extraction_rules # Contains domains extraction rules
+        :extraction_rules # Contains domains extraction rules
       ].freeze
+
+      EXTRACTION_RULES_FIELDS = %i[url_filters rules].freeze
 
       # Please note: These defaults are used the `Crawler::HttpUtils::Config` class.
       # Make sure to check those before renaming or removing any defaults.
@@ -171,7 +174,7 @@ module Crawler
         sitemap_discovery_disabled: false,
         head_requests_enabled: false,
 
-        domains_extraction_rules: {}
+        extraction_rules: {}
       }.freeze
 
       # Settings we are not allowed to log due to their sensitive nature
@@ -213,9 +216,9 @@ module Crawler
         configure_robots_txt_service!
         configure_http_header_service!
         configure_sitemap_urls!
+        configure_extraction_rules!
       end
 
-      #---------------------------------------------------------------------------------------------
       def to_s
         formatted_fields = CONFIG_FIELDS.map do |k|
           value = SENSITIVE_FIELDS.include?(k) ? '[redacted]' : public_send(k)
@@ -224,7 +227,6 @@ module Crawler
         "<#{self.class}: #{formatted_fields.join('; ')}>"
       end
 
-      #---------------------------------------------------------------------------------------------
       def validate_param_names!(params)
         extra_params = params.keys - CONFIG_FIELDS
         raise ArgumentError, "Unexpected configuration options: #{extra_params.inspect}" if extra_params.any?
@@ -236,13 +238,11 @@ module Crawler
         end
       end
 
-      #---------------------------------------------------------------------------------------------
       # Generate a new crawl id if needed
       def configure_crawl_id!
         @crawl_id ||= BSON::ObjectId.new.to_s # rubocop:disable Naming/MemoizedInstanceVariableName
       end
 
-      #---------------------------------------------------------------------------------------------
       def confugure_ssl_ca_certificates!
         ssl_ca_certificates.map! do |cert|
           if /BEGIN CERTIFICATE/.match?(cert)
@@ -253,7 +253,6 @@ module Crawler
         end
       end
 
-      #---------------------------------------------------------------------------------------------
       # Parses a PEM-formatted certificate and returns an X509Certificate object for it
       def parse_certificate_string(pem)
         cert_stream = ByteArrayInputStream.new(pem.to_java_bytes)
@@ -263,7 +262,6 @@ module Crawler
         raise ArgumentError, "Error while parsing an SSL certificate: #{e}"
       end
 
-      #---------------------------------------------------------------------------------------------
       # Loads an SSL certificate from disk and returns it as an X509Certificate object
       def load_certificate_from_file(file_name)
         system_logger.debug("Loading SSL certificate: #{file_name.inspect}")
@@ -273,19 +271,20 @@ module Crawler
         raise ArgumentError, "Error while loading an SSL certificate #{file_name.inspect}: #{e}"
       end
 
-      #---------------------------------------------------------------------------------------------
       def configure_domain_allowlist!
         raise ArgumentError, 'Needs at least one domain' unless domains&.any?
 
-        @domain_allowlist = domains.map do |domain|
+        @domain_allowlist, urls = domains.each_with_object([[], []]) do |domain, (allowlist, urls)|
           raise ArgumentError, 'Each domain requires a url' unless domain[:url]
 
           validate_domain!(domain[:url])
-          Crawler::Data::Domain.new(domain[:url])
+          allowlist << Crawler::Data::Domain.new(domain[:url])
+          urls << domain[:url]
         end
+
+        raise ArgumentError, "Main domain urls must be unique, but found [#{urls.join(', ')}]" unless urls == urls.uniq
       end
 
-      #---------------------------------------------------------------------------------------------
       def validate_domain!(domain)
         url = URI.parse(domain)
         raise ArgumentError, "Domain #{domain.inspect} does not have a URL scheme" unless url.scheme
@@ -293,7 +292,6 @@ module Crawler
         raise ArgumentError, "Domain #{domain.inspect} cannot have a path" unless url.path == ''
       end
 
-      #---------------------------------------------------------------------------------------------
       def configure_seed_urls!
         # use the main url if no seed_urls were configured
         seed_urls = domains.flat_map do |domain|
@@ -315,17 +313,14 @@ module Crawler
         end
       end
 
-      #---------------------------------------------------------------------------------------------
       def configure_robots_txt_service!
         @robots_txt_service ||= Crawler::RobotsTxtService.new(user_agent:) # rubocop:disable Naming/MemoizedInstanceVariableName
       end
 
-      #---------------------------------------------------------------------------------------------
       def configure_http_header_service!
         @http_header_service ||= Crawler::HttpHeaderService.new(auth:) # rubocop:disable Naming/MemoizedInstanceVariableName
       end
 
-      #---------------------------------------------------------------------------------------------
       def configure_sitemap_urls!
         # Parse and validate all URLs
         @sitemap_urls = @domains.filter_map do |domain|
@@ -339,7 +334,23 @@ module Crawler
         end
       end
 
-      #---------------------------------------------------------------------------------------------
+      def configure_extraction_rules!
+        @extraction_rules = @domains.each_with_object({}) do |domain, extraction_rules|
+          url = domain[:url]
+          rulesets = domain[:extraction_rulesets].nil? ? [] : domain[:extraction_rulesets]
+
+          raise ArgumentError, "Extraction rulesets for #{url} is not an array" unless rulesets.is_a?(Array)
+
+          extra_rules = rulesets.flat_map(&:keys) - EXTRACTION_RULES_FIELDS
+          if extra_rules.any?
+            raise ArgumentError,
+                  "Unexpected extraction ruleset(s) for #{url}: #{extra_rules.join(', ')}"
+          end
+
+          extraction_rules[url] = rulesets.map { |ruleset| Crawler::Data::Extraction::Ruleset.new(ruleset) }
+        end
+      end
+
       def configure_logging!(log_level, event_logs_enabled)
         @event_logger = Logger.new($stdout) if event_logs_enabled
 
@@ -351,24 +362,20 @@ module Crawler
         @system_logger = tagged_system_logger.tagged("crawl:#{crawl_id}", crawl_stage)
       end
 
-      #---------------------------------------------------------------------------------------------
       # Returns an event generator used to capture crawl life cycle events
       def events
         @events ||= Crawler::EventGenerator.new(self)
       end
 
-      #---------------------------------------------------------------------------------------------
       # Returns the per-crawl stats object used for aggregating crawl statistics
       def stats
         @stats ||= Crawler::Stats.new
       end
 
-      #---------------------------------------------------------------------------------------------
       def document_mapper
         @document_mapper ||= ::Crawler::DocumentMapper.new(self)
       end
 
-      #---------------------------------------------------------------------------------------------
       # Receives a crawler event object and outputs it into relevant systems
       def output_event(event)
         # Log the event
