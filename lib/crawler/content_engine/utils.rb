@@ -9,7 +9,7 @@
 require 'set'
 
 module Crawler
-  module Extraction
+  module ContentEngine
     module Utils
       # A list of tags tags we want to remove before extracting content
       NON_CONTENT_TAGS = %w[

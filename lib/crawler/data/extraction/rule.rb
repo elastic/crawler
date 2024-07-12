@@ -15,8 +15,14 @@ module Crawler
         ACTION_TYPE_EXTRACT = 'extract'
         ACTION_TYPE_SET = 'set'
         ACTIONS = [ACTION_TYPE_EXTRACT, ACTION_TYPE_SET].freeze
-        JOINS = %w[array string].freeze
-        SOURCES = %w[url html].freeze
+
+        JOINS_ARRAY = 'array'
+        JOINS_STRING = 'string'
+        JOINS = [JOINS_ARRAY, JOINS_STRING].freeze
+
+        SOURCES_URL = 'url'
+        SOURCES_HTML = 'html'
+        SOURCES = [SOURCES_URL, SOURCES_HTML].freeze
 
         attr_reader :action, :field_name, :selector, :join_as, :source, :value
 
@@ -28,6 +34,32 @@ module Crawler
           @source = rule[:source]
           @value = rule[:value]
           validate_rule
+        end
+
+        def build_url_filtering_rules
+          policy = Crawler::Data::Rule::ALLOW
+
+          url_filters.map do |filter|
+            pattern = Regexp.new(url_pattern(filter[:filter], filter[:pattern]))
+            Crawler::Data::Rule.new(policy, url_pattern: pattern)
+          end
+        end
+
+        def path_pattern(rule, pattern)
+          case rule
+          when 'begins'
+            pattern_with_wildcard(pattern)
+          when 'ends'
+            ".*#{pattern_with_wildcard(pattern)}\\z"
+          when 'contains'
+            ".*#{pattern_with_wildcard(pattern)}"
+          when 'regex'
+            pattern
+          end
+        end
+
+        def pattern_with_wildcard(pattern)
+          Regexp.escape(pattern).gsub('\*', '.*')
         end
 
         private
