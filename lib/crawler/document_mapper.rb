@@ -41,6 +41,11 @@ module Crawler
       )
     end
 
+    def extract_by_rules(crawl_result, extraction_rules)
+      rulesets = extraction_rules[crawl_result.site_url.to_s]
+      Crawler::ContentEngine::Extractor.extract(rulesets, crawl_result)
+    end
+
     private
 
     # Accepts a hash and removes empty values from it

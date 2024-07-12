@@ -46,12 +46,6 @@ module Crawler
         rescue RegexpError => e
           raise ArgumentError, "Extraction ruleset url_filter pattern regex is invalid: #{e.message}"
         end
-
-        def url_match?(url)
-          Timeout.timeout(REGEX_TIMEOUT) do
-            @url_pattern.match?(url.to_s)
-          end
-        end
       end
     end
   end
