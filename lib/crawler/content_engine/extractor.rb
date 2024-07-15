@@ -65,7 +65,6 @@ module Crawler
 
         filtering_rules.any? do |fr|
           match = fr.url_match?(crawl_result.url.to_s)
-          config.system_logger.info("#{match} for #{crawl_result.url.to_s}")
           match
         end
       end

@@ -7,6 +7,7 @@
 # frozen_string_literal: true
 
 RSpec.describe(Crawler::Data::Extraction::Ruleset) do
+  let(:domain) { 'http://www.example.com' }
   let(:url_filters) do
     [
       { type: 'begins', pattern: '/blog' },
@@ -28,7 +29,7 @@ RSpec.describe(Crawler::Data::Extraction::Ruleset) do
 
   describe '#initialize' do
     it 'initializes with a valid ruleset' do
-      ruleset = described_class.new(ruleset_input)
+      ruleset = described_class.new(ruleset_input, domain)
 
       expect(ruleset.rules.size).to eq(2)
       expect(ruleset.rules.map(&:action)).to match_array(%w[extract set])
@@ -42,7 +43,7 @@ RSpec.describe(Crawler::Data::Extraction::Ruleset) do
         let(:url_filters) { empty_param }
         let(:rules) { empty_param }
         it 'initializes with empty arrays' do
-          ruleset = described_class.new(ruleset_input)
+          ruleset = described_class.new(ruleset_input, domain)
 
           expect(ruleset.rules).to eq([])
           expect(ruleset.url_filters).to eq([])
@@ -55,7 +56,7 @@ RSpec.describe(Crawler::Data::Extraction::Ruleset) do
         let(:rules) { invalid_rule }
         it 'raises an ArgumentError' do
           expect do
-            described_class.new(ruleset_input)
+            described_class.new(ruleset_input, domain)
           end.to raise_error(ArgumentError, 'Extraction ruleset rules must be an array')
         end
       end
@@ -66,7 +67,7 @@ RSpec.describe(Crawler::Data::Extraction::Ruleset) do
         let(:url_filters) { invalid_filter }
         it 'raises an ArgumentError' do
           expect do
-            described_class.new(ruleset_input)
+            described_class.new(ruleset_input, domain)
           end.to raise_error(ArgumentError, 'Extraction ruleset url_filters must be an array')
         end
       end
