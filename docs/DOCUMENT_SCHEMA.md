@@ -13,7 +13,7 @@ If you are ingesting onto an index that has custom mappings, be sure that the ma
 | Field              | Type     |
 |--------------------|----------|
 | `id`               | text     |
-| `body_content`     | text     |
+| `body`             | text     |
 | `domains`          | text     |
 | `headings`         | text     |
 | `last_crawled_at`  | datetime |

@@ -107,7 +107,7 @@ RSpec.describe(Utility::EsClient) do
       {
         body: [
           { index: { _index: 'my_index', _id: '123' } },
-          { id: '123', title: 'Foo', body_content: 'bar' }
+          { id: '123', title: 'Foo', body: 'bar' }
         ]
       }
     end
