@@ -15,8 +15,14 @@ module Crawler
         ACTION_TYPE_EXTRACT = 'extract'
         ACTION_TYPE_SET = 'set'
         ACTIONS = [ACTION_TYPE_EXTRACT, ACTION_TYPE_SET].freeze
-        JOINS = %w[array string].freeze
-        SOURCES = %w[url html].freeze
+
+        JOINS_ARRAY = 'array'
+        JOINS_STRING = 'string'
+        JOINS = [JOINS_ARRAY, JOINS_STRING].freeze
+
+        SOURCES_URL = 'url'
+        SOURCES_HTML = 'html'
+        SOURCES = [SOURCES_URL, SOURCES_HTML].freeze
 
         attr_reader :action, :field_name, :selector, :join_as, :source, :value
 

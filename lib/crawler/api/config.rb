@@ -347,7 +347,7 @@ module Crawler
                   "Unexpected extraction ruleset(s) for #{url}: #{extra_rules.join(', ')}"
           end
 
-          extraction_rules[url] = rulesets.map { |ruleset| Crawler::Data::Extraction::Ruleset.new(ruleset) }
+          extraction_rules[url] = rulesets.map { |ruleset| Crawler::Data::Extraction::Ruleset.new(ruleset, url) }
         end
       end
 

@@ -13,8 +13,9 @@ module Crawler
   module Data
     module Extraction
       class Ruleset
-        def initialize(ruleset)
+        def initialize(ruleset, domain)
           @ruleset = ruleset
+          @domain = domain
           validate_ruleset
 
           # initialize these after validating they are arrays
@@ -44,7 +45,35 @@ module Crawler
             end
         end
 
+        def url_filtering_rules
+          @url_filtering_rules ||= url_filters.map do |filter|
+            pattern = Regexp.new(url_pattern(filter.type, filter.pattern))
+            Crawler::Data::Rule.new(Crawler::Data::Rule::ALLOW, url_pattern: pattern)
+          end
+        end
+
         private
+
+        def url_pattern(type, pattern)
+          "\\A#{Regexp.escape(@domain)}#{path_pattern(type, pattern)}"
+        end
+
+        def path_pattern(type, pattern)
+          case type
+          when 'begins'
+            pattern_with_wildcard(pattern)
+          when 'ends'
+            ".*#{pattern_with_wildcard(pattern)}\\z"
+          when 'contains'
+            ".*#{pattern_with_wildcard(pattern)}"
+          when 'regex'
+            pattern
+          end
+        end
+
+        def pattern_with_wildcard(pattern)
+          Regexp.escape(pattern).gsub('\*', '.*')
+        end
 
         def validate_ruleset
           if !@ruleset[:rules].nil? && !@ruleset[:rules].is_a?(Array)

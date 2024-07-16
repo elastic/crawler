@@ -115,21 +115,21 @@ module Crawler
         # Returns the meta tag value for keywords
         def meta_keywords(limit: 512)
           keywords = extract_attribute_value('meta[name=keywords]', 'content')
-          Crawler::ExtractionUtils.limit_bytesize(keywords, limit)
+          Crawler::ContentEngine::Utils.limit_bytesize(keywords, limit)
         end
 
         # Returns the meta tag value for the description of the page
         def meta_description(limit: 1024)
           description = extract_attribute_value('meta[name=description]', 'content')
-          Crawler::ExtractionUtils.limit_bytesize(description, limit)
+          Crawler::ContentEngine::Utils.limit_bytesize(description, limit)
         end
 
         #---------------------------------------------------------------------------------------------
         # Returns the title of the document, cleaned up for indexing
         def document_title(limit: 1000)
           title_tag = parsed_content.css('title').first
-          title = Crawler::ExtractionUtils.node_descendant_text(title_tag)
-          Crawler::ExtractionUtils.limit_bytesize(title, limit)
+          title = Crawler::ContentEngine::Utils.node_descendant_text(title_tag)
+          Crawler::ContentEngine::Utils.limit_bytesize(title, limit)
         end
 
         # Returns the body of the document, cleaned up for indexing
@@ -137,9 +137,9 @@ module Crawler
           body_tag = parsed_content.at_css('body')
           return '' unless body_tag
 
-          body_tag = Crawler::ContentExtraction.transform(body_tag)
-          body_content = Crawler::ExtractionUtils.node_descendant_text(body_tag)
-          Crawler::ExtractionUtils.limit_bytesize(body_content, limit)
+          body_tag = Crawler::ContentEngine::Transformer.transform(body_tag)
+          body_content = Crawler::ContentEngine::Utils.node_descendant_text(body_tag)
+          Crawler::ContentEngine::Utils.limit_bytesize(body_content, limit)
         end
 
         # Returns an array of section headings from the page (using h1-h6 tags to find those)
@@ -169,7 +169,7 @@ module Crawler
         # @return [Array<String>]
         def extract_by_selector(selector, ignore_tags)
           parsed_content.search(selector).map do |node|
-            Crawler::ExtractionUtils.node_descendant_text(node, ignore_tags)
+            Crawler::ContentEngine::Utils.node_descendant_text(node, ignore_tags)
           end
         end
 
