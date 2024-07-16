@@ -195,7 +195,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       let(:expected_doc) do
         {
           id: crawl_result.url_hash,
-          body_content: 'some page',
+          body: 'some page',
           _reduce_whitespace: true,
           _run_ml_inference: true,
           _extract_binary_content: true
@@ -214,7 +214,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       let(:big_crawl_result) do
         FactoryBot.build(:html_crawl_result, url: 'http://example.com/big', content: 'pretend this string is big')
       end
-      let(:big_doc) { { id: big_crawl_result.url_hash, body_content: 'pretend this string is big' }.stringify_keys }
+      let(:big_doc) { { id: big_crawl_result.url_hash, body: 'pretend this string is big' }.stringify_keys }
 
       before(:each) do
         allow(bulk_queue).to receive(:will_fit?).and_return(false)
@@ -238,8 +238,8 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       let(:crawl_result_two) do
         FactoryBot.build(:html_crawl_result, url: 'http://example.com/two', content: 'work work!')
       end
-      let(:doc_one) { { id: crawl_result_one.url_hash, body_content: 'hoho, haha!' }.stringify_keys }
-      let(:doc_two) { { id: crawl_result_two.url_hash, body_content: 'work work!' }.stringify_keys }
+      let(:doc_one) { { id: crawl_result_one.url_hash, body: 'hoho, haha!' }.stringify_keys }
+      let(:doc_two) { { id: crawl_result_two.url_hash, body: 'work work!' }.stringify_keys }
 
       before(:each) do
         # emulated behaviour is:
