@@ -11,7 +11,7 @@ require 'set'
 module Crawler
   module ContentEngine
     module Utils
-      # A list of tags tags we want to remove before extracting content
+      # A list of tags we want to remove before extracting content
       NON_CONTENT_TAGS = %w[
         comment
         object
