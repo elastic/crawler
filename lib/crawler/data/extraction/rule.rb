@@ -85,11 +85,19 @@ module Crawler
         def validate_selector
           raise ArgumentError, "Extraction rule selector can't be blank" if @selector.blank?
 
-          # NOTE: expand for other sources when added (e.g. url)
-          begin
-            Nokogiri::HTML::DocumentFragment.parse('<a></a>').search(@selector)
-          rescue Nokogiri::CSS::SyntaxError, Nokogiri::XML::XPath::SyntaxError => e
-            raise ArgumentError, "Extraction rule selector `#{@selector}` is not valid: #{e.message}"
+          if @source == SOURCES_HTML
+            begin
+              Nokogiri::HTML::DocumentFragment.parse('<a></a>').search(@selector)
+            rescue Nokogiri::CSS::SyntaxError, Nokogiri::XML::XPath::SyntaxError => e
+              raise ArgumentError, "Extraction rule selector `#{@selector}` is not a valid HTML selector: #{e.message}"
+            end
+          else
+            begin
+              Regexp.new(@selector)
+            rescue RegexpError => e
+              raise ArgumentError,
+                    "Extraction rule selector `#{@selector}` is not a valid regular expression: #{e.message}"
+            end
           end
         end
       end

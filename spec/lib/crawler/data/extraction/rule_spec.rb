@@ -153,7 +153,32 @@ RSpec.describe(Crawler::Data::Extraction::Rule) do
           described_class.new(rule_input)
         end.to raise_error(
           ArgumentError,
-          /^Extraction rule selector `\.#class-or-id` is not valid: */
+          /^Extraction rule selector `\.#class-or-id` is not a valid HTML selector: */
+        )
+      end
+    end
+
+    context 'when source is `url` and regex is valid' do
+      let(:source) { 'url' }
+      let(:selector) { '[0-9]' }
+
+      it 'should assign values' do
+        rule = described_class.new(rule_input)
+        expect(rule.source).to eq(source)
+        expect(rule.selector).to eq(selector)
+      end
+    end
+
+    context 'when source is `url` and selector regex is invalid' do
+      let(:source) { 'url' }
+      let(:selector) { '[' }
+
+      it 'raises an error' do
+        expect do
+          described_class.new(rule_input)
+        end.to raise_error(
+          ArgumentError,
+          /^Extraction rule selector `\[` is not a valid regular expression: */
         )
       end
     end

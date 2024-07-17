@@ -79,11 +79,11 @@ module Crawler
         match_data = regexp.match(normalized_url)
         return [] unless match_data
 
-        # return capture is regex groups are used
+        # return capture if regex groups are used
         captures = match_data.captures
         return captures unless captures.empty?
 
-        # return a successulf match as a single element array
+        # return a successful match as a single element array
         match_data.to_a
       end
     end

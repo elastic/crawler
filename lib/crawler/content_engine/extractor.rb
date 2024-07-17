@@ -9,6 +9,8 @@
 module Crawler
   module ContentEngine
     module Extractor
+      REGEX_TIMEOUT = 0.5 # seconds
+
       def self.extract(rulesets, crawl_result)
         fields = {}
 
@@ -39,12 +41,11 @@ module Crawler
       end
 
       def self.extract_from_crawl_result(rule, crawl_result)
-        # NOTE: re-enable when we support URL extraction
-        # if rule[:source_type] == Crawler::Data::Extraction::Rule::SOURCES_URL
-        #   Timeout.timeout(REGEX_TIMEOUT) do
-        #     return crawl_result.url.extract_by_regexp(Regexp.new(rule[:selector]))
-        #   end
-        # end
+        if rule.source == Crawler::Data::Extraction::Rule::SOURCES_URL
+          Timeout.timeout(REGEX_TIMEOUT) do
+            return crawl_result.url.extract_by_regexp(Regexp.new(rule.selector))
+          end
+        end
 
         return [] unless crawl_result.is_a?(Crawler::Data::CrawlResult::HTML)
 
