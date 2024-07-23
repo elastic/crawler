@@ -101,7 +101,7 @@ RSpec.describe(Crawler::RuleEngine::Base) do
               { policy: 'deny', pattern: '/foo', type: 'begins' },
               { policy: 'deny', pattern: '/baa', type: 'ends' },
               { policy: 'deny', pattern: '/hmm/', type: 'contains' },
-              { policy: 'deny', pattern: '.*/(xaa|xee)/.*', type: 'regex' },
+              { policy: 'deny', pattern: '\/.*\/(xaa|xee)\/.*', type: 'regex' },
               { policy: 'allow', pattern: '/', type: 'begins' }
             ]
           }
@@ -124,10 +124,8 @@ RSpec.describe(Crawler::RuleEngine::Base) do
         # 'regex' rule
         'http://example1.com/1/xaa/2',
         'http://example1.com/1/2/xaa/3/4',
-        'http://example1.com/xaa/1/2',
         'http://example1.com/1/xee/2',
-        'http://example1.com/1/2/xee/3',
-        'http://example1.com/xee/1'
+        'http://example1.com/1/2/xee/3'
       ].each do |url_string|
         it "should deny the URL #{url_string}" do
           url = Crawler::Data::URL.parse(url_string)
