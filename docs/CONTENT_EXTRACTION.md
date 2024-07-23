@@ -70,7 +70,10 @@ This can be any string value, as long as it is not one of the predefined field n
 ### `domains[].extraction_rulesets[].rules[].selector`
 
 The selector for finding the content in HTML.
-Can be a CSS selector or an Xpath selector.
+
+#### Selectors for `html` sources
+
+If `source` is `html`, this can be a CSS selector or an Xpath selector.
 
 There are examples in W3schools for selector syntax:
 - [CSS selectors syntax examples](https://www.w3schools.com/css/css_selectors.asp)
@@ -79,6 +82,18 @@ There are examples in W3schools for selector syntax:
 You can also refer to the official W3C documentation for more details:
 - [CSS selectors official documentation](https://www.w3.org/TR/selectors-3/) 
 - [XPath selectors official documentation](https://www.w3.org/TR/xpath-31/)
+
+#### Selectors for `url` sources
+
+If `source` is `url`, this must be a regular expression (regexp).
+We recommend using capturing groups to explicitly indicate which part of the regular expression needs to stored as a content field.
+
+Here are some examples:
+
+| String                                        | Regex                                       | Match result       | Match group (final result) |
+|-----------------------------------------------|---------------------------------------------|--------------------|----------------------------|
+| `https://example.org/posts/2023/01/20/post-1` | `posts\/([0-9]{4})`                         | `posts/2023`       | `2023`                     |
+| `https://example.org/posts/2023/01/20/post-1` | `posts\/([0-9]{4})\/([0-9]{2})\/([0-9]{2})` | `posts/2023/01/20` | `[2023, 01, 20]`           |
 
 ### `domains[].extraction_rulesets[].rules[].join_as`
 
@@ -97,4 +112,4 @@ Value can be anything except `null`.
 ### `domains[].extraction_rulesets[].rules[].source`
 
 The source that Crawler will try to extract content from.
-Currently only `html` is supported.
+Currently only `html` or `url` is supported.

@@ -30,10 +30,10 @@
 #        rules:
 #          - action: "extract"		# Rule action, can be: extract | set
 #            field_name: "author"	# The ES doc field to add the value to
-#            selector: ".author"	# The CSS or XPATH selector
+#            selector: ".author"	# CSS or XPATH selector if source is `html`, regexp if source is `url`
 #            join_as: "array"		# How to concatenate multiple values, can be: array | string
 #            value: "yes"			# The value to use, only applicable if action is `set`
-#            source: "html"			# The source to extract from, can be: html
+#            source: "html"			# The source to extract from, can be: html | url
 #
 ## Where to send the results. Possible values are console, file, or elasticsearch
 #output_sink: elasticsearch

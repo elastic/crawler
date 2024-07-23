@@ -26,7 +26,7 @@ RSpec.describe(Crawler::ContentEngine::Extractor) do
   end
   let(:html_crawl_result) do
     Crawler::Data::CrawlResult::HTML.new(
-      url: Crawler::Data::URL.parse("#{domain}/"),
+      url: Crawler::Data::URL.parse("#{domain}/foo/faa/fum"),
       content: html
     )
   end
@@ -35,10 +35,17 @@ RSpec.describe(Crawler::ContentEngine::Extractor) do
     [
       {
         action: 'set',
-        field_name: 'set_value_field',
+        field_name: 'set_html_field',
         selector: '#need_to_be_extracted',
         source: 'html',
-        value: 'set_value'
+        value: 'set_html_value'
+      },
+      {
+        action: 'set',
+        field_name: 'set_url_field',
+        selector: 'foo\/([a-zA-Z0-9]{3})',
+        source: 'url',
+        value: 'set_url_value'
       }
     ]
   end
@@ -46,10 +53,17 @@ RSpec.describe(Crawler::ContentEngine::Extractor) do
     [
       {
         action: 'extract',
-        field_name: 'extracted_value_field',
+        field_name: 'extracted_html_field',
         join_as: 'string',
         selector: '#need_to_be_extracted',
         source: 'html'
+      },
+      {
+        action: 'extract',
+        field_name: 'extracted_url_field',
+        join_as: 'string',
+        selector: 'foo\/([a-zA-Z0-9]{3})',
+        source: 'url'
       }
     ]
   end
@@ -80,16 +94,16 @@ RSpec.describe(Crawler::ContentEngine::Extractor) do
     context 'when value type is `set`' do
       let(:ruleset_config_payload) { set_ruleset_config }
 
-      it 'should have a set value' do
-        expect(subject).to match('set_value_field' => 'set_value')
+      it 'should have set values' do
+        expect(subject).to match('set_html_field' => 'set_html_value', 'set_url_field' => 'set_url_value')
       end
     end
 
     context 'when value type is `extract`' do
       let(:ruleset_config_payload) { extract_ruleset_config }
 
-      it 'should have an extracted value' do
-        expect(subject).to match('extracted_value_field' => 'Random container')
+      it 'should have extracted values' do
+        expect(subject).to match('extracted_html_field' => 'Random container', 'extracted_url_field' => 'faa')
       end
     end
 
@@ -101,8 +115,13 @@ RSpec.describe(Crawler::ContentEngine::Extractor) do
         }
       end
 
-      it 'should have both a set and an extracted value' do
-        expect(subject).to match('set_value_field' => 'set_value', 'extracted_value_field' => 'Random container')
+      it 'should have both set and extracted values' do
+        expect(subject).to match(
+          'set_html_field' => 'set_html_value',
+          'set_url_field' => 'set_url_value',
+          'extracted_html_field' => 'Random container',
+          'extracted_url_field' => 'faa'
+        )
       end
     end
 
@@ -115,17 +134,24 @@ RSpec.describe(Crawler::ContentEngine::Extractor) do
             join_as: 'string',
             selector: '#doesnt_exist',
             source: 'html'
+          },
+          {
+            action: 'extract',
+            field_name: 'extracted_url_field',
+            join_as: 'string',
+            selector: 'baa\/([a-zA-Z0-9]{3})',
+            source: 'url'
           }
         ]
       end
       let(:ruleset_config_payload) { extract_ruleset_config }
 
       it 'should have an extracted value' do
-        expect(subject).to match('extracted_value_field' => '')
+        expect(subject).to match('extracted_value_field' => '', 'extracted_url_field' => '')
       end
     end
 
-    context 'when multiple_objects_handling is "array"' do
+    context 'when join_as is `array`' do
       let(:ruleset_config_payload) do
         {
           rules: [
@@ -135,6 +161,13 @@ RSpec.describe(Crawler::ContentEngine::Extractor) do
               join_as: 'array',
               selector: '#need_to_be_extracted',
               source: 'html'
+            },
+            {
+              action: 'extract',
+              field_name: 'extracted_url_field_array',
+              join_as: 'array',
+              selector: 'foo\/([a-zA-Z0-9]{3})',
+              source: 'url'
             }
           ],
           url_filters:
@@ -142,7 +175,10 @@ RSpec.describe(Crawler::ContentEngine::Extractor) do
       end
 
       it 'should concatenate the results as an array' do
-        expect(subject).to match('extracted_value_field_array' => ['Random container'])
+        expect(subject).to match(
+          'extracted_value_field_array' => ['Random container'],
+          'extracted_url_field_array' => ['faa']
+        )
       end
     end
 
@@ -170,7 +206,7 @@ RSpec.describe(Crawler::ContentEngine::Extractor) do
       let(:ruleset_config_payload) { set_ruleset_config }
 
       it 'should apply any rules' do
-        expect(subject).to match('set_value_field' => 'set_value')
+        expect(subject).to match('set_html_field' => 'set_html_value', 'set_url_field' => 'set_url_value')
       end
     end
   end
