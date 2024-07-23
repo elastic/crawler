@@ -8,6 +8,7 @@
 
 require_dependency(File.join(__dir__, 'rule'))
 require_dependency(File.join(__dir__, 'url_filter'))
+require_dependency(File.join(__dir__, '..', '..', 'utils'))
 
 module Crawler
   module Data
@@ -47,33 +48,12 @@ module Crawler
 
         def url_filtering_rules
           @url_filtering_rules ||= url_filters.map do |filter|
-            pattern = Regexp.new(url_pattern(filter.type, filter.pattern))
+            pattern = Regexp.new(Crawler::Utils.url_pattern(@domain, filter.type, filter.pattern))
             Crawler::Data::Rule.new(Crawler::Data::Rule::ALLOW, url_pattern: pattern)
           end
         end
 
         private
-
-        def url_pattern(type, pattern)
-          "\\A#{Regexp.escape(@domain)}#{path_pattern(type, pattern)}"
-        end
-
-        def path_pattern(type, pattern)
-          case type
-          when 'begins'
-            pattern_with_wildcard(pattern)
-          when 'ends'
-            ".*#{pattern_with_wildcard(pattern)}\\z"
-          when 'contains'
-            ".*#{pattern_with_wildcard(pattern)}"
-          when 'regex'
-            pattern
-          end
-        end
-
-        def pattern_with_wildcard(pattern)
-          Regexp.escape(pattern).gsub('\*', '.*')
-        end
 
         def validate_ruleset
           if !@ruleset[:rules].nil? && !@ruleset[:rules].is_a?(Array)

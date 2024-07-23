@@ -11,7 +11,7 @@ module Crawler
     class Base
       attr_reader :config
 
-      delegate :domain_allowlist, :robots_txt_service, to: :config
+      delegate :crawl_rules, :domain_allowlist, :robots_txt_service, :system_logger, to: :config
 
       def initialize(config)
         raise ArgumentError, 'Invalid config' unless config.is_a?(Crawler::API::Config)
@@ -31,7 +31,35 @@ module Crawler
           return denied_outcome(:robots_txt_disallowed, robots_txt_outcome.disallow_message)
         end
 
-        allowed_outcome
+        return allowed_outcome unless crawl_rules[url.domain_name]&.any?
+
+        crawl_rules_outcome(url)
+      end
+
+      def crawl_rules_outcome(url)
+        matching_rule = crawl_rules[url.domain_name].find do |crawl_rule|
+          crawl_rule.url_match?(url)
+        rescue Timeout::Error
+          system_logger.warn("Timeout while applying a crawl rule  to URL #{url}")
+          return denied_outcome(:crawl_rule_timeout, source: crawl_rule.source)
+        end
+
+        crawl_rules_outcome_by_policy(matching_rule, url)
+      end
+
+      def crawl_rules_outcome_by_policy(matching_rule, url)
+        case matching_rule&.policy
+        when Crawler::Data::Rule::ALLOW
+          allowed_outcome(:crawl_rule_allowed, matching_rule)
+        when Crawler::Data::Rule::DENY
+          system_logger.debug(
+            "The URL #{url} will not be crawled due to configured crawl rule: #{matching_rule.description}"
+          )
+          denied_outcome(:crawl_rule_denied, matching_rule)
+        else
+          system_logger.debug("The URL #{url} will not be crawled because no crawl rules apply to it.")
+          allowed_outcome(:no_crawl_rule_match_denied, url)
+        end
       end
 
       def output_crawl_result_outcome(crawl_result) # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity
