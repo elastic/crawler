@@ -12,6 +12,7 @@ require_dependency(File.join(__dir__, '..', '..', 'statically_tagged_logger'))
 require_dependency(File.join(__dir__, '..', 'data', 'crawl_result', 'html'))
 require_dependency(File.join(__dir__, '..', 'data', 'extraction', 'ruleset'))
 require_dependency(File.join(__dir__, '..', 'document_mapper'))
+require_dependency(File.join(__dir__, '..', 'utils'))
 
 java_import java.io.ByteArrayInputStream
 java_import java.security.cert.CertificateFactory
@@ -42,6 +43,7 @@ module Crawler
         :domain_allowlist,     # Array of domain names for restricting which links to follow
         :seed_urls,            # An array or an enumerator of initial URLs to crawl
         :sitemap_urls,         # Array of sitemap URLs to be used for content discovery
+        :crawl_rules,          # Array of allow/deny-listed URL patterns
 
         :robots_txt_service,   # Service to fetch robots.txt
         :output_sink,          # The type of output, either :console | :file | :elasticsearch
@@ -174,7 +176,8 @@ module Crawler
         sitemap_discovery_disabled: false,
         head_requests_enabled: false,
 
-        extraction_rules: {}
+        extraction_rules: {},
+        crawl_rules: {}
       }.freeze
 
       # Settings we are not allowed to log due to their sensitive nature
@@ -212,6 +215,7 @@ module Crawler
         # Normalize and validate parameters
         confugure_ssl_ca_certificates!
         configure_domain_allowlist!
+        configure_crawl_rules!
         configure_seed_urls!
         configure_robots_txt_service!
         configure_http_header_service!
@@ -290,6 +294,30 @@ module Crawler
         raise ArgumentError, "Domain #{domain.inspect} does not have a URL scheme" unless url.scheme
         raise ArgumentError, "Domain #{domain.inspect} is not an HTTP(S) site" unless url.is_a?(URI::HTTP)
         raise ArgumentError, "Domain #{domain.inspect} cannot have a path" unless url.path == ''
+      end
+
+      def configure_crawl_rules!
+        @crawl_rules = domains.each_with_object({}) do |domain, crawl_rules|
+          url = domain[:url]
+          if domain[:crawl_rules].nil?
+            crawl_rules[url] = {}
+            next
+          end
+
+          raise ArgumentError, "Crawl rules for #{url} is not an array" unless domain[:crawl_rules].is_a?(Array)
+
+          crawl_rules[url] = build_crawl_rules(domain[:crawl_rules], url)
+        end
+      end
+
+      def build_crawl_rules(crawl_rules, url)
+        crawl_rules.map do |crawl_rule|
+          policy = crawl_rule[:policy].to_sym
+          url_pattern = Regexp.new(
+            Crawler::Utils.url_pattern(url, crawl_rule[:type], crawl_rule[:pattern])
+          )
+          Crawler::Data::Rule.new(policy, url_pattern:)
+        end
       end
 
       def configure_seed_urls!

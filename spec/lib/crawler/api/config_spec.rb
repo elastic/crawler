@@ -125,5 +125,45 @@ RSpec.describe(Crawler::API::Config) do
         end.to raise_error(ArgumentError, 'Needs at least one domain')
       end
     end
+
+    context 'when crawl rules exist' do
+      let(:domain2) do
+        {
+          url: 'http://domain2.com',
+          crawl_rules: [
+            { policy: 'deny', pattern: '/blog', type: 'begins' }
+          ]
+        }
+      end
+
+      it 'should create a crawl rule for the domain' do
+        config = Crawler::API::Config.new(domains:)
+
+        # nil when no crawl rules are configured
+        crawl_rules_d1 = config.crawl_rules['http://domain1.com']
+        expect(crawl_rules_d1).to be_nil
+
+        crawl_rules_d2 = config.crawl_rules['http://domain2.com']
+        expect(crawl_rules_d2.size).to eq(1)
+        expect(crawl_rules_d2.first.policy).to eq(:deny)
+      end
+    end
+
+    context 'when crawl rules is not an array' do
+      let(:domain2) do
+        {
+          url: 'http://domain2.com',
+          crawl_rules: { policy: 'deny', pattern: '/blog', type: 'begins' }
+        }
+      end
+
+      it 'should raise an argument error' do
+        expect do
+          Crawler::API::Config.new(
+            domains:
+          )
+        end.to raise_error(ArgumentError, 'Crawl rules for http://domain2.com is not an array')
+      end
+    end
   end
 end

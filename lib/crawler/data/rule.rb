@@ -36,6 +36,10 @@ module Crawler
           @url_pattern.match?(url.to_s)
         end
       end
+
+      def description
+        @description ||= "policy: #{@policy}, url_pattern: #{@url_pattern}"
+      end
     end
   end
 end

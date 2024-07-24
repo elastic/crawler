@@ -14,26 +14,33 @@
 ##   They are separated to allow for domain-specific configurations.
 #
 #domains:
-#  - url: http://localhost:8000		# The base URL for this domain
-#    seed_urls:						# The entry point(s) for crawl jobs
+#  - url: http://localhost:8000         # The base URL for this domain
+#    seed_urls:                         # The entry point(s) for crawl jobs
 #      - http://localhost:8000/foo
 #      - http://localhost:8000/bar
-#    sitemap_urls:					# The location(s) of sitemap files
+#    sitemap_urls:                      # The location(s) of sitemap files
 #      - http://localhost:8000/sitemap.xml
 #
+#    # An array of crawl rules
+#    # See docs/features/CRAWL_RULES.md for more details on this feature
+#    crawl_rules:
+#      - policy: deny       # the policy for this rule, either: allow | deny
+#        type: begins       # the type of rule, any of: begins | ends | contains | regex
+#        pattern: /blog     # the pattern string for the rule
+#
 #    # An array of content extraction rules
-#    # See docs/CONTENT_EXTRACTION.md for more details on this feature
+#    # See docs/features/CONTENT_EXTRACTION.md for more details on this feature
 #    extraction_rulesets:
 #      - url_filters:
-#          - type: "begins"			# Filter type, can be: begins | ends | contains | regex
-#            pattern: "/blog"		# The pattern for the filter
+#          - type: begins           # Filter type, can be: begins | ends | contains | regex
+#            pattern: /blog         # The pattern for the filter
 #        rules:
-#          - action: "extract"		# Rule action, can be: extract | set
-#            field_name: "author"	# The ES doc field to add the value to
-#            selector: ".author"	# CSS or XPATH selector if source is `html`, regexp if source is `url`
-#            join_as: "array"		# How to concatenate multiple values, can be: array | string
-#            value: "yes"			# The value to use, only applicable if action is `set`
-#            source: "html"			# The source to extract from, can be: html | url
+#          - action: extract        # Rule action, can be: extract | set
+#            field_name: author     # The ES doc field to add the value to
+#            selector: .author      # CSS or XPATH selector if source is `html`, regexp if source is `url`
+#            join_as: array         # How to concatenate multiple values, can be: array | string
+#            value: yes             # The value to use, only applicable if action is `set`
+#            source: html           # The source to extract from, can be: html | url
 #
 ## Where to send the results. Possible values are console, file, or elasticsearch
 #output_sink: elasticsearch

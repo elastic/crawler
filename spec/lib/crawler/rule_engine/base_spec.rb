@@ -9,12 +9,13 @@
 RSpec.describe(Crawler::RuleEngine::Base) do
   let(:domains) { [{ url: 'http://example.com' }] }
   let(:config) do
-    Crawler::API::Config.new(domains:,
-                             robots_txt_service: Crawler::RobotsTxtService.always_allow)
+    Crawler::API::Config.new(
+      domains:,
+      robots_txt_service: Crawler::RobotsTxtService.always_allow
+    )
   end
   subject(:rule_engine) { described_class.new(config) }
 
-  #-------------------------------------------------------------------------------------------------
   describe '#discover_url_outcome' do
     it 'should require a domain object' do
       expect do
@@ -90,9 +91,61 @@ RSpec.describe(Crawler::RuleEngine::Base) do
         end
       end
     end
+
+    context 'when the are configured crawl rules' do
+      let(:domains) do
+        [
+          {
+            url: 'http://example1.com',
+            crawl_rules: [
+              { policy: 'deny', pattern: '/foo', type: 'begins' },
+              { policy: 'deny', pattern: '/baa', type: 'ends' },
+              { policy: 'deny', pattern: '/hmm/', type: 'contains' },
+              { policy: 'deny', pattern: '\/.*\/(xaa|xee)\/.*', type: 'regex' }
+            ]
+          }
+        ]
+      end
+
+      [
+        # 'begins' rule
+        'http://example1.com/foo',
+        'http://example1.com/foo/1',
+        'http://example1.com/foo/1/2',
+        # 'ends' rule
+        'http://example1.com/baa',
+        'http://example1.com/1/baa',
+        'http://example1.com/1/2/baa',
+        # 'contains' rule
+        'http://example1.com/1/hmm/2',
+        'http://example1.com/1/2/hmm/3/4',
+        'http://example1.com/hmm/1/2',
+        # 'regex' rule
+        'http://example1.com/1/xaa/2',
+        'http://example1.com/1/2/xaa/3/4',
+        'http://example1.com/1/xee/2',
+        'http://example1.com/1/2/xee/3'
+      ].each do |url_string|
+        it "should deny the URL #{url_string}" do
+          url = Crawler::Data::URL.parse(url_string)
+          expect(rule_engine.discover_url_outcome(url)).to be_denied
+        end
+      end
+
+      [
+        'http://example1.com/',
+        'http://example1.com/baa/foo',
+        'http://example1.com/hmm', # no trailing slash
+        'http://example1.com/xee' # no trailing slash
+      ].each do |url_string|
+        it "should allow the URL #{url_string}" do
+          url = Crawler::Data::URL.parse(url_string)
+          expect(rule_engine.discover_url_outcome(url)).to be_allowed
+        end
+      end
+    end
   end
 
-  #-------------------------------------------------------------------------------------------------
   describe '#output_crawl_result_outcome' do
     let(:url) { Crawler::Data::URL.parse('http://example.com/') }
     let(:outcome) { rule_engine.output_crawl_result_outcome(mock_crawl_result) }
