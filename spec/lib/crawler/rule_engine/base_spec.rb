@@ -101,8 +101,7 @@ RSpec.describe(Crawler::RuleEngine::Base) do
               { policy: 'deny', pattern: '/foo', type: 'begins' },
               { policy: 'deny', pattern: '/baa', type: 'ends' },
               { policy: 'deny', pattern: '/hmm/', type: 'contains' },
-              { policy: 'deny', pattern: '\/.*\/(xaa|xee)\/.*', type: 'regex' },
-              { policy: 'allow', pattern: '/', type: 'begins' }
+              { policy: 'deny', pattern: '\/.*\/(xaa|xee)\/.*', type: 'regex' }
             ]
           }
         ]

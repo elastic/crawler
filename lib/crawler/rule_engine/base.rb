@@ -57,8 +57,8 @@ module Crawler
           )
           denied_outcome(:crawl_rule_denied, matching_rule)
         else
-          system_logger.debug("The URL #{url} will not be crawled because no crawl rules apply to it.")
-          allowed_outcome(:no_crawl_rule_match_denied, url)
+          # no crawl rule match means it's allowed
+          allowed_outcome
         end
       end
 

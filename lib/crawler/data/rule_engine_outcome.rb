@@ -69,13 +69,6 @@ module Crawler
             message: format('Timeout while applying crawl rule: %<source>s', options)
           )
         end
-
-        def no_crawl_rule_match_denied(url)
-          DeniedOutcome.new(
-            :rule_engine_denied,
-            message: "Denying discovery of URL #{url}, could not find matching crawl rule"
-          )
-        end
       end
 
       attr_reader :message, :details

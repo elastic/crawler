@@ -1,10 +1,12 @@
 # Crawl Rules
 
 A crawl rule is a crawler instruction to allow or disallow specific paths within a domain.
-For a concrete example of crawl rules in action, see our website search guide.
+These are configured in the crawler's yaml config file.
+
+A single domain can have multiple crawl rules.
 Remember that order matters and each URL is evaluated according to the first match.
-The web crawler will crawl only those paths that are allowed by the crawl rules for the domain and the directives within the robots.txt file for the domain.
-Ensure entry points for each domain are allowed.
+Any URLs that do not match a crawl rule will be crawled as normal.
+If you want the web crawler to change this behaviour, be sure to end your crawl rules with a catch-all `deny` rule (see [restricting paths using crawl rules](#restricting-paths-using-crawl-rules) for details).
 
 ## Crawl rule logic (rules)
 
@@ -59,22 +61,9 @@ The following table provides various examples of crawl rule matching:
 
 ## Restricting paths using crawl rules
 
-The example config crawl rules has a default crawl rule for the example.
-Below is a simplified version of that rule:
-
-```yaml
-domains:
-  - url: http://example.com
-  - crawl_rules:
-    - policy: allow
-      type: regex
-      pattern: .*
-```
-
-This rule is permissive, allowing all paths within the domain.
 To restrict paths, use either of the following techniques:
 
-1. Add rules that disallow specific paths (e.g. disallow the blog):
+1. Add rules that disallow specific paths (e.g. disallow any URLs that begin with `/blog`):
     ```yaml
     domains:
     - url: http://example.com
@@ -82,12 +71,9 @@ To restrict paths, use either of the following techniques:
       - policy: deny
         type: begins
         pattern: /blog
-      - policy: allow
-        type: regex
-        pattern: .*
     ```
 
-2. Add rules that allow specific paths and disallow all others (e.g. allow only the blog):
+2. Add rules that allow specific paths and disallow all others (e.g. allow only URLs that begin with `/blog`):
     ```yaml
     domains:
     - url: http://example.com
