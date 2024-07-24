@@ -67,7 +67,7 @@ To restrict paths, use either of the following techniques:
     ```yaml
     domains:
     - url: http://example.com
-    - crawl_rules:
+      crawl_rules:
       - policy: deny
         type: begins
         pattern: /blog
@@ -77,7 +77,9 @@ To restrict paths, use either of the following techniques:
     ```yaml
     domains:
     - url: http://example.com
-    - crawl_rules:
+      seed_urls:
+        - http://example.com/blog
+      crawl_rules:
       - policy: allow
         type: begins
         pattern: /blog
