@@ -14,6 +14,10 @@ module Crawler
           AllowedOutcome.new
         end
 
+        def error_denied(error)
+          DeniedOutcome.new(:error_denied, message: "Error: #{error}")
+        end
+
         def fatal_error_denied(error)
           DeniedOutcome.new(:fatal_error_denied, message: "Error: #{error}")
         end

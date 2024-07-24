@@ -264,6 +264,57 @@ RSpec.describe(Crawler::Coordinator) do
         end
       end
     end
+
+    context 'when crawl result is a redirect' do
+      let(:crawl_result) do
+        double(
+          :crawl_result,
+          url:,
+          redirect_chain: [],
+          location: Crawler::Data::URL.parse('http://example.com/redirected'),
+          error?: false,
+          redirect?: true
+        )
+      end
+
+      it 'should add url to backlog and not send crawl results to output sink' do
+        expect(crawl.sink).not_to receive(:write)
+        expect(coordinator).to receive(:add_urls_to_backlog).once
+        process_crawl_result
+      end
+    end
+
+    context 'when crawl result is an error' do
+      let(:output_crawl_result_outcome) do
+        double(
+          :output_crawl_result_outcome,
+          denied?: true,
+          deny_reason: 'blocked',
+          message: 'you shall not pass'
+        )
+      end
+      let(:rule_engine) do
+        double(
+          :rule_engine,
+          output_crawl_result_outcome:,
+          discover_url_outcome: double(:discover_url_outcome, denied?: false)
+        )
+      end
+      let(:crawl_result) do
+        double(
+          :crawl_result,
+          url:,
+          error?: true,
+          redirect?: false
+        )
+      end
+
+      it 'should not add url to backlog nor send crawl results to output sink' do
+        expect(coordinator).not_to receive(:add_urls_to_backlog)
+        expect(crawl.sink).not_to receive(:write)
+        process_crawl_result
+      end
+    end
   end
 
   #-------------------------------------------------------------------------------------------------
