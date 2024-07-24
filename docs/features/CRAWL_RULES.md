@@ -66,27 +66,27 @@ To restrict paths, use either of the following techniques:
 1. Add rules that disallow specific paths (e.g. disallow any URLs that begin with `/blog`):
     ```yaml
     domains:
-    - url: http://example.com
-      crawl_rules:
-      - policy: deny
-        type: begins
-        pattern: /blog
+      - url: http://example.com
+        crawl_rules:
+          - policy: deny
+            type: begins
+            pattern: /blog
     ```
 
 2. Add rules that allow specific paths and disallow all others (e.g. allow only URLs that begin with `/blog`):
     ```yaml
     domains:
-    - url: http://example.com
-      seed_urls:
-        - http://example.com/blog
-      crawl_rules:
-      - policy: allow
-        type: begins
-        pattern: /blog
-      - policy: deny
-        type: regex
-        pattern: .*
+      - url: http://example.com
+        seed_urls:
+          - http://example.com/blog
+        crawl_rules:
+          - policy: allow
+            type: begins
+            pattern: /blog
+          - policy: deny
+            type: regex
+            pattern: .*
     ```
-    When you restrict a crawl to specific paths, be sure to add entry points that allow the crawler to discover those paths.
-    For example, if your crawl rules restrict the crawler to `/blog`, add `/blog` as an entry point.
-    If you leave only the default entry point `/`, the crawl will end immediately, since `/` is disallowed.
+    When you restrict a crawl to specific paths, be sure to add seed URLs that allow the crawler to discover those paths.
+    For example, if your crawl rules restrict the crawler to `/blog`, add `/blog` as a seed URL.
+    If you don't specify a seed URL, the crawl will end immediately, since `/` is disallowed.
