@@ -319,7 +319,13 @@ module Crawler
           deny_reason: output_crawl_result_outcome.deny_reason,
           message: output_crawl_result_outcome.message
         )
-      elsif crawl_task.content? && !crawl_result.redirect?
+      elsif crawl_result.redirect?
+        crawl_task_progress(crawl_task, 'skipping ingestion of redirect')
+        extracted_event.merge!(
+          redirect_location: crawl_result.location,
+          message: "Crawler was redirected to #{crawl_result.location}"
+        )
+      elsif crawl_task.content?
         crawl_task_progress(crawl_task, 'ingesting the result')
         outcome = output_crawl_result(crawl_result)
         extracted_event.merge!(outcome)

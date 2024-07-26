@@ -70,7 +70,6 @@ RSpec.describe(Crawler::Coordinator) do
         extract_links: { links: Set.new(links), limit_reached: false },
         meta_nofollow?: meta_nofollow,
         error?: false,
-        fatal_error?: false,
         html?: true,
         redirect?: false
       )
@@ -266,12 +265,13 @@ RSpec.describe(Crawler::Coordinator) do
     end
 
     context 'when crawl result is a redirect' do
+      let(:redirect_location) { Crawler::Data::URL.parse('http://example.com/redirected') }
       let(:crawl_result) do
         double(
           :crawl_result,
           url:,
           redirect_chain: [],
-          location: Crawler::Data::URL.parse('http://example.com/redirected'),
+          location: redirect_location,
           error?: false,
           redirect?: true
         )
@@ -280,6 +280,18 @@ RSpec.describe(Crawler::Coordinator) do
       it 'should add url to backlog and not send crawl results to output sink' do
         expect(crawl.sink).not_to receive(:write)
         expect(coordinator).to receive(:add_urls_to_backlog).once
+        expect(events).to receive(:url_extracted).with(
+          hash_including(
+            url: crawl_result.url,
+            type: :allowed,
+            start_time: kind_of(Time),
+            end_time: kind_of(Time),
+            duration: kind_of(Benchmark::Tms),
+            outcome: :success,
+            redirect_location: redirect_location,
+            message: "Crawler was redirected to http://example.com/redirected"
+          )
+        )
         process_crawl_result
       end
     end
@@ -312,6 +324,18 @@ RSpec.describe(Crawler::Coordinator) do
       it 'should not add url to backlog nor send crawl results to output sink' do
         expect(coordinator).not_to receive(:add_urls_to_backlog)
         expect(crawl.sink).not_to receive(:write)
+        expect(events).to receive(:url_extracted).with(
+          hash_including(
+            url: crawl_result.url,
+            type: :denied,
+            start_time: kind_of(Time),
+            end_time: kind_of(Time),
+            duration: kind_of(Benchmark::Tms),
+            outcome: :success,
+            deny_reason: "blocked",
+            message: "you shall not pass"
+          )
+        )
         process_crawl_result
       end
     end
