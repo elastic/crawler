@@ -9,8 +9,8 @@
 require 'fileutils'
 require 'elasticsearch'
 
-module Utility
-  class EsClient < ::Elasticsearch::Client
+module ES
+  class Client < ::Elasticsearch::Client
     USER_AGENT = 'elastic-web-crawler-'
     MAX_RETRIES = 3
     REQUEST_TIMEOUT = 10 # seconds

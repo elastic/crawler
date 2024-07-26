@@ -10,7 +10,7 @@ require 'elasticsearch/api'
 
 require_dependency File.join(__dir__, '..', 'errors')
 
-module Utility
+module ES
   class BulkQueue
     # Maximum number of operations in BULK Elasticsearch operation that will ingest the data
     DEFAULT_OP_COUNT_THRESHOLD = 100

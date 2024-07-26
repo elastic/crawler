@@ -7,8 +7,8 @@
 # frozen_string_literal: true
 
 require_dependency File.join(__dir__, 'base')
-require_dependency File.join(__dir__, '..', '..', 'utility', 'es_client')
-require_dependency File.join(__dir__, '..', '..', 'utility', 'bulk_queue')
+require_dependency File.join(__dir__, '..', '..', 'es', 'client')
+require_dependency File.join(__dir__, '..', '..', 'es', 'bulk_queue')
 require_dependency File.join(__dir__, '..', '..', 'errors')
 
 module Crawler
@@ -87,7 +87,7 @@ module Crawler
           client.bulk(body:, pipeline:) # TODO: parse response
           system_logger.info("Successfully indexed #{indexing_docs_count} docs.")
           reset_ingestion_stats(true)
-        rescue Utility::EsClient::IndexingFailedError => e
+        rescue ES::Client::IndexingFailedError => e
           system_logger.warn("Bulk index failed: #{e}")
           reset_ingestion_stats(false)
         rescue StandardError => e
@@ -101,7 +101,7 @@ module Crawler
       end
 
       def operation_queue
-        @operation_queue ||= Utility::BulkQueue.new(
+        @operation_queue ||= ES::BulkQueue.new(
           es_config.dig(:bulk_api, :max_items),
           es_config.dig(:bulk_api, :max_size_bytes),
           system_logger
@@ -113,7 +113,7 @@ module Crawler
       end
 
       def client
-        @client ||= Utility::EsClient.new(es_config, system_logger, Crawler.version, crawl_id)
+        @client ||= ES::Client.new(es_config, system_logger, Crawler.version, crawl_id)
       end
 
       def index_name
