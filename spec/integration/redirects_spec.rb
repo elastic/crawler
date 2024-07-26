@@ -64,7 +64,7 @@ RSpec.describe 'Redirect handling' do
       mock_response(url: 'http://127.0.0.1:9393/', status_code: 200),
 
       # First redirect chain: followed a redirect and indexed a page
-      mock_response(url: 'http://127.0.0.1:9393/hello', status_code: 200),
+      mock_response(url: 'http://127.0.0.1:9393/hello', status_code: 200)
     ]
   end
 end

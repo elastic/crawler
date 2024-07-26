@@ -40,8 +40,6 @@ module Crawler
       end
 
       def write(crawl_result)
-        return handle_redirects_and_errors(crawl_result) if crawl_result.error? || crawl_result.redirect?
-
         # make additions to the operation queue thread-safe
         raise Errors::SinkLockedError unless @queue_lock.try_lock
 
@@ -140,10 +138,6 @@ module Crawler
       end
 
       private
-
-      def handle_redirects_and_errors(crawl_result)
-
-      end
 
       def parametrized_doc(crawl_result)
         doc = to_doc(crawl_result)

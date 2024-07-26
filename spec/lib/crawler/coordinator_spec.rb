@@ -288,8 +288,8 @@ RSpec.describe(Crawler::Coordinator) do
             end_time: kind_of(Time),
             duration: kind_of(Benchmark::Tms),
             outcome: :success,
-            redirect_location: redirect_location,
-            message: "Crawler was redirected to http://example.com/redirected"
+            redirect_location:,
+            message: 'Crawler was redirected to http://example.com/redirected'
           )
         )
         process_crawl_result
@@ -332,8 +332,8 @@ RSpec.describe(Crawler::Coordinator) do
             end_time: kind_of(Time),
             duration: kind_of(Benchmark::Tms),
             outcome: :success,
-            deny_reason: "blocked",
-            message: "you shall not pass"
+            deny_reason: 'blocked',
+            message: 'you shall not pass'
           )
         )
         process_crawl_result
