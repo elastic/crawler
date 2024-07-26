@@ -28,6 +28,10 @@ module Crawler
         raise NotImplementedError
       end
 
+      def purge_docs
+        raise NotImplementedError
+      end
+
       def to_doc(crawl_result)
         doc = { id: crawl_result.url_hash }
         doc.merge!(document_mapper.document_fields(crawl_result))

@@ -47,7 +47,6 @@ module Crawler
       @started_at = Time.now
     end
 
-    #-----------------------------------------------------------------------------------------------
     # Returns crawl duration in seconds or +nil+ if crawl has not been started yet
     def crawl_duration
       started_at ? Time.now - started_at : nil
@@ -58,7 +57,6 @@ module Crawler
       task_executors.length
     end
 
-    #-----------------------------------------------------------------------------------------------
     def run_crawl!
       load_robots_txts
       enqueue_seed_urls
@@ -78,6 +76,16 @@ module Crawler
         events.log_crawl_status(crawl)
       end
 
+      # Clean up any remaining items in queue
+      # We are no longer multi-threaded so no need for lock
+      sink.flush
+
+      # Purge old docs if configured to do so
+      if config.purge_docs_enabled
+        system_logger.info('Purging documents for pages not seen during the crawl...')
+        sink.purge(started_at)
+      end
+
       # Close the sink to make sure all the in-flight content has been safely stored/indexed/etc
       system_logger.info('Closing the output sink before finishing the crawl...')
       sink.close
@@ -89,7 +97,6 @@ module Crawler
 
     private
 
-    #-----------------------------------------------------------------------------------------------
     # Communicates the progress on a given crawl task via the system log and Java thread names
     def crawl_task_progress(crawl_task, message)
       progress_message = "#{crawl_task.inspect}: #{message}"
@@ -97,7 +104,6 @@ module Crawler
       system_logger.debug("Crawl task progress: #{progress_message}")
     end
 
-    #-----------------------------------------------------------------------------------------------
     # Loads robots.txt for each configured domain and registers it
     def load_robots_txts
       config.domain_allowlist.each do |domain|
@@ -109,7 +115,6 @@ module Crawler
       end
     end
 
-    #-----------------------------------------------------------------------------------------------
     # Fetches robots.txt for a given domain and returns it as a crawl result
     def load_robots_txt(domain)
       crawl_task = Crawler::Data::CrawlTask.new(
@@ -139,7 +144,6 @@ module Crawler
       crawl_result
     end
 
-    #-----------------------------------------------------------------------------------------------
     # Seed the crawler with configured URLs
     def enqueue_seed_urls
       system_logger.debug("Seeding the crawl with #{config.seed_urls.size} URLs...")
@@ -151,7 +155,6 @@ module Crawler
       )
     end
 
-    #-----------------------------------------------------------------------------------------------
     # Seed the crawler with pre-configured sitemaps
     def enqueue_sitemaps
       if config.sitemap_urls.any?
@@ -193,19 +196,16 @@ module Crawler
       end
     end
 
-    #-----------------------------------------------------------------------------------------------
     def set_outcome(outcome, message)
       @crawl_outcome = outcome
       @outcome_message = message
     end
 
-    #-----------------------------------------------------------------------------------------------
     # Returns +true+ if there are any free executors available to run crawl tasks
     def executors_available?
       task_executors.length < task_executors.max_length
     end
 
-    #-----------------------------------------------------------------------------------------------
     # Checks if we should terminate the crawl loop and sets the outcome value accordingly
     def crawl_finished?
       return true if crawl_outcome
@@ -243,7 +243,6 @@ module Crawler
       false
     end
 
-    #-----------------------------------------------------------------------------------------------
     # Performs a single iteration of the crawl loop
     def run_crawl_loop
       return if shutdown_started?
@@ -266,7 +265,6 @@ module Crawler
       end
     end
 
-    #-----------------------------------------------------------------------------------------------
     def execute_crawl_task(crawl_task)
       # Fetch the page.
       crawl_result = execute_task(crawl_task)
@@ -279,7 +277,6 @@ module Crawler
       raise
     end
 
-    #-----------------------------------------------------------------------------------------------
     # Fetches a URL and logs info about the HTTP request/response.
     def execute_task(crawl_task, follow_redirects: false)
       crawl_task_progress(crawl_task, 'HTTP execution')
@@ -288,7 +285,6 @@ module Crawler
       end
     end
 
-    #-----------------------------------------------------------------------------------------------
     # Process a crawl_result:
     # - Extract canonical_url and add it to the backlog
     # - Extract links contained in the page and add them to the backlog
@@ -333,7 +329,6 @@ module Crawler
       events.url_extracted(**extracted_event)
     end
 
-    #-----------------------------------------------------------------------------------------------
     # Extracts links from a given crawl result and pushes them into the crawl queue for processing
     def extract_and_enqueue_links(crawl_task, crawl_result)
       return if crawl_result.error?
@@ -345,7 +340,6 @@ module Crawler
       extract_and_enqueue_sitemap_links(crawl_task, crawl_result) if crawl_result.sitemap?
     end
 
-    #-----------------------------------------------------------------------------------------------
     def enqueue_redirect_link(crawl_task, crawl_result)
       add_urls_to_backlog(
         urls: [crawl_result.location],
@@ -357,7 +351,6 @@ module Crawler
       )
     end
 
-    #-----------------------------------------------------------------------------------------------
     def extract_and_enqueue_html_links(crawl_task, crawl_result)
       canonical_link = crawl_result.canonical_link
       if canonical_link
@@ -393,7 +386,6 @@ module Crawler
       )
     end
 
-    #-----------------------------------------------------------------------------------------------
     def extract_and_enqueue_sitemap_links(crawl_task, crawl_result)
       result = crawl_result.extract_links
       limit_reached, error = result.values_at(:limit_reached, :error)
@@ -422,7 +414,6 @@ module Crawler
       end
     end
 
-    #-----------------------------------------------------------------------------------------------
     def extract_links(crawl_result, crawl_depth:)
       extracted_links = crawl_result.extract_links(limit: config.max_extracted_links_count)
       links, limit_reached = extracted_links.values_at(:links, :limit_reached)
@@ -450,7 +441,6 @@ module Crawler
       end
     end
 
-    #-----------------------------------------------------------------------------------------------
     # Outputs the results of a single URL processing to an output module configured for the crawl
     def output_crawl_result(crawl_result)
       retries = 0
@@ -484,7 +474,6 @@ module Crawler
       end
     end
 
-    #-----------------------------------------------------------------------------------------------
     # Adds a set of URLs to the backlog for processing (if they are OK to follow)
     def add_urls_to_backlog(urls:, type:, source_type:, crawl_depth:, source_url: nil, redirect_chain: []) # rubocop:disable Metrics/ParameterLists
       return unless urls.any?
@@ -535,7 +524,6 @@ module Crawler
       events.crawl_seed(added_urls_count, type: :content) if source_type == SEED_LIST
     end
 
-    #-----------------------------------------------------------------------------------------------
     # Adds a single url to the backlog for processing and logs an event associated with it
     # If the queue is full, drops the item on the floor and logs about it.
     def add_url_to_backlog(url:, type:, source_type:, crawl_depth:, source_url:, redirect_chain: []) # rubocop:disable Metrics/ParameterLists
@@ -570,7 +558,6 @@ module Crawler
       )
     end
 
-    #-----------------------------------------------------------------------------------------------
     # Receives a newly-discovered url, makes a decision on what to do with it and records it in the log
     # FIXME: Feels like we need a generic way of encoding URL decisions, probably in the rules engine
     def check_discovered_url(url:, type:, source_url:, crawl_depth:) # rubocop:disable Metrics/PerceivedComplexity

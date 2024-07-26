@@ -62,12 +62,42 @@ module Crawler
         end
       end
 
+      def purge(crawl_start_time)
+        limit = (crawl_start_time - 1.minute).rfc3339
+        delete_query = {
+          query: {
+            range: {
+              last_crawled_at: {
+                lt: limit
+              }
+            }
+          }
+        }.deep_stringify_keys
+
+        begin
+          client.indices.refresh(index: [index_name])
+
+          log = <<~LOG.squish
+            Deleting all documents that were crawled before the crawl start time (#{limit}).
+            Full query: #{delete_query}
+          LOG
+          system_logger.debug(log)
+
+          response = client.delete_by_query(index: [index_name], body: delete_query, refresh: true)
+          system_logger.debug("Delete by query response: #{response}")
+
+          @deleted = response['deleted']
+        rescue StandardError => e
+          system_logger.warn("Purge docs failed: #{e}")
+        end
+      end
+
       def close
-        flush
         msg = <<~LOG.squish
           All indexing operations completed.
-          Successfully indexed #{@completed[:docs_count]} docs with a volume of #{@completed[:docs_volume]} bytes.
+          Successfully upserted #{@completed[:docs_count]} docs with a volume of #{@completed[:docs_volume]} bytes.
           Failed to index #{@failed[:docs_count]} docs with a volume of #{@failed[:docs_volume]} bytes.
+          Deleted #{@deleted} outdated docs from the index.
         LOG
         system_logger.info(msg)
       end
@@ -158,6 +188,7 @@ module Crawler
           docs_count: 0,
           docs_volume: 0
         }
+        @deleted = 0
       end
 
       def increment_ingestion_stats(doc)
