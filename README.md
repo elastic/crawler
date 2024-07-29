@@ -79,13 +79,22 @@ If using an API key, ensure that the API key has read and write permissions to a
 Open Crawler has a Dockerfile that can be built and run locally.
 
 1. Clone the repository: `git clone https://github.com/elastic/crawler.git`
-2. Build the image `docker build -t crawler-image .`
-3. Run the container `docker run -i -d --name crawler crawler-image`
+2. Create a docker network `docker network create elastic`
+3. Build the image `docker build -t crawler-image .`
+4. Run the container
+    ```bash
+    docker run \
+    -i -d \
+    --network elastic \
+    --name crawler \
+    crawler-image
+    ```
    - `-i` allows the container to stay alive so CLI commands can be executed inside it
    - `-d` allows the container to run "detached" so you don't have to dedicate a terminal window to it
-4. Confirm that CLI commands are working `docker exec -it crawler bin/crawler version`
+   - `--network` if you're running Elasticsearch in another docker container on the same machine, they will both need to run on the same network
+5. Confirm that CLI commands are working `docker exec -it crawler bin/crawler version`
    - Execute other CLI commands from outside of the container by prepending `docker exec -it crawler <command>`
-5. Create a config file for your crawler. See [Configuring crawlers](#configuring-crawlers) for next steps. See [Configuring crawlers](#configuring-crawlers) for next steps.
+6. Create a config file for your crawler. See [Configuring crawlers](#configuring-crawlers) for next steps.
 
 #### Running Open Crawler from source
 
