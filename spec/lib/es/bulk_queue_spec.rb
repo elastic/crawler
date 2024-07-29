@@ -6,7 +6,7 @@
 
 # frozen_string_literal: true
 
-RSpec.describe(Utility::BulkQueue) do
+RSpec.describe(ES::BulkQueue) do
   let(:subject) { described_class.new(count_threshold, size_threshold, system_logger) }
   let(:system_logger) { double }
   let(:count_threshold) { 50 }
