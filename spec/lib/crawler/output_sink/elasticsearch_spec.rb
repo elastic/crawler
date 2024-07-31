@@ -37,8 +37,8 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
   let(:deleted_id) { 25 }
 
   before(:each) do
-    allow(Utility::EsClient).to receive(:new).and_return(es_client)
-    allow(Utility::BulkQueue).to receive(:new).and_return(bulk_queue)
+    allow(ES::Client).to receive(:new).and_return(es_client)
+    allow(ES::BulkQueue).to receive(:new).and_return(bulk_queue)
     allow(config).to receive(:system_logger).and_return(system_logger)
 
     allow(es_client).to receive(:bulk)
@@ -301,7 +301,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
 
     context('when an error occurs during indexing') do
       before(:each) do
-        allow(es_client).to receive(:bulk).and_raise(Utility::EsClient::IndexingFailedError.new('BOOM'))
+        allow(es_client).to receive(:bulk).and_raise(ES::Client::IndexingFailedError.new('BOOM'))
       end
 
       it 'logs error' do
@@ -382,7 +382,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
 
         before(:each) do
           allow(bulk_queue).to receive(:bytesize).and_return(serialized_object.bytesize)
-          allow(es_client).to receive(:bulk).and_raise(Utility::EsClient::IndexingFailedError.new('BOOM'))
+          allow(es_client).to receive(:bulk).and_raise(ES::Client::IndexingFailedError.new('BOOM'))
 
           document_count.times.each do |x|
             subject.write(FactoryBot.build(:html_crawl_result, url: "http://real.com/#{x}"))

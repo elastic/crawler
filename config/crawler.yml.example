@@ -73,7 +73,8 @@
 #loopback_allowed: true
 #ssl_verification_mode: none
 #
-## Authorization configurations. Only required if a site has some form of authorization.
+## Authentication configurations.
+##     Only required if a site has some form of authentication.
 #auth.domain: https://parksaustralia.gov.au
 #auth.type: basic
 #auth.username: user

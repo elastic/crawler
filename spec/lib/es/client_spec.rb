@@ -8,7 +8,7 @@
 
 require 'elasticsearch'
 
-RSpec.describe(Utility::EsClient) do
+RSpec.describe(ES::Client) do
   let(:system_logger) { double }
   let(:host) { 'http://notreallyaserver' }
   let(:port) { '9200' }
@@ -143,7 +143,7 @@ RSpec.describe(Utility::EsClient) do
       let(:file_double) { double('File', puts: nil, close: nil) }
 
       before :each do
-        stub_const('Utility::EsClient::MAX_RETRIES', 1)
+        stub_const('ES::Client::MAX_RETRIES', 1)
         allow(File).to receive(:open).and_yield(file_double)
         allow(Time).to receive(:now).and_return(fixed_time)
         stub_request(:post, "#{host}:#{port}/_bulk").to_return({ status: 404, exception: 'Consistent failure' })
@@ -160,7 +160,7 @@ RSpec.describe(Utility::EsClient) do
         )
 
         expect(File).to have_received(:open).with(
-          "#{Utility::EsClient::FAILED_BULKS_DIR}/crawl-id/#{fixed_time.strftime('%Y%m%d%H%M%S')}", 'w'
+          "#{ES::Client::FAILED_BULKS_DIR}/crawl-id/#{fixed_time.strftime('%Y%m%d%H%M%S')}", 'w'
         )
 
         expect(file_double).to have_received(:puts).with(payload[:body].first)
