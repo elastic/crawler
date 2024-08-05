@@ -69,7 +69,7 @@ module Crawler
         end
 
         return denied_outcome(:content_type_denied, crawl_result.error) if crawl_result.unsupported_content_type?
-        return denied_outcome(:fatal_error_denied, crawl_result.error) if crawl_result.fatal_error?
+        return denied_outcome(:error_denied, crawl_result.error) if crawl_result.error?
         return denied_outcome(:noindex_meta_denied) if crawl_result.html? && crawl_result.meta_noindex?
 
         if crawl_result.redirect? && crawl_result.redirect_count > config.max_redirects

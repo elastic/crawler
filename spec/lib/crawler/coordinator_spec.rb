@@ -70,7 +70,6 @@ RSpec.describe(Crawler::Coordinator) do
         extract_links: { links: Set.new(links), limit_reached: false },
         meta_nofollow?: meta_nofollow,
         error?: false,
-        fatal_error?: false,
         html?: true,
         redirect?: false
       )
@@ -262,6 +261,82 @@ RSpec.describe(Crawler::Coordinator) do
           ).exactly(links.count).times
           process_crawl_result
         end
+      end
+    end
+
+    context 'when crawl result is a redirect' do
+      let(:redirect_location) { Crawler::Data::URL.parse('http://example.com/redirected') }
+      let(:crawl_result) do
+        double(
+          :crawl_result,
+          url:,
+          redirect_chain: [],
+          location: redirect_location,
+          error?: false,
+          redirect?: true
+        )
+      end
+
+      it 'should add url to backlog and not send crawl results to output sink' do
+        expect(crawl.sink).not_to receive(:write)
+        expect(coordinator).to receive(:add_urls_to_backlog).once
+        expect(events).to receive(:url_extracted).with(
+          hash_including(
+            url: crawl_result.url,
+            type: :allowed,
+            start_time: kind_of(Time),
+            end_time: kind_of(Time),
+            duration: kind_of(Benchmark::Tms),
+            outcome: :success,
+            redirect_location:,
+            message: 'Crawler was redirected to http://example.com/redirected'
+          )
+        )
+        process_crawl_result
+      end
+    end
+
+    context 'when crawl result is an error' do
+      let(:output_crawl_result_outcome) do
+        double(
+          :output_crawl_result_outcome,
+          denied?: true,
+          deny_reason: 'blocked',
+          message: 'you shall not pass'
+        )
+      end
+      let(:rule_engine) do
+        double(
+          :rule_engine,
+          output_crawl_result_outcome:,
+          discover_url_outcome: double(:discover_url_outcome, denied?: false)
+        )
+      end
+      let(:crawl_result) do
+        double(
+          :crawl_result,
+          url:,
+          error?: true,
+          redirect?: false
+        )
+      end
+
+      it 'should not add url to backlog nor send crawl results to output sink' do
+        expect(coordinator).not_to receive(:add_urls_to_backlog)
+        expect(crawl.sink).not_to receive(:write)
+        expect(events).to receive(:url_extracted).with(
+          hash_including(
+            url: crawl_result.url,
+            type: :denied,
+            start_time: kind_of(Time),
+            end_time: kind_of(Time),
+            duration: kind_of(Benchmark::Tms),
+            outcome: :success,
+            deny_reason: 'blocked',
+            message: 'you shall not pass'
+          )
+        )
+        process_crawl_result
       end
     end
   end

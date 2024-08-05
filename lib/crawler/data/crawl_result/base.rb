@@ -71,10 +71,6 @@ module Crawler
           is_a?(Error)
         end
 
-        def fatal_error?
-          error? && status_code == Error::FATAL_ERROR_STATUS
-        end
-
         def unsupported_content_type?
           is_a?(UnsupportedContentType)
         end
