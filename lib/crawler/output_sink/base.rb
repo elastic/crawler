@@ -28,7 +28,11 @@ module Crawler
         raise NotImplementedError
       end
 
-      def purge_docs
+      def fetch_missing_docs(_crawl_start_time)
+        raise NotImplementedError
+      end
+
+      def purge_docs(_crawl_start_time)
         raise NotImplementedError
       end
 

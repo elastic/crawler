@@ -19,10 +19,13 @@ module Crawler
   class Coordinator # rubocop:disable Metrics/ClassLength
     SEED_LIST = 'seed-list'
 
+    CRAWL_STAGE_PRIMARY = :primary
+    CRAWL_STAGE_PURGE = :purge
+
     SINK_LOCK_RETRY_INTERVAL = 1.second
     SINK_LOCK_MAX_RETRIES = 120
 
-    attr_reader :crawl, :seen_urls, :crawl_outcome, :outcome_message, :started_at, :task_executors
+    attr_reader :crawl, :seen_urls, :crawl_results, :started_at, :task_executors
 
     delegate :events, :system_logger, :config, :executor, :sink, :rule_engine,
              :interruptible_sleep, :shutdown_started?, :allow_resume?,
@@ -42,8 +45,12 @@ module Crawler
       )
 
       # Setup crawl internal state
-      @crawl_outcome = nil
-      @outcome_message = nil
+      @crawl_stage = CRAWL_STAGE_PRIMARY
+      @crawl_results = {
+        CRAWL_STAGE_PRIMARY => { outcome: nil, message: nil },
+        CRAWL_STAGE_PURGE => { outcome: nil, message: nil }
+      }
+      @purge_backlog = {}
       @started_at = Time.now
     end
 
@@ -58,33 +65,8 @@ module Crawler
     end
 
     def run_crawl!
-      load_robots_txts
-      enqueue_seed_urls
-      enqueue_sitemaps
-
-      system_logger.info("Starting the crawl with up to #{task_executors.max_length} parallel thread(s)...")
-
-      # Run the crawl until it is time to stop
-      until crawl_finished?
-        if executors_available?
-          run_crawl_loop
-        else
-          # Sleep for a bit if there are no available executors to avoid creating a hot loop
-          system_logger.debug('No executors available, sleeping for a second...')
-          sleep(1)
-        end
-        events.log_crawl_status(crawl)
-      end
-
-      # Clean up any remaining items in queue
-      # We are no longer multi-threaded so no need for lock
-      sink.flush
-
-      # Purge old docs if configured to do so
-      if config.purge_docs_enabled
-        system_logger.info('Purging documents for pages not seen during the crawl...')
-        sink.purge(started_at)
-      end
+      run_primary_crawl!
+      run_purge_crawl! if purge_crawls_allowed?
 
       # Close the sink to make sure all the in-flight content has been safely stored/indexed/etc
       system_logger.info('Closing the output sink before finishing the crawl...')
@@ -95,7 +77,59 @@ module Crawler
       system_logger.info('Crawl shutdown complete')
     end
 
+    def run_primary_crawl!
+      @crawl_stage = CRAWL_STAGE_PRIMARY
+      system_logger.info("Starting the primary crawl with up to #{task_executors.max_length} parallel thread(s)...")
+
+      load_robots_txts
+      enqueue_seed_urls
+      enqueue_sitemaps
+
+      run_crawl_loop
+    end
+
+    # Fetches the URLs from docs that were indexed in a previous crawl, but were not seen in the current crawl.
+    # Those URLs are crawled to see if they still exist. Any URLs that can't be found will be deleted from the index.
+    def run_purge_crawl!
+      @crawl_stage = CRAWL_STAGE_PURGE
+
+      # Fetch URLs from docs for pages that were previously indexed but not seen this crawl
+      @purge_backlog = sink.fetch_missing_docs(started_at)
+
+      system_logger.info('******')
+      system_logger.info(@purge_backlog)
+      system_logger.info('******')
+
+      if @purge_backlog.empty?
+        system_logger.info('No documents were found for the purge crawl. Skipping purge crawl.')
+        return
+      end
+
+      system_logger.info("Starting the purge crawl with up to #{task_executors.max_length} parallel thread(s)...")
+      enqueue_purge_urls(@purge_backlog.keys)
+
+      run_crawl_loop
+
+      # Any URLs in the purge backlog that are still accessible have been removed during the crawl loop.
+      # We can safely send all of the remaining IDs to be deleted.
+      sink.purge(@purge_backlog.values)
+    end
+
     private
+
+    def purge_crawls_allowed?
+      unless config.output_sink == 'elasticsearch'
+        system_logger.info("Purge crawls are not supported for sink type #{config.output_sink}. Skipping purge crawl.")
+        return false
+      end
+
+      unless config.purge_docs_enabled
+        system_logger.info('Purge crawls are disabled in the config file. Skipping purge crawl.')
+        return false
+      end
+
+      true
+    end
 
     # Communicates the progress on a given crawl task via the system log and Java thread names
     def crawl_task_progress(crawl_task, message)
@@ -184,6 +218,12 @@ module Crawler
       )
     end
 
+    def enqueue_purge_urls(urls)
+      system_logger.debug("Seeding the crawl with #{urls.size} URLs from the ES index...")
+      parsed_urls = urls.map { |url| Crawler::Data::URL.parse(url) }
+      add_urls_to_backlog(urls: parsed_urls, type: :content, source_type: :purge, crawl_depth: 1)
+    end
+
     def fetch_valid_auto_discovered_sitemap_urls!
       config.robots_txt_service.sitemaps.each_with_object([]) do |sitemap, out|
         sitemap_url = Crawler::Data::URL.parse(sitemap)
@@ -197,8 +237,8 @@ module Crawler
     end
 
     def set_outcome(outcome, message)
-      @crawl_outcome = outcome
-      @outcome_message = message
+      @crawl_results[@crawl_stage][:outcome] = outcome
+      @crawl_results[@crawl_stage][:outcome] = message
     end
 
     # Returns +true+ if there are any free executors available to run crawl tasks
@@ -208,31 +248,33 @@ module Crawler
 
     # Checks if we should terminate the crawl loop and sets the outcome value accordingly
     def crawl_finished?
-      return true if crawl_outcome
+      return true if @crawl_results[@crawl_stage][:outcome]
 
       # Check if there are any active tasks still being processed
       return false if task_executors.length.positive?
 
       if crawl_queue.empty? && !shutdown_started?
-        system_logger.info('Crawl queue is empty, finishing the crawl')
-        set_outcome(:success, 'Successfully finished the crawl with an empty crawl queue')
+        system_logger.info("Crawl queue is empty, finishing the #{@crawl_stage} crawl")
+        set_outcome(:success, "Successfully finished the #{@crawl_stage} crawl with an empty crawl queue")
         return true
       end
 
       if shutdown_started?
         set_outcome(
           :shutdown,
-          "Terminated the crawl with #{crawl_queue.length} unprocessed URLs " \
+          "Terminated the #{@crawl_stage} crawl with #{crawl_queue.length} unprocessed URLs " \
           "due to a crawler shutdown (allow_resume=#{allow_resume?})"
         )
-        system_logger.warn("Shutting down the crawl with #{crawl_queue.length} unprocessed URLs...")
+        system_logger.warn("Shutting down the #{@crawl_stage} crawl with #{crawl_queue.length} unprocessed URLs...")
         return true
       end
 
+      # This duration is the total of both the primary and purge crawl stages,
+      # so no need to differentiate between them here.
       if crawl_duration > config.max_duration
         outcome_message = <<~OUTCOME.squish
           The crawl is taking too long (elapsed: #{crawl_duration.to_i} sec, limit: #{config.max_duration} sec).
-          Shutting down with #{crawl_queue.length} unprocessed URLs.
+          Shutting down #{@crawl_stage} crawl with #{crawl_queue.length} unprocessed URLs.
           If you would like to increase the limit, change the max_duration setting.
         OUTCOME
         set_outcome(:warning, outcome_message)
@@ -243,8 +285,24 @@ module Crawler
       false
     end
 
-    # Performs a single iteration of the crawl loop
     def run_crawl_loop
+      until crawl_finished?
+        if executors_available?
+          prepare_crawl_task
+        else
+          # Sleep for a bit if there are no available executors to avoid creating a hot loop
+          system_logger.debug('No executors available, sleeping for a second...')
+          sleep(1)
+        end
+        events.log_crawl_status(crawl)
+      end
+
+      sink.flush
+      log_crawl_end_event
+    end
+
+    # Performs a single iteration of the crawl loop
+    def prepare_crawl_task
       return if shutdown_started?
 
       # Get a task to execute
@@ -331,7 +389,7 @@ module Crawler
 
     # Extracts links from a given crawl result and pushes them into the crawl queue for processing
     def extract_and_enqueue_links(crawl_task, crawl_result)
-      return if crawl_result.error?
+      return if crawl_result.error? || @crawl_stage == CRAWL_STAGE_PURGE
 
       crawl_task_progress(crawl_task, 'extracting links')
       return enqueue_redirect_link(crawl_task, crawl_result) if crawl_result.redirect?
@@ -451,6 +509,8 @@ module Crawler
             error = "Expected to return an outcome object from the sink, returned #{outcome.inspect} instead"
             raise ArgumentError, error
           end
+
+          @purge_backlog.delete(crawl_result.url) if @crawl_stage == CRAWL_STAGE_PURGE
         end
       rescue Errors::SinkLockedError
         # Adding a debug log here is incredibly noisy, so instead we should rely on logging from the sink
@@ -636,6 +696,14 @@ module Crawler
       events.url_discover(**discover_event.merge(type: :allowed))
 
       :allow
+    end
+
+    def log_crawl_end_event
+      events.crawl_end(
+        outcome: @crawl_results[@crawl_stage][:outcome],
+        message: @crawl_results[@crawl_stage][:message],
+        resume_possible: false
+      )
     end
   end
 end

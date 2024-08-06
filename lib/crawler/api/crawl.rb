@@ -80,17 +80,12 @@ module Crawler
       end
 
       # Starts a new crawl described by the given config. The job is started immediately.
-      def start! # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+      def start! # rubocop:disable Metrics/AbcSize
         events.crawl_start(
           url_queue_items: crawl_queue.length,
           seen_urls: seen_urls.count
         )
         coordinator.run_crawl!
-
-        record_outcome(
-          outcome: coordinator.crawl_outcome,
-          message: coordinator.outcome_message
-        )
       rescue StandardError => e
         log_exception(e, 'Unexpected error while running the crawl')
         record_outcome(

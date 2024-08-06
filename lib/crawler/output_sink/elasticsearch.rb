@@ -62,14 +62,35 @@ module Crawler
         end
       end
 
-      def purge(crawl_start_time)
-        limit = (crawl_start_time - 1.minute).rfc3339
-        delete_query = {
+      def fetch_missing_docs(crawl_start_time)
+        @limit = crawl_start_time.rfc3339
+        search_query = {
+          _source: ['url'],
           query: {
             range: {
               last_crawled_at: {
-                lt: limit
+                lt: @limit
               }
+            }
+          }
+        }.deep_stringify_keys
+
+        begin
+          client.indices.refresh(index: [index_name])
+          response = client.search(index: [index_name], body: search_query)
+          system_logger.info(response)
+          # Object with url as key and id as value `{ url: id }`
+          response['hits']['hits'].each_with_object({}) do |r, result|
+            result[r['_source']['url']] = r['_id']
+          end
+        end
+      end
+
+      def purge(doc_ids)
+        delete_query = {
+          query: {
+            terms: {
+              _id: doc_ids
             }
           }
         }.deep_stringify_keys
@@ -78,7 +99,7 @@ module Crawler
           client.indices.refresh(index: [index_name])
 
           log = <<~LOG.squish
-            Deleting all documents that were crawled before the crawl start time (#{limit}).
+            Deleting documents for pages that were not accessible during the purge crawl.
             Full query: #{delete_query}
           LOG
           system_logger.debug(log)
@@ -88,7 +109,7 @@ module Crawler
 
           @deleted = response['deleted']
         rescue StandardError => e
-          system_logger.warn("Purge docs failed: #{e}")
+          system_logger.warn("Deleting docs from Elasticsearch failed: #{e}")
         end
       end
 
