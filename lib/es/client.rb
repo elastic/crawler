@@ -99,14 +99,14 @@ module ES
       end
     end
 
+    private
+
     # Create a reference hash with url as key and id as value `{ url: id }`
     def format_search_results(hits)
       hits.each_with_object({}) do |hit, r|
         r[hit['_source']['url']] = hit['_id']
       end
     end
-
-    private
 
     def configure_auth(es_config)
       if es_config[:api_key]

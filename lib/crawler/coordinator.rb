@@ -350,6 +350,7 @@ module Crawler
       end
     end
 
+    #-----------------------------------------------------------------------------------------------
     # Process a crawl_result:
     # - Extract canonical_url and add it to the backlog
     # - Extract links contained in the page and add them to the backlog
