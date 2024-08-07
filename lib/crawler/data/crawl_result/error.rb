@@ -12,14 +12,14 @@ module Crawler
   module Data
     module CrawlResult
       class Error < Base
-        # Status code to be used for internal errors
-        INTERNAL_ERROR_STATUS = 599
+        # Fake status code to be used for unexpected internal errors
+        MISCELLANEOUS_ERROR = 599
 
         attr_reader :error, :suggestion_message
 
         # INTERNAL_ERROR_STATUS is used by default for unexpected internal errors that
         # were not part of the HTTP response from a crawled web page.
-        def initialize(error:, status_code: INTERNAL_ERROR_STATUS, suggestion_message: nil, **kwargs)
+        def initialize(error:, status_code: MISCELLANEOUS_ERROR, suggestion_message: nil, **kwargs)
           super(status_code:, **kwargs)
           @error = error
           @suggestion_message = suggestion_message
