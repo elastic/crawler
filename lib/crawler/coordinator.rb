@@ -94,9 +94,7 @@ module Crawler
     # Those URLs are crawled to see if they still exist. Any URLs that can't be found will be deleted from the index.
     def run_purge_crawl!
       @crawl_stage = CRAWL_STAGE_PURGE
-
-      # Fetch URLs from docs for pages that were previously indexed but not seen this crawl
-      @purge_backlog = sink.fetch_missing_docs(started_at)
+      @purge_backlog = sink.fetch_purge_docs(started_at)
 
       if @purge_backlog.empty?
         system_logger.info('No documents were found for the purge crawl. Skipping purge crawl.')
@@ -108,7 +106,7 @@ module Crawler
 
       run_crawl_loop
 
-      # Any URLs in the purge backlog that are still accessible have been removed during the crawl loop.
+      # Any URLs in the purge backlog that are still accessible have been removed during the purge crawl loop.
       # We can safely send all of the remaining IDs to be deleted.
       sink.purge(@purge_backlog.values)
     end

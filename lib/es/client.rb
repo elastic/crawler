@@ -72,6 +72,40 @@ module ES
       end
     end
 
+    # Perform a search query with pagination and return a formatted response.
+    # ES paginates search results using a combination of `sort` and `search_after`.
+    # We repeat search queries until the response is empty, which is how we know pagination is complete.
+    def paginated_search(index_name, query)
+      results = {}
+
+      loop do
+        retries = 0
+        begin
+          response = search(index: [index_name], body: query)
+          hits = response['hits']['hits']
+          # If hits is empty, no need to format results or continue pagination
+          return results if hits.empty?
+
+          results.merge!(format_search_results(hits))
+
+          # Set `search_after` param for next paginated search call using the last hit's `sort` value
+          query['search_after'] = hits.last['sort']
+        rescue StandardError => e
+          retries += 1
+          raise e unless retries <= MAX_RETRIES
+
+          sleep((2**retries).seconds) && retry
+        end
+      end
+    end
+
+    # Create a reference hash with url as key and id as value `{ url: id }`
+    def format_search_results(hits)
+      hits.each_with_object({}) do |hit, r|
+        r[hit['_source']['url']] = hit['_id']
+      end
+    end
+
     private
 
     def configure_auth(es_config)

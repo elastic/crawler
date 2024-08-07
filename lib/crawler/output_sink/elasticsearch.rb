@@ -20,6 +20,7 @@ module Crawler
         _run_ml_inference: true,
         _extract_binary_content: true
       }.freeze
+      SEARCH_PAGINATION_SIZE = 1_000
 
       def initialize(config)
         super
@@ -62,28 +63,25 @@ module Crawler
         end
       end
 
-      def fetch_missing_docs(crawl_start_time)
-        @limit = crawl_start_time.rfc3339
-        search_query = {
+      def fetch_purge_docs(crawl_start_time)
+        query = {
           _source: ['url'],
           query: {
             range: {
               last_crawled_at: {
-                lt: @limit
+                lt: (crawl_start_time - 1.second).rfc3339
               }
             }
-          }
+          },
+          size: SEARCH_PAGINATION_SIZE,
+          sort: [{ last_crawled_at: 'asc' }]
         }.deep_stringify_keys
+        system_logger.debug(
+          "Fetching docs for pages that were not encountered during the sync. Full query: #{query.inspect}"
+        )
 
-        begin
-          client.indices.refresh(index: [index_name])
-          response = client.search(index: [index_name], body: search_query)
-          system_logger.info(response)
-          # Object with url as key and id as value `{ url: id }`
-          response['hits']['hits'].each_with_object({}) do |r, result|
-            result[r['_source']['url']] = r['_id']
-          end
-        end
+        client.indices.refresh(index: [index_name])
+        client.paginated_search(index_name, query)
       end
 
       def purge(doc_ids)
@@ -95,22 +93,16 @@ module Crawler
           }
         }.deep_stringify_keys
 
-        begin
-          client.indices.refresh(index: [index_name])
+        log = <<~LOG.squish
+          Deleting docs for pages that were not accessible during the purge crawl.
+          Full query: #{delete_query}
+        LOG
+        system_logger.debug(log)
 
-          log = <<~LOG.squish
-            Deleting documents for pages that were not accessible during the purge crawl.
-            Full query: #{delete_query}
-          LOG
-          system_logger.debug(log)
+        response = client.delete_by_query(index: [index_name], body: delete_query, refresh: true)
+        system_logger.debug("Delete by query response: #{response}")
 
-          response = client.delete_by_query(index: [index_name], body: delete_query, refresh: true)
-          system_logger.debug("Delete by query response: #{response}")
-
-          @deleted = response['deleted']
-        rescue StandardError => e
-          system_logger.warn("Deleting docs from Elasticsearch failed: #{e}")
-        end
+        @deleted = response['deleted']
       end
 
       def close
