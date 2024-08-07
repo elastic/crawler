@@ -47,6 +47,7 @@ module Crawler
       delegate :system_logger, :events, :stats, to: :config
       delegate :rule_engine, to: :sink
 
+      #---------------------------------------------------------------------------------------------
       def shutdown_started?
         @shutdown_started.true?
       end
@@ -64,6 +65,7 @@ module Crawler
         @shutdown_started.make_true
       end
 
+      #---------------------------------------------------------------------------------------------
       # Waits for a specified number of seconds, stopping earlier if we are in a shutdown mode
       def interruptible_sleep(period)
         start_time = Time.now
@@ -75,10 +77,12 @@ module Crawler
         end
       end
 
+      #---------------------------------------------------------------------------------------------
       def coordinator
         @coordinator ||= Crawler::Coordinator.new(self)
       end
 
+      #---------------------------------------------------------------------------------------------
       # Starts a new crawl described by the given config. The job is started immediately.
       def start! # rubocop:disable Metrics/AbcSize
         events.crawl_start(
@@ -106,6 +110,7 @@ module Crawler
         end
       end
 
+      #---------------------------------------------------------------------------------------------
       # Returns a hash with crawl-specific status information
       # Note: This is used by the `EventGenerator` class for crawl-status events and by the Crawler Status API.
       #       Please update OpenAPI specs if you add any new fields here.
