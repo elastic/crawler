@@ -119,7 +119,7 @@ module Crawler
         return false
       end
 
-      unless config.purge_docs_enabled
+      unless config.purge_crawl_enabled
         system_logger.info('Purge crawls are disabled in the config file. Skipping purge crawl.')
         return false
       end
