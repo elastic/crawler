@@ -67,6 +67,18 @@ RSpec.describe(Crawler::API::Crawl) do
       expect(subject.seen_urls).to receive(:clear)
       subject.start!
     end
+
+
+    it 'should emit an appropriate form of the crawl-end event' do
+      subject.start!
+      expect(subject.config.event_logger.mock_events).to include(
+        hash_including(
+          'event.action' => 'crawl-end',
+          'event.outcome' => 'success',
+          'crawler.crawl.resume_possible' => false
+        )
+      )
+    end
   end
 
   #-------------------------------------------------------------------------------------------------
@@ -94,6 +106,27 @@ RSpec.describe(Crawler::API::Crawl) do
       expect(subject.seen_urls).to receive(:clear)
       expect(subject.crawl_queue).to receive(:delete)
       subject.start!
+    end
+
+    context 'with resume allowed' do
+      let(:allow_resume) { true }
+
+      it 'should save the state' do
+        expect(subject.crawl_queue).to receive(:save)
+        expect(subject.seen_urls).to receive(:save)
+        subject.start!
+      end
+
+      it 'should emit an appropriate form of the crawl-end event' do
+        subject.start!
+        expect(subject.config.event_logger.mock_events).to include(
+          hash_including(
+            'event.action' => 'crawl-end',
+            'event.outcome' => 'shutdown',
+            'crawler.crawl.resume_possible' => true
+          )
+        )
+      end
     end
   end
 
