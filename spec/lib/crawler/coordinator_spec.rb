@@ -74,13 +74,19 @@ RSpec.describe(Crawler::Coordinator) do
     end
     let(:sink) { Crawler::OutputSink::Elasticsearch.new(crawl_config) }
     let(:es_client) { double }
+    let(:search_result) do
+      {
+        _id: '1234',
+        _source: { url: 'https://example.com/outdated' }
+      }.stringify_keys
+    end
 
     before do
       allow(ES::Client).to receive(:new).and_return(es_client)
       allow(es_client).to receive(:bulk)
       allow(es_client).to receive(:delete_by_query).and_return({ deleted: 1 }.stringify_keys)
       allow(es_client)
-        .to receive(:paginated_search).and_return({ 'https://example.com/outdated': '1234' }.stringify_keys)
+        .to receive(:paginated_search).and_return([search_result])
       allow(es_client).to receive(:indices).and_return(double(:indices, refresh: double))
 
       allow(sink).to receive(:purge).and_call_original

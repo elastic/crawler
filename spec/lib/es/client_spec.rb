@@ -192,14 +192,14 @@ RSpec.describe(ES::Client) do
         _id: '1234',
         _source: { url: 'https://www.elastic.co/search-labs' },
         sort: [1]
-      }
+      }.deep_stringify_keys
     end
     let(:hit2) do
       {
         _id: '5678',
         _source: { url: 'https://www.elastic.co/search-labs/tutorials' },
         sort: [2]
-      }
+      }.deep_stringify_keys
     end
     let(:empty_response) do
       {
