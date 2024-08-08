@@ -68,7 +68,6 @@ RSpec.describe(Crawler::API::Crawl) do
       subject.start!
     end
 
-
     it 'should emit an appropriate form of the crawl-end event' do
       subject.start!
       expect(subject.config.event_logger.mock_events).to include(
