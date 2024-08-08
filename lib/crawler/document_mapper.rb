@@ -41,6 +41,15 @@ module Crawler
       )
     end
 
+    def extractable_content_fields(crawl_result)
+      remove_empty_values(
+        file_name: crawl_result.file_name,
+        content_length: crawl_result.content_length,
+        last_crawled_at: crawl_result.start_time&.rfc3339,
+        _attachment: crawl_result.base64_encoded_content,
+      )
+    end
+
     def extract_by_rules(crawl_result, extraction_rules)
       rulesets = extraction_rules[crawl_result.site_url.to_s] || []
       Crawler::ContentEngine::Extractor.extract(rulesets, crawl_result)

@@ -30,10 +30,20 @@ module Crawler
 
       def to_doc(crawl_result)
         doc = { id: crawl_result.url_hash }
-        doc.merge!(document_mapper.document_fields(crawl_result))
-        doc.merge!(document_mapper.url_components(crawl_result.url))
-        doc.merge!(document_mapper.extract_by_rules(crawl_result, config.extraction_rules))
-        doc.deep_stringify_keys!
+        return to_content_extractable_doc(doc, crawl_result) if crawl_result.content_extractable_file?
+
+        doc.merge(
+          document_mapper.document_fields(crawl_result),
+          document_mapper.url_components(crawl_result.url),
+          document_mapper.extract_by_rules(crawl_result, config.extraction_rules)
+        ).deep_stringify_keys
+      end
+
+      def to_content_extractable_doc(doc, crawl_result)
+        doc.merge(
+          document_mapper.extractable_content_fields(crawl_result),
+          document_mapper.url_components(crawl_result.url)
+        ).deep_stringify_keys
       end
 
       def close

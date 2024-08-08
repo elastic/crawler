@@ -314,6 +314,7 @@ module Crawler
         Crawler::Data::CrawlResult::ContentExtractableFile.new(
           url: crawl_task.url,
           status_code: response.code,
+          content_length: response.content_length,
           content_type: response['content-type'],
           content: response_body,
           start_time: response.request_start_time,
