@@ -25,7 +25,7 @@ module Crawler
     SINK_LOCK_RETRY_INTERVAL = 1.second
     SINK_LOCK_MAX_RETRIES = 120
 
-    attr_reader :crawl, :seen_urls, :crawl_results, :started_at, :task_executors
+    attr_reader :crawl, :crawl_results, :crawl_stage, :seen_urls, :started_at, :task_executors
 
     delegate :events, :system_logger, :config, :executor, :sink, :rule_engine,
              :interruptible_sleep, :shutdown_started?, :allow_resume?,
@@ -240,7 +240,7 @@ module Crawler
     #-----------------------------------------------------------------------------------------------
     def set_outcome(outcome, message)
       @crawl_results[@crawl_stage][:outcome] = outcome
-      @crawl_results[@crawl_stage][:outcome] = message
+      @crawl_results[@crawl_stage][:message] = message
     end
 
     #-----------------------------------------------------------------------------------------------
@@ -383,7 +383,6 @@ module Crawler
         )
       elsif crawl_result.redirect?
         crawl_task_progress(crawl_task, 'skipping ingestion of redirect')
-        extracted_event[:redirect_location] = crawl_result.location
         extracted_event[:message] = "Crawler was redirected to #{crawl_result.location}"
       elsif crawl_task.content?
         crawl_task_progress(crawl_task, 'ingesting the result')

@@ -28,11 +28,11 @@ module Crawler
         raise NotImplementedError
       end
 
-      def fetch_missing_docs(_crawl_start_time)
+      def fetch_purge_docs(_crawl_start_time)
         raise NotImplementedError
       end
 
-      def purge_docs(_crawl_start_time)
+      def purge(_crawl_start_time)
         raise NotImplementedError
       end
 
@@ -45,6 +45,11 @@ module Crawler
       end
 
       def close
+        # To be implemented by the sink if needed.
+        # Does nothing by default.
+      end
+
+      def flush
         # To be implemented by the sink if needed.
         # Does nothing by default.
       end

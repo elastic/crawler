@@ -81,7 +81,8 @@ module Crawler
         )
 
         client.indices.refresh(index: [index_name])
-        client.paginated_search(index_name, query)
+        results = client.paginated_search(index_name, query)
+        format_search_results(results)
       end
 
       def purge(doc_ids)
@@ -99,7 +100,7 @@ module Crawler
         LOG
         system_logger.debug(log)
 
-        response = client.delete_by_query(index: [index_name], body: delete_query, refresh: true)
+        response = client.delete_by_query(index: [index_name], body: delete_query)
         system_logger.debug("Delete by query response: #{response}")
 
         @deleted = response['deleted']
@@ -186,6 +187,13 @@ module Crawler
         doc = to_doc(crawl_result)
         doc.merge!(pipeline_params) if pipeline_enabled?
         doc
+      end
+
+      # Create a reference hash with url as key and id as value `{ url: id }`
+      def format_search_results(hits)
+        hits.each_with_object({}) do |hit, r|
+          r[hit['_source']['url']] = hit['_id']
+        end
       end
 
       def init_ingestion_stats

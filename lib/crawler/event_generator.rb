@@ -42,11 +42,12 @@ module Crawler
     #-----------------------------------------------------------------------------------------------
     def log_error(error, message)
       full_message = "#{message}: #{error.class}: #{error.message}"
-      system_logger.error("Crawl Error: #{full_message}\n#{error.backtrace.join("\n")}")
+      backtrace = error.backtrace&.join("\n")
+      system_logger.error("Crawl Error: #{full_message} #{backtrace}")
       log_event(
         'event.type' => 'error',
         'error.message' => full_message,
-        'error.stack_trace' => error.backtrace&.join("\n")
+        'error.stack_trace' => backtrace
       )
     end
 
