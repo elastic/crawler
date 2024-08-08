@@ -84,7 +84,7 @@ module Crawler
 
       #---------------------------------------------------------------------------------------------
       # Starts a new crawl described by the given config. The job is started immediately.
-      def start! # rubocop:disable Metrics/AbcSize
+      def start! # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
         events.crawl_start(
           url_queue_items: crawl_queue.length,
           seen_urls: seen_urls.count
@@ -140,9 +140,13 @@ module Crawler
           return
         end
 
-        outcome = (results[:primary][:outcome] == :success && results[:purge][:outcome] == :success) ? :success : :failure
+        outcome = combined_outcome(results)
         message = "#{results[:primary][:message]} | #{results[:purge][:outcome]}"
         record_outcome(outcome:, message:)
+      end
+
+      def combined_outcome(results)
+        results[:primary][:outcome] == :success && results[:purge][:outcome] == :success ? :success : :failure
       end
 
       def record_outcome(outcome:, message:)
