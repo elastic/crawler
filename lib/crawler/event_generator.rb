@@ -72,6 +72,16 @@ module Crawler
       )
     end
 
+    def crawl_stage_end(outcome:, message:)
+      system_logger.info("Finished a crawl stage. Result: #{outcome}; #{message}")
+      log_crawl_event(
+        'event.type' => 'change',
+        'event.action' => 'crawl-stage-end',
+        'event.outcome' => outcome,
+        'message' => message
+      )
+    end
+
     def crawl_end(outcome:, message:, resume_possible:)
       system_logger.info("Finished a crawl. Result: #{outcome}; #{message}")
       log_crawl_event(

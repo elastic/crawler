@@ -715,10 +715,9 @@ module Crawler
     end
 
     def log_crawl_end_event
-      events.crawl_end(
+      events.crawl_stage_end(
         outcome: @crawl_results[@crawl_stage][:outcome],
-        message: @crawl_results[@crawl_stage][:message],
-        resume_possible: false
+        message: @crawl_results[@crawl_stage][:message]
       )
     end
   end
