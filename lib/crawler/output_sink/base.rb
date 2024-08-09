@@ -29,14 +29,7 @@ module Crawler
       end
 
       def to_doc(crawl_result)
-        doc = document_mapper.core_fields(crawl_result)
-        return to_content_extractable_doc(doc, crawl_result) if crawl_result.content_extractable_file?
-
-        doc.merge(
-          document_mapper.html_fields(crawl_result),
-          document_mapper.url_components(crawl_result.url),
-          document_mapper.extraction_rule_fields(crawl_result, config.extraction_rules)
-        ).deep_stringify_keys
+        document_mapper.create_doc(crawl_result)
       end
 
       def to_content_extractable_doc(doc, crawl_result)
