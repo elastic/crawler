@@ -86,7 +86,7 @@ module Crawler
       end
 
       def content_length
-        headers['content-length']&.to_i || 0
+        headers['content-length'].to_i
       end
 
       def content_type

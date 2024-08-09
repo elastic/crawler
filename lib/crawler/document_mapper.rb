@@ -46,7 +46,7 @@ module Crawler
         file_name: crawl_result.file_name,
         content_length: crawl_result.content_length,
         last_crawled_at: crawl_result.start_time&.rfc3339,
-        _attachment: crawl_result.base64_encoded_content,
+        _attachment: crawl_result.base64_encoded_content
       )
     end
 
