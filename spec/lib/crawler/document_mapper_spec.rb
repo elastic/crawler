@@ -12,9 +12,6 @@ RSpec.describe(Crawler::DocumentMapper) do
   let(:config_params) { { domains: [{ url: url.to_s }] } }
   let(:config) { Crawler::API::Config.new(config_params) }
 
-  before do
-  end
-
   describe '#create_doc' do
     context 'when crawl result is HTML' do
       let(:meta_description) { 'An apt description!' }

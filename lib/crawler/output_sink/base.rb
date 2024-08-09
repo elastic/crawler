@@ -32,13 +32,6 @@ module Crawler
         document_mapper.create_doc(crawl_result)
       end
 
-      def to_content_extractable_doc(doc, crawl_result)
-        doc.merge(
-          document_mapper.binary_file_fields(crawl_result),
-          document_mapper.url_components(crawl_result.url)
-        ).deep_stringify_keys
-      end
-
       def close
         # To be implemented by the sink if needed.
         # Does nothing by default.
