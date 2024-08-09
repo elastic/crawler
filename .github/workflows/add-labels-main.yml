@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - id: version
-        uses: juliangruber/read-file-action@ebfa650188272343fef925480eb4d18c5d49b925
+        uses: juliangruber/read-file-action@386973d5b59f826915775874c7d1f82c4bbcfb07
         with:
           path: ./product_version
       - uses: actions-ecosystem/action-add-labels@v1
