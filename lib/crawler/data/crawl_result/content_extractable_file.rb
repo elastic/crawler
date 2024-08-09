@@ -17,12 +17,24 @@ module Crawler
         # Allow constructor to be called on concrete result classes
         public_class_method :new
 
+        attr_reader :content_length
+
+        def initialize(status_code:, content_length:, **kwargs)
+          super(status_code:, **kwargs)
+
+          @content_length = content_length
+        end
+
         def content_hash
           @content_hash ||= Digest::SHA1.hexdigest(content)
         end
 
         def base64_encoded_content
-          Base64.strict_encode64(content)
+          @base64_encoded_content ||= Base64.strict_encode64(content)
+        end
+
+        def file_name
+          @file_name ||= url.path.split('/').last
         end
       end
     end
