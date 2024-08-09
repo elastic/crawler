@@ -20,6 +20,7 @@ module Crawler
         _run_ml_inference: true,
         _extract_binary_content: true
       }.freeze
+      SEARCH_PAGINATION_SIZE = 1_000
 
       def initialize(config)
         super
@@ -62,12 +63,55 @@ module Crawler
         end
       end
 
+      def fetch_purge_docs(crawl_start_time)
+        query = {
+          _source: ['url'],
+          query: {
+            range: {
+              last_crawled_at: {
+                lt: (crawl_start_time - 1.second).rfc3339
+              }
+            }
+          },
+          size: SEARCH_PAGINATION_SIZE,
+          sort: [{ last_crawled_at: 'asc' }]
+        }.deep_stringify_keys
+        system_logger.debug(
+          "Fetching docs for pages that were not encountered during the sync. Full query: #{query.inspect}"
+        )
+
+        client.indices.refresh(index: [index_name])
+        results = client.paginated_search(index_name, query)
+        format_search_results(results)
+      end
+
+      def purge(doc_ids)
+        delete_query = {
+          query: {
+            terms: {
+              _id: doc_ids
+            }
+          }
+        }.deep_stringify_keys
+
+        log = <<~LOG.squish
+          Deleting docs for pages that were not accessible during the purge crawl.
+          Full query: #{delete_query}
+        LOG
+        system_logger.debug(log)
+
+        response = client.delete_by_query(index: [index_name], body: delete_query)
+        system_logger.debug("Delete by query response: #{response}")
+
+        @deleted = response['deleted']
+      end
+
       def close
-        flush
         msg = <<~LOG.squish
           All indexing operations completed.
-          Successfully indexed #{@completed[:docs_count]} docs with a volume of #{@completed[:docs_volume]} bytes.
+          Successfully upserted #{@completed[:docs_count]} docs with a volume of #{@completed[:docs_volume]} bytes.
           Failed to index #{@failed[:docs_count]} docs with a volume of #{@failed[:docs_volume]} bytes.
+          Deleted #{@deleted} outdated docs from the index.
         LOG
         system_logger.info(msg)
       end
@@ -145,6 +189,13 @@ module Crawler
         doc
       end
 
+      # Create a reference hash with url as key and id as value `{ url: id }`
+      def format_search_results(hits)
+        hits.each_with_object({}) do |hit, r|
+          r[hit['_source']['url']] = hit['_id']
+        end
+      end
+
       def init_ingestion_stats
         @queued = {
           docs_count: 0,
@@ -158,6 +209,7 @@ module Crawler
           docs_count: 0,
           docs_volume: 0
         }
+        @deleted = 0
       end
 
       def increment_ingestion_stats(doc)

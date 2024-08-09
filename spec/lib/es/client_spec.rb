@@ -13,6 +13,7 @@ RSpec.describe(ES::Client) do
   let(:host) { 'http://notreallyaserver' }
   let(:port) { '9200' }
   let(:elastic_product_headers) { { 'x-elastic-product': 'Elasticsearch' } }
+  let(:index_name) { 'fantastic_index_name' }
   let(:config) do
     {
       elasticsearch: {
@@ -106,7 +107,7 @@ RSpec.describe(ES::Client) do
     let(:payload) do
       {
         body: [
-          { index: { _index: 'my_index', _id: '123' } },
+          { index: { _index: index_name, _id: '123' } },
           { id: '123', title: 'Foo', body: 'bar' }
         ]
       }
@@ -165,6 +166,134 @@ RSpec.describe(ES::Client) do
 
         expect(file_double).to have_received(:puts).with(payload[:body].first)
         expect(file_double).to have_received(:puts).with(payload[:body].second)
+      end
+    end
+  end
+
+  describe '#paginated_search' do
+    let(:size) { Crawler::OutputSink::Elasticsearch::SEARCH_PAGINATION_SIZE }
+    let(:query) do
+      {
+        _source: ['url'],
+        query: {
+          range: {
+            last_crawled_at: {
+              lt: Time.now.rfc3339
+            }
+          }
+        },
+        size:,
+        sort: [{ last_crawled_at: 'asc' }]
+      }.deep_stringify_keys
+    end
+
+    let(:hit1) do
+      {
+        _id: '1234',
+        _source: { url: 'https://www.elastic.co/search-labs' },
+        sort: [1]
+      }.deep_stringify_keys
+    end
+    let(:hit2) do
+      {
+        _id: '5678',
+        _source: { url: 'https://www.elastic.co/search-labs/tutorials' },
+        sort: [2]
+      }.deep_stringify_keys
+    end
+    let(:empty_response) do
+      {
+        hits: {
+          hits: []
+        }
+      }.deep_stringify_keys
+    end
+    let(:full_response) do
+      {
+        hits: {
+          hits: [hit1, hit2]
+        }
+      }.deep_stringify_keys
+    end
+
+    context 'when successful' do
+      before do
+        allow(subject)
+          .to receive(:search).and_return(full_response, empty_response)
+      end
+
+      it 'sends search requests without error' do
+        expect(subject).to receive(:search).twice
+
+        results = subject.paginated_search(index_name, query)
+        expect(results).to match_array([hit1, hit2])
+      end
+    end
+
+    context 'when successful with pagination' do
+      let(:size) { 1 }
+
+      let(:first_response) do
+        {
+          hits: {
+            hits: [hit1]
+          }
+        }.deep_stringify_keys
+      end
+      let(:second_response) do
+        {
+          hits: {
+            hits: [hit2]
+          }
+        }.deep_stringify_keys
+      end
+
+      before do
+        allow(subject)
+          .to receive(:search).and_return(first_response, second_response, empty_response)
+      end
+
+      it 'sends search requests without error' do
+        expect(subject).to receive(:search).exactly(3).times
+
+        results = subject.paginated_search(index_name, query)
+        expect(results).to match_array([hit1, hit2])
+      end
+    end
+
+    context 'when one request fails' do
+      before do
+        call_count = 0
+        allow(subject).to receive(:search) do
+          call_count += 1
+
+          case call_count
+          when 1 then raise StandardError('oops')
+          when 2 then full_response
+          else
+            empty_response
+          end
+        end
+      end
+
+      it 'sends search requests without error' do
+        expect(subject).to receive(:search).exactly(3).times
+
+        results = subject.paginated_search(index_name, query)
+        expect(results).to match_array([hit1, hit2])
+      end
+    end
+
+    context 'when all requests fails' do
+      before do
+        stub_const('ES::Client::MAX_RETRIES', 1)
+        allow(subject).to receive(:search).and_raise(StandardError.new('big oops'))
+      end
+
+      it 'raises an error after retrying' do
+        expect(subject).to receive(:search).exactly(2).times
+
+        expect { subject.paginated_search(index_name, query) }.to raise_error(StandardError, 'big oops')
       end
     end
   end
