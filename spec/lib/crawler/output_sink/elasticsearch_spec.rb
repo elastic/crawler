@@ -278,6 +278,37 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
         subject.write(crawl_result_two)
       end
     end
+
+    context 'when crawl result is of type ContentExtractableFile' do
+      let(:file_name) { 'real.pdf' }
+      let(:content_length) { 1234 }
+      let(:crawl_result) do
+        FactoryBot.build(
+          :content_extractable_file_crawl_result,
+          url: "http://example.com/#{file_name}",
+          content_length:
+        )
+      end
+      let(:expected_doc) do
+        {
+          id: crawl_result.url_hash,
+          content_length:,
+          file_name:,
+          _attachment: crawl_result.base64_encoded_content,
+          _reduce_whitespace: true,
+          _run_ml_inference: true,
+          _extract_binary_content: true
+        }.stringify_keys
+      end
+
+      it 'does not immediately send the document into elasticsearch' do
+        # using an empty queue for this test, so bulk should never be called
+        expect(es_client).to_not receive(:bulk)
+
+        subject.write(crawl_result)
+        expect(bulk_queue).to have_received(:add).with(index_op, hash_including(expected_doc))
+      end
+    end
   end
 
   describe '#flush' do
