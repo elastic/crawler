@@ -266,8 +266,8 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
-Library: bson 4.2.2
-URL: http://bsonspec.org
+Library: bson 4.15.0
+URL: https://docs.mongodb.com/ruby-driver/current/tutorials/bson-v4/
 License: Apache-2.0
 
                                  Apache License
