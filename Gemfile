@@ -62,7 +62,7 @@ end
 
 group :test do
   gem 'rspec', '~> 3.13.0'
-  gem 'webmock'
+  gem 'webmock', '~> 3.23.1'
   gem 'simplecov'
   gem 'simplecov-material', require: false
 end
