@@ -26,7 +26,7 @@ group :default do
   gem 'addressable', '>= 2.8.0'
   gem 'concurrent-ruby', '~> 1.1.4'
   gem 'dry-cli', '~> 0.7.0'
-  gem 'elasticsearch', '~> 8.13.0'
+  gem 'elasticsearch', '~> 8.15.0'
   gem 'jar-dependencies', '0.4.1'
   gem 'json-schema', '~> 4.3.0'
   gem 'webrick', '~> 1.8.1'
