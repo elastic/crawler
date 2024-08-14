@@ -32,7 +32,7 @@ group :default do
   gem 'webrick', '~> 1.8.1'
 
   # Gems that need jruby as the platform
-  gem 'bson', '~> 4.2.2', platform: :jruby
+  gem 'bson', '~> 4.15.0', platform: :jruby
   gem 'bigdecimal', '~> 3.1.7', platform: :jruby
   gem 'json', '~> 2.7.2', platform: :jruby
   gem 'nokogiri', '= 1.13.10', platform: :jruby
