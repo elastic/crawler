@@ -24,19 +24,21 @@ gem 'bundler', supported_bundler_version
 group :default do
   gem 'activesupport', '= 6.1.7.7'
   gem 'addressable', '>= 2.8.0'
-  gem 'bson', '~> 4.2.2', platform: :jruby
-  gem 'bigdecimal', '~> 3.1.7', platform: :jruby
   gem 'concurrent-ruby', '~> 1.1.4'
   gem 'dry-cli', '~> 0.7.0'
   gem 'elasticsearch', '~> 8.13.0'
   gem 'jar-dependencies', '0.4.1'
-  gem 'json', '~> 2.7.2', platform: :jruby
   gem 'json-schema', '~> 4.3.0'
-  gem 'nokogiri', '= 1.13.10', require: false, platform: :jruby
+  gem 'webrick', '~> 1.8.1'
+
+  # Gems that need jruby as the platform
+  gem 'bson', '~> 4.2.2', platform: :jruby
+  gem 'bigdecimal', '~> 3.1.7', platform: :jruby
+  gem 'json', '~> 2.7.2', platform: :jruby
+  gem 'nokogiri', '= 1.13.10', platform: :jruby
   gem 'racc', '~> 1.7.3', platform: :jruby
   gem 'strscan', '~> 3.1.0', platform: :jruby
   gem 'thread_safe', '~> 0.3.6', platform: :jruby
-  gem 'webrick', '~> 1.8.1'
 
   # override ipaddr 1.2.2 that comes from jruby-jars 9.3.3.0
   # issue https://github.com/elastic/enterprise-search-team/issues/2137
