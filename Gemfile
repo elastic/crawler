@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-# 6.1
-gem 'thread_safe', '= 0.3.6'
-
 # # Unless we are in a deployment mode or are running from a script bundle, show a warning
 is_install_or_update = (ARGV.empty? || ARGV.include?('install') || ARGV.include?('update'))
 not_deployment_mode = !ARGV.include?('--deployment')
@@ -25,30 +22,36 @@ source 'https://rubygems.org'
 gem 'bundler', supported_bundler_version
 
 group :default do
-  gem 'addressable', '>= 2.8.0'
-  gem 'bson', '~> 4.2.2'
-  gem 'concurrent-ruby', '~> 1.1.4'
-  gem 'elasticsearch', '~> 8.13.0'
-  gem 'nokogiri', '= 1.13.10', require: false
-  gem 'json-schema'
   gem 'activesupport', '= 6.1.7.7'
+  gem 'addressable', '>= 2.8.0'
+  gem 'concurrent-ruby', '~> 1.1.4'
+  gem 'dry-cli', '~> 0.7.0'
+  gem 'elasticsearch', '~> 8.13.0'
   gem 'jar-dependencies', '0.4.1'
+  gem 'json-schema', '~> 4.3.0'
   gem 'webrick', '~> 1.8.1'
+
+  # Gems that need jruby as the platform
+  gem 'bson', '~> 4.15.0', platform: :jruby
+  gem 'bigdecimal', '~> 3.1.7', platform: :jruby
+  gem 'json', '~> 2.7.2', platform: :jruby
+  gem 'nokogiri', '= 1.13.10', platform: :jruby
+  gem 'racc', '~> 1.7.3', platform: :jruby
+  gem 'strscan', '~> 3.1.0', platform: :jruby
+  gem 'thread_safe', '~> 0.3.6', platform: :jruby
 
   # override ipaddr 1.2.2 that comes from jruby-jars 9.3.3.0
   # issue https://github.com/elastic/enterprise-search-team/issues/2137
   # it can be removed when jruby-jars includes ipaddr ~> 1.2.4
   gem 'ipaddr', '~> 1.2.4'
 
-  # Local gem for testing fake sites
-  gem 'faux', path: 'vendor/faux', require: false
-
   # We need to bundle TZ data because on windows and in some minimal Linux installations there is
   # no system-level TZ data info and the app blows up when trying to use timezone information
   # See https://github.com/tzinfo/tzinfo/wiki/Resolving-TZInfo::DataSourceNotFound-Errors for details
-  gem 'tzinfo-data'
+  gem 'tzinfo-data', '~> 1.2024.1'
 
-  gem 'dry-cli'
+  # Local gem for testing fake sites
+  gem 'faux', path: 'vendor/faux', require: false
 end
 
 group :development do
@@ -70,6 +73,6 @@ end
 group :development, :test do
   gem 'rack', '~> 2.2.8.1'
   gem 'httpclient'
-  gem 'pry'
+  gem 'pry', '~> 0.14.2', platform: :jruby
   gem 'factory_bot', '~> 6.2.0', require: false
 end
