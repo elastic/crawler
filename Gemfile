@@ -29,7 +29,6 @@ group :default do
   gem 'concurrent-ruby', '~> 1.1.4'
   gem 'dry-cli', '~> 0.7.0'
   gem 'elasticsearch', '~> 8.13.0'
-  gem 'ffi', '~> 1.16.3', platform: :jruby
   gem 'jar-dependencies', '0.4.1'
   gem 'json', '~> 2.7.2', platform: :jruby
   gem 'json-schema', '~> 4.3.0'

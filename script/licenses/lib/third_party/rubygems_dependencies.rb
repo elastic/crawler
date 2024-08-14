@@ -77,7 +77,10 @@ module ThirdParty
       'rack-mount' => 'MIT',
 
       # https://github.com/ruby/ruby2_keywords/blob/master/LICENSE
-      'ruby2_keywords' => 'BSD-2-Clause'
+      'ruby2_keywords' => 'BSD-2-Clause',
+
+      # https://github.com/ruby/strscan/blob/master/LICENSE.txt
+      'strscan' => 'BSD-2-Clause'
     }.freeze
 
     URL_FALLBACKS = {
@@ -124,7 +127,10 @@ module ThirdParty
 
       # https://github.com/ruby/webrick/blob/master/webrick.gemspec#L65
       # BSD-2-Clause licensed gem
-      'webrick' => { url: 'http://www.ruby-lang.org/en/LICENSE.txt' }
+      'webrick' => { url: 'http://www.ruby-lang.org/en/LICENSE.txt' },
+
+      # https://github.com/ruby/strscan/blob/master/LICENSE.txt
+      'strscan' => { url: 'https://github.com/ruby/strscan/blob/master/LICENSE.txt' }
     }.freeze
   end
 end

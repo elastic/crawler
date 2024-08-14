@@ -158,7 +158,6 @@ DEPENDENCIES
   elasticsearch (~> 8.13.0)
   factory_bot (~> 6.2.0)
   faux!
-  ffi (~> 1.16.3)
   httpclient
   ipaddr (~> 1.2.4)
   jar-dependencies (= 0.4.1)
