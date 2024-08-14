@@ -328,8 +328,8 @@ You can redistribute it and/or modify it under either the terms of the
      PURPOSE.
 
 --------------------------------------------------------------------------------
-Library: bson 4.2.2
-URL: http://bsonspec.org
+Library: bson 4.15.0
+URL: https://docs.mongodb.com/ruby-driver/current/tutorials/bson-v4/
 License: Apache-2.0
 
                                  Apache License
