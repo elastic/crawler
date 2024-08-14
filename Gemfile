@@ -24,7 +24,7 @@ gem 'bundler', supported_bundler_version
 group :default do
   gem 'activesupport', '= 6.1.7.7'
   gem 'addressable', '>= 2.8.0'
-  gem 'concurrent-ruby', '~> 1.1.4'
+  gem 'concurrent-ruby', '~> 1.3.0'
   gem 'dry-cli', '~> 0.7.0'
   gem 'elasticsearch', '~> 8.13.0'
   gem 'jar-dependencies', '0.4.1'
