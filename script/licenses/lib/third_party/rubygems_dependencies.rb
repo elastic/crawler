@@ -130,7 +130,7 @@ module ThirdParty
       'webrick' => { url: 'http://www.ruby-lang.org/en/LICENSE.txt' },
 
       # https://github.com/ruby/strscan/blob/master/LICENSE.txt
-      'strscan' => { url: 'https://github.com/ruby/strscan/blob/master/LICENSE.txt' }
+      'strscan' => { url: 'https://raw.githubusercontent.com/ruby/strscan/master/LICENSE.txt' }
     }.freeze
   end
 end
