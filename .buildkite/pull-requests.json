@@ -2,7 +2,7 @@
   "jobs": [
     {
       "enabled": true,
-      "pipelineSlug": "crawler",
+      "pipelineSlug": "elastic-crawler",
       "allow_org_users": true,
       "allowed_repo_permissions": ["admin", "write"],
       "allowed_list": [],
