@@ -26,7 +26,6 @@ BUNDLER_VERSION="$(cat .bundler-version)"
 BUNDLER_CONSTRAINT="~> $BUNDLER_VERSION"
 
 blue_echo "Bundling jruby gems..."
-bundle_command config cache_all true
 
 blue_echo "Running the bundle command..."
 bundle_command "$@"
