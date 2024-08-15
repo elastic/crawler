@@ -21,10 +21,15 @@ spec:
       name: elastic-crawler
       description: 
     spec:
+      branch_configuration: "main"
       repository: elastic/crawler
       pipeline_file: ".buildkite/pipeline.yml"
+      provider_settings:
+        skip_pull_request_builds_for_existing_commits: false
       teams:
         ent-search-eng:
           access_level: MANAGE_BUILD_AND_READ
         everyone:
           access_level: READ_ONLY
+        ingestion-team: {}
+        search-productivity-team: {}
