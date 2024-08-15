@@ -27,9 +27,8 @@ spec:
       provider_settings:
         skip_pull_request_builds_for_existing_commits: false
       teams:
-        ent-search-eng:
+        ingestion-team:
           access_level: MANAGE_BUILD_AND_READ
         everyone:
           access_level: READ_ONLY
-        ingestion-team: {}
         search-productivity-team: {}
