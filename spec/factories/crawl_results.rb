@@ -26,13 +26,15 @@ FactoryBot.define do
     status_code { 200 }
     content { 'Lorem ipsum' }
     content_length { 1_000 }
+    content_type { 'application/pdf' }
 
     initialize_with do
       new(
         url: Crawler::Data::URL.parse(url),
         status_code:,
         content:,
-        content_length:
+        content_length:,
+        content_type:
       )
     end
   end

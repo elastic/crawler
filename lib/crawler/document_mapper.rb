@@ -45,7 +45,8 @@ module Crawler
       {}.merge(
         core_fields(crawl_result),
         binary_file_fields(crawl_result),
-        url_components(crawl_result.url)
+        url_components(crawl_result.url),
+        extraction_rule_fields(crawl_result)
       )
     end
 
@@ -71,6 +72,7 @@ module Crawler
       remove_empty_values(
         file_name: crawl_result.file_name,
         content_length: crawl_result.content_length,
+        content_type: crawl_result.content_type,
         _attachment: crawl_result.base64_encoded_content
       )
     end

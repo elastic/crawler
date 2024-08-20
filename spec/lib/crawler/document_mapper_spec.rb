@@ -135,11 +135,13 @@ RSpec.describe(Crawler::DocumentMapper) do
 
     context 'when crawl result is a binary file' do
       let(:content_length) { 500 }
+      let(:content_type) { 'application/pdf' }
       let(:content) { 'A PDF for ants' }
       let(:file_name) { 'ant-file.pdf' }
       let(:file_url) { Crawler::Data::URL.parse("https://example.com/#{file_name}") }
       let(:crawl_result) do
-        FactoryBot.build(:content_extractable_file_crawl_result, content:, content_length:, url: file_url.to_s)
+        FactoryBot.build(:content_extractable_file_crawl_result, content:, content_length:, content_type:,
+                                                                 url: file_url.to_s)
       end
 
       let(:expected_result) do
@@ -148,6 +150,7 @@ RSpec.describe(Crawler::DocumentMapper) do
           last_crawled_at: crawl_result.start_time.rfc3339,
           file_name:,
           content_length:,
+          content_type:,
           _attachment: crawl_result.base64_encoded_content,
           url: file_url.to_s,
           url_scheme: file_url.scheme,
@@ -162,6 +165,44 @@ RSpec.describe(Crawler::DocumentMapper) do
         result = subject.create_doc(crawl_result)
 
         expect(result).to eq(expected_result)
+      end
+
+      context 'when extraction rules are present' do
+        let(:config_params) do
+          {
+            domains: [
+              {
+                url: url.to_s,
+                extraction_rulesets: [
+                  {
+                    url_filters: [{ type: 'regex', pattern: '.*' }],
+                    rules: [
+                      {
+                        action: 'set',
+                        field_name: 'is_pdf',
+                        selector: '(?i)^.*\.pdf$',
+                        value: 'yes',
+                        source: 'url'
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        end
+
+        let(:expected_result_extracted) do
+          expected_result.merge(
+            is_pdf: 'yes'
+          )
+        end
+
+        it 'creates a doc with binary content content fields and custom extracted fields' do
+          result = subject.create_doc(crawl_result)
+
+          expect(result).to eq(expected_result_extracted)
+        end
       end
     end
 
