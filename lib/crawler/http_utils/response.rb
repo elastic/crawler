@@ -85,6 +85,10 @@ module Crawler
         end
       end
 
+      def content_length
+        headers['content-length'].to_i
+      end
+
       def content_type
         http_entity&.content_type || headers['content-type']
       end

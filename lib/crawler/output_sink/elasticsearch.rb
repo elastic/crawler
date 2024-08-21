@@ -45,7 +45,7 @@ module Crawler
 
         begin
           doc = parametrized_doc(crawl_result)
-          index_op = { 'index' => { '_index' => index_name, '_id' => doc['id'] } }
+          index_op = { index: { _index: index_name, _id: doc[:id] } }
 
           flush unless operation_queue.will_fit?(index_op, doc)
 
@@ -53,10 +53,10 @@ module Crawler
             index_op,
             doc
           )
-          system_logger.debug("Added doc #{doc['id']} to bulk queue. Current stats: #{operation_queue.current_stats}")
+          system_logger.debug("Added doc #{doc[:id]} to bulk queue. Current stats: #{operation_queue.current_stats}")
 
           increment_ingestion_stats(doc)
-          success("Successfully added #{doc['id']} to the bulk queue")
+          success("Successfully added #{doc[:id]} to the bulk queue")
         ensure
           @queue_lock.unlock
         end
@@ -134,7 +134,7 @@ module Crawler
       end
 
       def pipeline_params
-        @pipeline_params ||= DEFAULT_PIPELINE_PARAMS.merge(es_config[:pipeline_params] || {}).deep_stringify_keys
+        @pipeline_params ||= DEFAULT_PIPELINE_PARAMS.merge(es_config[:pipeline_params] || {})
       end
 
       private

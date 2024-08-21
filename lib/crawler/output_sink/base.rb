@@ -29,11 +29,7 @@ module Crawler
       end
 
       def to_doc(crawl_result)
-        doc = { id: crawl_result.url_hash }
-        doc.merge!(document_mapper.document_fields(crawl_result))
-        doc.merge!(document_mapper.url_components(crawl_result.url))
-        doc.merge!(document_mapper.extract_by_rules(crawl_result, config.extraction_rules))
-        doc.deep_stringify_keys!
+        document_mapper.create_doc(crawl_result)
       end
 
       def close
