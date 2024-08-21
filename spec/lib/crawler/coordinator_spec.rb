@@ -94,6 +94,10 @@ RSpec.describe(Crawler::Coordinator) do
 
       allow(coordinator).to receive(:run_primary_crawl!).and_call_original
       allow(coordinator).to receive(:run_purge_crawl!).and_call_original
+
+      allow(system_logger).to receive(:debug)
+      allow(system_logger).to receive(:info)
+      allow(system_logger).to receive(:warn)
     end
 
     context 'when purge_crawl_enabled is true' do
@@ -561,7 +565,6 @@ RSpec.describe(Crawler::Coordinator) do
 
       it 'should remove the URL from the seen URLs list' do
         allow(events).to receive(:url_discover_denied)
-        allow(system_logger).to receive(:debug)
         expect(seen_urls).to receive(:delete).with(url)
         add_url_to_backlog
       end
