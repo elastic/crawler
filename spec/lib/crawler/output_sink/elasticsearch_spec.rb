@@ -291,7 +291,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
         query: {
           range: {
             last_crawled_at: {
-              lt: (crawl_start_time - 1.second).rfc3339
+              lt: crawl_start_time.rfc3339
             }
           }
         },
@@ -317,10 +317,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       [hit1, hit2]
     end
     let(:formatted_results) do
-      {
-        'https://www.elastic.co/search-labs': '1234',
-        'https://www.elastic.co/search-labs/tutorials': '5678'
-      }.stringify_keys
+      %w[https://www.elastic.co/search-labs https://www.elastic.co/search-labs/tutorials]
     end
 
     before do
@@ -337,12 +334,15 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
   end
 
   describe '#purge' do
-    let(:doc_ids) { %w[baa bee bii boo buu] }
+    let(:crawl_start_time) { Time.now }
     let(:expected_query) do
       {
+        _source: ['url'],
         query: {
-          terms: {
-            _id: doc_ids
+          range: {
+            last_crawled_at: {
+              lt: crawl_start_time.rfc3339
+            }
           }
         }
       }.deep_stringify_keys
@@ -356,7 +356,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       expect(es_client)
         .to receive(:delete_by_query).with(index: [index_name], body: expected_query).once
 
-      result = subject.purge(doc_ids)
+      result = subject.purge(crawl_start_time)
       expect(result).to eq(5)
     end
   end

@@ -53,7 +53,7 @@ module Crawler
         :results_collection,   # An Enumerable collection for storing mock crawl results
         :user_agent,           # The User-Agent used for requests made from the crawler.
         :stats_dump_interval,  # How often should we output stats in the logs during a crawl
-        :purge_crawl_enabled, # Whether or not to purge ES docs after a crawl
+        :purge_crawl_enabled, # Whether or not to purge ES docs after a crawl, only possible for elasticsearch sinks
 
         # Elasticsearch settings
         :elasticsearch, # Elasticsearch connection settings

@@ -69,7 +69,7 @@ module Crawler
           query: {
             range: {
               last_crawled_at: {
-                lt: (crawl_start_time - 1.second).rfc3339
+                lt: crawl_start_time.rfc3339
               }
             }
           },
@@ -81,26 +81,27 @@ module Crawler
         )
 
         client.indices.refresh(index: [index_name])
-        results = client.paginated_search(index_name, query)
-        format_search_results(results)
+        hits = client.paginated_search(index_name, query)
+        hits.map { |h| h['_source']['url'] }
       end
 
-      def purge(doc_ids)
-        delete_query = {
+      def purge(crawl_start_time)
+        query = {
+          _source: ['url'],
           query: {
-            terms: {
-              _id: doc_ids
+            range: {
+              last_crawled_at: {
+                lt: crawl_start_time.rfc3339
+              }
             }
           }
         }.deep_stringify_keys
 
-        log = <<~LOG.squish
-          Deleting docs for pages that were not accessible during the purge crawl.
-          Full query: #{delete_query}
-        LOG
-        system_logger.debug(log)
+        system_logger.info('Deleting docs for pages that were not accessible during the purge crawl.')
+        system_logger.debug("Full delete query: #{query}")
 
-        response = client.delete_by_query(index: [index_name], body: delete_query)
+        client.indices.refresh(index: [index_name])
+        response = client.delete_by_query(index: [index_name], body: query)
         system_logger.debug("Delete by query response: #{response}")
 
         @deleted = response['deleted']
@@ -187,13 +188,6 @@ module Crawler
         doc = to_doc(crawl_result)
         doc.merge!(pipeline_params) if pipeline_enabled?
         doc
-      end
-
-      # Create a reference hash with url as key and id as value `{ url: id }`
-      def format_search_results(hits)
-        hits.each_with_object({}) do |hit, r|
-          r[hit['_source']['url']] = hit['_id']
-        end
       end
 
       def init_ingestion_stats

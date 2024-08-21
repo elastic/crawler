@@ -25,6 +25,8 @@ module Crawler
     SINK_LOCK_RETRY_INTERVAL = 1.second
     SINK_LOCK_MAX_RETRIES = 120
 
+    ELASTICSEARCH_OUTPUT_SINK = 'elasticsearch'
+
     attr_reader :crawl, :crawl_results, :crawl_stage, :seen_urls, :started_at, :task_executors
 
     delegate :events, :system_logger, :config, :executor, :sink, :rule_engine,
@@ -50,7 +52,6 @@ module Crawler
         CRAWL_STAGE_PRIMARY => { outcome: nil, message: nil },
         CRAWL_STAGE_PURGE => { outcome: nil, message: nil }
       }
-      @purge_backlog = {}
       @started_at = Time.now
     end
 
@@ -94,33 +95,33 @@ module Crawler
     # Those URLs are crawled to see if they still exist. Any URLs that can't be found will be deleted from the index.
     def run_purge_crawl!
       @crawl_stage = CRAWL_STAGE_PURGE
-      @purge_backlog = sink.fetch_purge_docs(started_at)
+      purge_urls = sink.fetch_purge_docs(started_at)
 
-      if @purge_backlog.empty?
+      if purge_urls.empty?
         system_logger.info('No documents were found for the purge crawl. Skipping purge crawl.')
         return
       end
 
       system_logger.info("Starting the purge crawl with up to #{task_executors.max_length} parallel thread(s)...")
-      enqueue_purge_urls(@purge_backlog.keys)
+      enqueue_purge_urls(purge_urls)
 
       run_crawl_loop
 
-      # Any URLs in the purge backlog that are still accessible have been removed during the purge crawl loop.
-      # We can safely send all of the remaining IDs to be deleted.
-      sink.purge(@purge_backlog.values)
+      # Any docs in the index that have a `last_crawled_at` value
+      # earlier than the primary crawl's start time are now safe to delete
+      sink.purge(started_at)
     end
 
     private
 
     def purge_crawls_allowed?
-      unless config.output_sink == 'elasticsearch'
-        system_logger.info("Purge crawls are not supported for sink type #{config.output_sink}. Skipping purge crawl.")
+      unless config.output_sink == ELASTICSEARCH_OUTPUT_SINK
+        system_logger.warn("Purge crawls are not supported for sink type #{config.output_sink}. Skipping purge crawl.")
         return false
       end
 
       unless config.purge_crawl_enabled
-        system_logger.info('Purge crawls are disabled in the config file. Skipping purge crawl.')
+        system_logger.warn('Purge crawls are disabled in the config file. Skipping purge crawl.')
         return false
       end
 
@@ -522,8 +523,6 @@ module Crawler
             error = "Expected to return an outcome object from the sink, returned #{outcome.inspect} instead"
             raise ArgumentError, error
           end
-
-          @purge_backlog.delete(crawl_result.url) if @crawl_stage == CRAWL_STAGE_PURGE
         end
       rescue Errors::SinkLockedError
         # Adding a debug log here is incredibly noisy, so instead we should rely on logging from the sink
