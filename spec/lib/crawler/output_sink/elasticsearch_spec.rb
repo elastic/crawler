@@ -26,7 +26,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
 
   let(:index_name) { 'some-index-name' }
   let(:default_pipeline) { Crawler::OutputSink::Elasticsearch::DEFAULT_PIPELINE }
-  let(:default_pipeline_params) { Crawler::OutputSink::Elasticsearch::DEFAULT_PIPELINE_PARAMS.deep_stringify_keys }
+  let(:default_pipeline_params) { Crawler::OutputSink::Elasticsearch::DEFAULT_PIPELINE_PARAMS }
   let(:system_logger) { double }
   let(:es_client) { double }
   let(:es_client_indices) { double(:es_client_indices, refresh: double) }
@@ -154,7 +154,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
           _run_ml_inference: true,
           _extract_binary_content: true,
           _foo_param: true
-        }.stringify_keys
+        }
       end
 
       it 'overrides the specified default params and includes new ones' do
@@ -187,7 +187,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
 
   describe '#write' do
     let(:crawl_result) { FactoryBot.build(:html_crawl_result, content: 'some page') }
-    let(:index_op) { { 'index' => { '_index' => index_name, '_id' => crawl_result.url_hash } } }
+    let(:index_op) { { index: { _index: index_name, _id: crawl_result.url_hash } } }
 
     before(:each) do
       # bytesize is only required for adding ingested doc size to stats, any value is fine for these tests
@@ -202,7 +202,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
           _reduce_whitespace: true,
           _run_ml_inference: true,
           _extract_binary_content: true
-        }.stringify_keys
+        }
       end
 
       it 'does not immediately send the document into elasticsearch' do
@@ -217,7 +217,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       let(:big_crawl_result) do
         FactoryBot.build(:html_crawl_result, url: 'http://example.com/big', content: 'pretend this string is big')
       end
-      let(:big_doc) { { id: big_crawl_result.url_hash, body: 'pretend this string is big' }.stringify_keys }
+      let(:big_doc) { { id: big_crawl_result.url_hash, body: 'pretend this string is big' } }
 
       before(:each) do
         allow(bulk_queue).to receive(:will_fit?).and_return(false)
@@ -241,8 +241,8 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       let(:crawl_result_two) do
         FactoryBot.build(:html_crawl_result, url: 'http://example.com/two', content: 'work work!')
       end
-      let(:doc_one) { { id: crawl_result_one.url_hash, body: 'hoho, haha!' }.stringify_keys }
-      let(:doc_two) { { id: crawl_result_two.url_hash, body: 'work work!' }.stringify_keys }
+      let(:doc_one) { { id: crawl_result_one.url_hash, body: 'hoho, haha!' } }
+      let(:doc_two) { { id: crawl_result_two.url_hash, body: 'work work!' } }
 
       before(:each) do
         # emulated behaviour is:
@@ -279,6 +279,37 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
 
         # mock reattempting after failed lock acquisition
         subject.write(crawl_result_two)
+      end
+    end
+
+    context 'when crawl result is of type ContentExtractableFile' do
+      let(:file_name) { 'real.pdf' }
+      let(:content_length) { 1234 }
+      let(:crawl_result) do
+        FactoryBot.build(
+          :content_extractable_file_crawl_result,
+          url: "http://example.com/#{file_name}",
+          content_length:
+        )
+      end
+      let(:expected_doc) do
+        {
+          id: crawl_result.url_hash,
+          content_length:,
+          file_name:,
+          _attachment: crawl_result.base64_encoded_content,
+          _reduce_whitespace: true,
+          _run_ml_inference: true,
+          _extract_binary_content: true
+        }
+      end
+
+      it 'does not immediately send the document into elasticsearch' do
+        # using an empty queue for this test, so bulk should never be called
+        expect(es_client).to_not receive(:bulk)
+
+        subject.write(crawl_result)
+        expect(bulk_queue).to have_received(:add).with(index_op, hash_including(expected_doc))
       end
     end
   end
