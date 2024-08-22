@@ -29,6 +29,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
   let(:default_pipeline_params) { Crawler::OutputSink::Elasticsearch::DEFAULT_PIPELINE_PARAMS }
   let(:system_logger) { double }
   let(:es_client) { double }
+  let(:es_client_indices) { double(:es_client_indices, refresh: double) }
   let(:bulk_queue) { double }
   let(:serializer) { double }
 
@@ -42,6 +43,8 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
     allow(config).to receive(:system_logger).and_return(system_logger)
 
     allow(es_client).to receive(:bulk)
+    allow(es_client).to receive(:indices).and_return(es_client_indices)
+    allow(es_client).to receive(:paginated_search)
 
     allow(bulk_queue).to receive(:will_fit?).and_return(true)
     allow(bulk_queue).to receive(:add)
@@ -308,6 +311,84 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
         subject.write(crawl_result)
         expect(bulk_queue).to have_received(:add).with(index_op, hash_including(expected_doc))
       end
+    end
+  end
+
+  describe '#fetch_purge_docs' do
+    let(:crawl_start_time) { Time.now }
+    let(:expected_query) do
+      {
+        _source: ['url'],
+        query: {
+          range: {
+            last_crawled_at: {
+              lt: crawl_start_time.rfc3339
+            }
+          }
+        },
+        size: Crawler::OutputSink::Elasticsearch::SEARCH_PAGINATION_SIZE,
+        sort: [{ last_crawled_at: 'asc' }]
+      }.deep_stringify_keys
+    end
+    let(:hit1) do
+      {
+        _id: '1234',
+        _source: { url: 'https://www.elastic.co/search-labs' },
+        sort: [1]
+      }.deep_stringify_keys
+    end
+    let(:hit2) do
+      {
+        _id: '5678',
+        _source: { url: 'https://www.elastic.co/search-labs/tutorials' },
+        sort: [2]
+      }.deep_stringify_keys
+    end
+    let(:es_results) do
+      [hit1, hit2]
+    end
+    let(:formatted_results) do
+      %w[https://www.elastic.co/search-labs https://www.elastic.co/search-labs/tutorials]
+    end
+
+    before do
+      allow(es_client).to receive(:paginated_search).and_return(es_results)
+    end
+
+    it 'builds a query and requests a paginated search from the client' do
+      expect(es_client_indices).to receive(:refresh).with(index: [index_name]).once
+      expect(es_client).to receive(:paginated_search).with(index_name, expected_query).once
+
+      results = subject.fetch_purge_docs(crawl_start_time)
+      expect(results).to match_array(formatted_results)
+    end
+  end
+
+  describe '#purge' do
+    let(:crawl_start_time) { Time.now }
+    let(:expected_query) do
+      {
+        _source: ['url'],
+        query: {
+          range: {
+            last_crawled_at: {
+              lt: crawl_start_time.rfc3339
+            }
+          }
+        }
+      }.deep_stringify_keys
+    end
+
+    before do
+      allow(es_client).to receive(:delete_by_query).and_return({ deleted: 5 }.stringify_keys)
+    end
+
+    it 'builds a query and requests a delete by query from the client' do
+      expect(es_client)
+        .to receive(:delete_by_query).with(index: [index_name], body: expected_query).once
+
+      result = subject.purge(crawl_start_time)
+      expect(result).to eq(5)
     end
   end
 

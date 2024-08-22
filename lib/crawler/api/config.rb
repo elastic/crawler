@@ -44,6 +44,7 @@ module Crawler
         :seed_urls,            # An array or an enumerator of initial URLs to crawl
         :sitemap_urls,         # Array of sitemap URLs to be used for content discovery
         :crawl_rules,          # Array of allow/deny-listed URL patterns
+        :extraction_rules,     # Contains domains extraction rules
 
         :robots_txt_service,   # Service to fetch robots.txt
         :output_sink,          # The type of output, either :console | :file | :elasticsearch
@@ -52,6 +53,7 @@ module Crawler
         :results_collection,   # An Enumerable collection for storing mock crawl results
         :user_agent,           # The User-Agent used for requests made from the crawler.
         :stats_dump_interval,  # How often should we output stats in the logs during a crawl
+        :purge_crawl_enabled, # Whether or not to purge ES docs after a crawl, only possible for elasticsearch sinks
 
         # Elasticsearch settings
         :elasticsearch, # Elasticsearch connection settings
@@ -108,16 +110,15 @@ module Crawler
         :max_headings_count,        # HTML heading tags count limit
 
         # Content extraction (from files)
-        :content_extraction_enabled, # Enable content extraction of non-HTML files found during a crawl
+        :content_extraction_enabled,    # Enable content extraction of non-HTML files found during a crawl
         :content_extraction_mime_types, # Extract files with the following MIME types
 
         # Other crawler tuning settings
-        :default_encoding, # Default encoding used for responses that do not specify a charset
-        :compression_enabled, # Enable/disable HTTP content compression
-        :sitemap_discovery_disabled, # Enable/disable crawling of sitemaps defined in robots.txt
-        :head_requests_enabled, # Fetching HEAD requests before GET requests enabled
+        :default_encoding,            # Default encoding used for responses that do not specify a charset
+        :compression_enabled,         # Enable/disable HTTP content compression
+        :sitemap_discovery_disabled,  # Enable/disable crawling of sitemaps defined in robots.txt
+        :head_requests_enabled        # Fetching HEAD requests before GET requests enabled
 
-        :extraction_rules # Contains domains extraction rules
       ].freeze
 
       EXTRACTION_RULES_FIELDS = %i[url_filters rules].freeze
@@ -177,7 +178,8 @@ module Crawler
         head_requests_enabled: false,
 
         extraction_rules: {},
-        crawl_rules: {}
+        crawl_rules: {},
+        purge_crawl_enabled: true
       }.freeze
 
       # Settings we are not allowed to log due to their sensitive nature
