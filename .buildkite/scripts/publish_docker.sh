@@ -19,10 +19,13 @@ make docker-build
 
 set +x   # Do not remove so we don't leak passwords
 VAULT_ADDR=${VAULT_ADDR:-https://secrets.elastic.co}
+VAULT_DIR="secret/k8s/elastic-apps-registry-production/container-library/machine-users/search-crawler-ci"
+DOCKER_PASS_KEY="password"
+DOCKER_USER_KEY="username"
 
-echo "Fetching Docker credentials for '$VAULT_USER' from Vault..."
-DOCKER_USER=$(vault read -address "${VAULT_ADDR}" -field user_20230609 secret/ci/elastic-connectors/${VAULT_USER})
-DOCKER_PASSWORD=$(vault read -address "${VAULT_ADDR}" -field secret_20230609 secret/ci/elastic-connectors/${VAULT_USER})
+echo "Fetching Docker credentials from Vault..."
+DOCKER_USER=$(vault read -address "${VAULT_ADDR}" -field ${DOCKER_USER_KEY} ${VAULT_DIR})
+DOCKER_PASSWORD=$(vault read -address "${VAULT_ADDR}" -field ${DOCKER_PASS_KEY} ${VAULT_DIR})
 echo "Done!"
 echo
 

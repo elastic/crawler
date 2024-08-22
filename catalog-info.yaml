@@ -43,7 +43,7 @@ spec:
 apiVersion: "backstage.io/v1alpha1"
 kind: "Resource"
 metadata:
-  name: "connectors-docker-build-publish"
+  name: "crawler-docker-build-publish"
   description: "Docker image build and publish for Elastic crawler"
   links:
     - title: "Crawler Docker Build and Publish"
