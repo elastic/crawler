@@ -28,8 +28,8 @@ set +x
 
 # Log into Docker
 echo "Logging into docker..."
-DOCKER_USER=$(vault read -address "${VAULT_ADDR}" -field "${DOCKER_USER_KEY}" "${VAULT_DIR}")
-vault read -address "${VAULT_ADDR}" -field "${DOCKER_PASS_KEY}" "${VAULT_DIR}" | \
+DOCKER_USER=$(vault read -address "${VAULT_ADDR}" -field "${DOCKER_USER_KEY}" "${VAULT_PATH}")
+vault read -address "${VAULT_ADDR}" -field "${DOCKER_PASS_KEY}" "${VAULT_PATH}" | \
   docker login -u "$DOCKER_USER" --password-stdin docker.elastic.co
 
 # Set our tag name and push the image

@@ -72,8 +72,8 @@ TEST_CONFIG_TEXT='
 schemaVersion: "2.0.0"
 
 commandTests:
-  # ensure Jruby 9.4.* is installed
-  - name: "Jruby Installation 9.4.*"
+  # ensure JRuby 9.4.* is installed
+  - name: "JRuby Installation 9.4.*"
     command: "ruby"
     args: ["--version"]
     expectedOutput: ["jruby\\s9\\.4\\.*"]

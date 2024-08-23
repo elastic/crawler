@@ -30,6 +30,6 @@ export DOCKERFILE_PATH="${DOCKERFILE_PATH:-Dockerfile}"
 export DOCKER_ARTIFACT_KEY="${DOCKER_ARTIFACT_KEY:-crawler-docker}"
 
 export VAULT_ADDR="${VAULT_ADDR:-https://secrets.elastic.co}"
-export VAULT_DIR="secret/k8s/elastic-apps-registry-production/container-library/machine-users/search-crawler-ci"
+export VAULT_PATH="secret/k8s/elastic-apps-registry-production/container-library/machine-users/search-crawler-ci"
 export DOCKER_PASS_KEY="password"
 export DOCKER_USER_KEY="username"
