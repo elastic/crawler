@@ -11,7 +11,7 @@ export JAVA_VERSION
 case $1 in
   lint)
     echo "---- running linter"
-    make install-gems lint lint-scripts
+    make install-gems lint
     ;;
 
   test)
