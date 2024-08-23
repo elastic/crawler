@@ -29,7 +29,7 @@ export BASE_TAG_NAME="${DOCKER_IMAGE_NAME:-docker.elastic.co/enterprise-search/c
 export DOCKERFILE_PATH="${DOCKERFILE_PATH:-Dockerfile}"
 export DOCKER_ARTIFACT_KEY="${DOCKER_ARTIFACT_KEY:-crawler-docker}"
 
-export VAULT_ADDR="${VAULT_ADDR:-https://secrets.elastic.co}"
-export VAULT_PATH="secret/k8s/elastic-apps-registry-production/container-library/machine-users/search-crawler-ci"
-export DOCKER_PASS_KEY="password"
-export DOCKER_USER_KEY="username"
+export VAULT_ADDR="${VAULT_ADDR:-https://vault-ci-prod.elastic.dev}"
+export VAULT_PATH="secret/ci/elastic-crawler/docker-ci-admin"
+export DOCKER_PASS_KEY="secret_20240823"
+export DOCKER_USER_KEY="user_20240823"
