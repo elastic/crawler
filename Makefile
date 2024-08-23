@@ -32,9 +32,3 @@ notice:
 
 build-docker-ci:
 	docker build -t crawler-ci .buildkite
-
-docker-build: $(DOCKERFILE_PATH)
-	docker build -f $(DOCKERFILE_PATH) -t $(DOCKER_IMAGE_NAME):$(VERSION)-SNAPSHOT .
-
-docker-push:
-	docker push $(DOCKER_IMAGE_NAME):$(VERSION)-SNAPSHOT

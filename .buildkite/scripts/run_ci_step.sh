@@ -2,13 +2,16 @@
 
 set -euxo pipefail
 
-export RUBY_VERSION=$(cat .ruby-version)
-export JAVA_VERSION=$(cat .java-version)
+RUBY_VERSION="$(cat .ruby-version)"
+JAVA_VERSION="$(cat .java-version)"
+
+export RUBY_VERSION
+export JAVA_VERSION
 
 case $1 in
   lint)
     echo "---- running linter"
-    make install-gems lint
+    make install-gems lint lint-scripts
     ;;
 
   test)

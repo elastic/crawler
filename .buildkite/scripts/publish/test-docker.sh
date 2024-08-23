@@ -13,11 +13,14 @@ if [[ "${ARCHITECTURE:-}" == "" ]]; then
 fi
 
 # Load our common environment variables for publishing
-export CURDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-source $CURDIR/publish-common.sh
+CURDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+export CURDIR
+
+# shellcheck source=./publish-common.sh
+source "$CURDIR/publish-common.sh"
 
 # Detect the platform we are running on (needed for container-structure-test)
-arch_name=`uname -sr`
+arch_name=$(uname -sr)
 case "$arch_name" in
     Darwin*)
         echo "detected MacOS platform"
@@ -47,11 +50,11 @@ if [[ ! -f "$TEST_EXEC" ]]; then
 
   pushd "$BIN_DIR"
   if [[ "$LOCAL_MACHINE_ARCH" == "MacOS" ]]; then
-    curl -LO https://storage.googleapis.com/container-structure-test/latest/container-structure-test-darwin-$ARCHITECTURE
-    mv container-structure-test-darwin-$ARCHITECTURE container-structure-test
+    curl -LO "https://storage.googleapis.com/container-structure-test/latest/container-structure-test-darwin-$ARCHITECTURE"
+    mv "container-structure-test-darwin-$ARCHITECTURE" container-structure-test
   else
-    curl -LO https://storage.googleapis.com/container-structure-test/latest/container-structure-test-linux-$ARCHITECTURE
-    mv container-structure-test-linux-$ARCHITECTURE container-structure-test
+    curl -LO "https://storage.googleapis.com/container-structure-test/latest/container-structure-test-linux-$ARCHITECTURE"
+    mv "container-structure-test-linux-$ARCHITECTURE" container-structure-test
   fi
 
   chmod +x container-structure-test
@@ -62,7 +65,7 @@ fi
 TEST_CONFIG_FILE="$PROJECT_ROOT/.buildkite/publish/container-structure-test.yaml"
 
 # The config file needs escaped dots - we'll do that here
-ESCAPED_VERSION=${VERSION//./\\\\.}
+ESCAPED_VERSION="${VERSION//./\\\\.}"
 
 # Generate the config file text
 TEST_CONFIG_TEXT='
