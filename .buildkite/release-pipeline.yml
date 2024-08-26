@@ -2,6 +2,15 @@
 # Manual triggered pipeline to build and publish Docker images
 
 steps:
+  - input: "Build information"
+    fields:
+      - select: "Build as SNAPSHOT"
+        key: "is_snapshot"
+        options:
+          - label: "True"
+            value: "true"
+          - label: "False"
+            value: "false"
   # ----
   # Docker builds for amd64
   # ----
