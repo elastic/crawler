@@ -25,7 +25,7 @@ if [[ "${USE_SNAPSHOT:-}" == "true" ]]; then
   export VERSION="${VERSION}-SNAPSHOT"
 fi
 
-export BASE_TAG_NAME="${DOCKER_IMAGE_NAME:-docker.elastic.co/enterprise-search/crawler}"
+export BASE_TAG_NAME="${DOCKER_IMAGE_NAME:-docker.elastic.co/integrations/crawler}"
 export DOCKERFILE_PATH="${DOCKERFILE_PATH:-Dockerfile}"
 export DOCKER_ARTIFACT_KEY="${DOCKER_ARTIFACT_KEY:-crawler-docker}"
 
