@@ -64,8 +64,10 @@ fi
 # Generate our config file
 TEST_CONFIG_FILE="$PROJECT_ROOT/.buildkite/publish/container-structure-test.yaml"
 
+# Remove -SNAPSHOT if it exists
+CLEAN_VERSION="${VERSION%-SNAPSHOT}"
 # The config file needs escaped dots - we'll do that here
-ESCAPED_VERSION="${VERSION//./\\\\.}"
+ESCAPED_VERSION="${CLEAN_VERSION//./\\\\.}"
 
 # Generate the config file text
 TEST_CONFIG_TEXT='
