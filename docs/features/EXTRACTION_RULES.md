@@ -189,7 +189,7 @@ domains:
         rules:
           - action: "extract"
             field_name: "publish_year"
-            selector: "posts\/([0-9]{4})"
+            selector: "blog\/([0-9]{4})"
             join_as: "string"
             source: "url"
 ```
@@ -233,7 +233,7 @@ domains:
         rules:
           - action: "extract"
             field_name: "publish_year"
-            selector: "posts\/([0-9]{4})"
+            selector: "blog\/([0-9]{4})"
             join_as: "string"
             source: "url"
 ```
