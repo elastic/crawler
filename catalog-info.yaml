@@ -10,6 +10,9 @@ metadata:
     - title: Pipeline
       url: https://buildkite.com/elastic/elastic-crawler
 
+# ------------------------------------------------------------------------------
+# this is the main pipeline, triggered via pull requests and merges
+
 spec:
   type: buildkite-pipeline
   owner: group:ent-search-eng
@@ -19,7 +22,7 @@ spec:
     kind: Pipeline
     metadata:
       name: elastic-crawler
-      description: 
+      description:
     spec:
       repository: elastic/crawler
       pipeline_file: ".buildkite/pipeline.yml"
@@ -28,3 +31,35 @@ spec:
           access_level: MANAGE_BUILD_AND_READ
         everyone:
           access_level: READ_ONLY
+        search-productivity-team: {}
+
+# ------------------------------------------------------------------------------
+# docker image build and publish - manual release
+
+apiVersion: "backstage.io/v1alpha1"
+kind: "Resource"
+metadata:
+  name: "crawler-docker-build-publish"
+  description: "Docker image build and publish for Elastic crawler"
+  links:
+    - title: "Crawler Docker Build and Publish"
+      url: "https://buildkite.com/elastic/crawler-docker-build-publish"
+spec:
+  type: "buildkite-pipeline"
+  owner: "group:ingestion-team"
+  system: "buildkite"
+  implementation:
+    apiVersion: "buildkite.elastic.dev/v1"
+    kind: "Pipeline"
+    metadata:
+      name: "crawler-docker-build-publish"
+    spec:
+      repository: "elastic/crawler"
+      pipeline_file: ".buildkite/release-pipeline.yml"
+      provider_settings:
+        trigger_mode: "none"
+      teams:
+        ingestion-team: {}
+        search-productivity-team: {}
+        everyone:
+          access_level: "READ_ONLY"
