@@ -1,4 +1,9 @@
-# Content Extraction
+# Extraction Rules
+
+This document contains detailed explanation about the individual fields in the extraction ruleset configuration.
+There are also [example usages](#examples) at the end of this page.
+
+## Summary
 
 Extraction rules enable you to customize how the crawler extracts content from webpages.
 Extraction rules are configured in the Crawler config file.
@@ -113,3 +118,122 @@ Value can be anything except `null`.
 
 The source that Crawler will try to extract content from.
 Currently only `html` or `url` is supported.
+
+## Examples
+
+### Extracting from HTML
+
+I have a simple website for an RPG.
+A page describing cities in the RPG is hosted at `https://totally-real-rpg.com/cities`.
+The HTML for this page looks like this:
+
+```HTML
+<!DOCTYPE html>
+<html>
+  <body>
+    <div>Cities:</div>
+    <div class="city">Neverwinter</div>
+    <div class="city">Waterdeep</div>
+    <div class="city">Menzoberranzan</div>
+  </body>
+</html>
+```
+
+I want to extract all of the cities as an array, but only from the webpage that ends with `/cities`.
+First I must set the `url_filters` for this extraction rule to apply to only this URL.
+Then I can define what the Crawler should do when it encounters this webpage.
+
+```yaml
+domains:
+  - url: https://totally-real-rpg.com
+    extraction_rulesets:
+      - url_filters:
+          - type: "ends"
+            pattern: "/cities"
+        rules:
+          - action: "extract"
+            field_name: "cities"
+            selector: ".city"
+            join_as: "array"
+            source: "html"
+```
+
+In this example, the output document will include the following field on top of the standard crawl result fields:
+
+```json
+{
+  "cities": ["Neverwinter", "Waterdeep", "Menzoberranzan"]
+}
+```
+
+### Extracting from URLs
+
+Now, I also have a blog on this website.
+There are three posts on this blog, which fall under the following URLs:
+
+- https://totally-real-rpg.com/blog/2023/12/25/beginners-guide
+- https://totally-real-rpg.com/blog/2024/01/07/patch-1.0-changes
+- https://totally-real-rpg.com/blog/2024/02/18/upcoming-server-maintenance
+
+When these sites are crawled, I want to get only the year that the blog was published.
+First I should define the `url_filters` so that this extraction only applies to blogs.
+Then I can use a `regex` selector in the rule to fetch the year from the URL.
+
+```yaml
+domains:
+  - url: https://totally-real-rpg.com
+    extraction_rulesets:
+      - url_filters:
+          - type: "begins"
+            pattern: "/blog"
+        rules:
+          - action: "extract"
+            field_name: "publish_year"
+            selector: "posts\/([0-9]{4})"
+            join_as: "string"
+            source: "url"
+```
+In this example, the ingested documents will include the following fields on top of the standard crawl result fields:
+
+- https://totally-real-rpg.com/blog/2023/12/25/beginners-guide
+    ```json
+    { "publish_year": "2023" }
+    ```
+- https://totally-real-rpg.com/blog/2024/01/07/patch-1.0-changes
+    ```json
+    { "publish_year": "2024" }
+    ```
+- https://totally-real-rpg.com/blog/2024/02/18/upcoming-server-maintenance
+    ```json
+    { "publish_year": "2024" }
+    ```
+
+### Combined example
+
+Multiple extraction rulesets can be defined for a single Crawler.
+Taking the above two examples, we can combine them into a single configuration.
+There's no limit to the number of extraction rulesets that can be defined.
+
+```yaml
+domains:
+  - url: https://totally-real-rpg.com
+    extraction_rulesets:
+      - url_filters:
+            - type: "ends"
+              pattern: "/cities"
+        rules:
+          - action: "extract"
+            field_name: "cities"
+            selector: ".city"
+            join_as: "array"
+            source: "html"
+      - url_filters:
+          - type: "begins"
+            pattern: "/blog"
+        rules:
+          - action: "extract"
+            field_name: "publish_year"
+            selector: "posts\/([0-9]{4})"
+            join_as: "string"
+            source: "url"
+```
