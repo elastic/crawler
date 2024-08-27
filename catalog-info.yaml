@@ -22,7 +22,7 @@ spec:
     kind: Pipeline
     metadata:
       name: elastic-crawler
-      description: 
+      description:
     spec:
       branch_configuration: "main"
       repository: elastic/crawler
