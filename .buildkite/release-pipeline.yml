@@ -16,7 +16,7 @@ steps:
         env:
           ARCHITECTURE: "amd64"
           DOCKER_ARTIFACT_KEY: "elastic-crawler-docker-debian"
-        command: ".buildkite/scripts/publish/build-docker.sh"
+        command: ".buildkite/publish/build-docker.sh"
         key: "build_docker_image_amd64"
         artifact_paths: ".artifacts/*.tar.gz"
       - label: "Testing amd64 Docker image"
@@ -30,7 +30,7 @@ steps:
         commands:
           - "mkdir -p .artifacts"
           - buildkite-agent artifact download '.artifacts/*.tar.gz*' .artifacts/ --step build_docker_image_amd64
-          - ".buildkite/scripts/publish/test-docker.sh"
+          - ".buildkite/publish/test-docker.sh"
   # ----
   # Docker builds for arm64
   # ----
@@ -47,7 +47,7 @@ steps:
         env:
           ARCHITECTURE: "arm64"
           DOCKER_ARTIFACT_KEY: "elastic-crawler-docker-debian"
-        command: ".buildkite/scripts/publish/build-docker.sh"
+        command: ".buildkite/publish/build-docker.sh"
         key: "build_docker_image_arm64"
         artifact_paths: ".artifacts/*.tar.gz"
       - label: "Testing arm64 Docker image"
@@ -63,7 +63,7 @@ steps:
         commands:
           - "mkdir -p .artifacts"
           - buildkite-agent artifact download '.artifacts/*.tar.gz*' .artifacts/ --step build_docker_image_arm64
-          - ".buildkite/scripts/publish/test-docker.sh"
+          - ".buildkite/publish/test-docker.sh"
   # ----
   # Multiarch Docker image build and push
   # ----
@@ -84,7 +84,7 @@ steps:
         commands:
           - "mkdir -p .artifacts"
           - buildkite-agent artifact download '.artifacts/*.tar.gz*' .artifacts/ --step build_docker_image_amd64
-          - ".buildkite/scripts/publish/push-docker.sh"
+          - ".buildkite/publish/push-docker.sh"
       - label: "Push arm64 Docker image"
         key: "push_arm64_docker_image"
         env:
@@ -99,13 +99,13 @@ steps:
         commands:
           - "mkdir -p .artifacts"
           - buildkite-agent artifact download '.artifacts/*.tar.gz*' .artifacts/ --step build_docker_image_arm64
-          - ".buildkite/scripts/publish/push-docker.sh"
+          - ".buildkite/publish/push-docker.sh"
       - label: "Build and push multiarch Docker image"
         agents:
           image: "docker.elastic.co/ci-agent-images/drivah:0.25.0"
           ephemeralStorage: "20G"
           memory: "4G"
-        command: ".buildkite/scripts/publish/build-and-push-multiarch-docker.sh"
+        command: ".buildkite/publish/build-and-push-multiarch-docker.sh"
         depends_on:
           - "push_amd64_docker_image"
           - "push_arm64_docker_image"

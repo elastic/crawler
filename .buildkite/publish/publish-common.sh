@@ -12,7 +12,7 @@ function realpath {
 export SCRIPT_DIR="$CURDIR"
 
 BUILDKITE_DIR=$(realpath "$(dirname "$SCRIPT_DIR")")
-PROJECT_ROOT=$(realpath "$(dirname "$BUILDKITE_DIR")/..")
+PROJECT_ROOT=$(realpath "$(dirname "$BUILDKITE_DIR")")
 VERSION_PATH="$PROJECT_ROOT/product_version"
 VERSION=$(cat "$VERSION_PATH")
 #IS_SNAPSHOT=$(buildkite-agent meta-data get is_snapshot)
