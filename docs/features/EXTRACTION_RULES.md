@@ -208,11 +208,10 @@ In this example, the ingested documents will include the following fields on top
     { "publish_year": "2024" }
     ```
 
-### Combined example
+### Multiple rulesets
 
-Multiple extraction rulesets can be defined for a single Crawler.
+There's no limit to the number of extraction rulesets that can be defined for a single Crawler.
 Taking the above two examples, we can combine them into a single configuration.
-There's no limit to the number of extraction rulesets that can be defined.
 
 ```yaml
 domains:
