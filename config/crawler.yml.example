@@ -54,6 +54,10 @@
 ## The maximum depth that Crawler will follow links to.
 #max_crawl_depth: 2
 #
+## Scheduling using cron expressions
+#scheduling:
+#  - interval: "0 12 * * *"     # every day at noon
+#
 ## Crawl result field size limits
 #max_title_size: 1000
 #max_body_size: 5_242_880 # 5 megabytes
