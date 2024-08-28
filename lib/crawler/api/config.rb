@@ -45,6 +45,7 @@ module Crawler
         :sitemap_urls,         # Array of sitemap URLs to be used for content discovery
         :crawl_rules,          # Array of allow/deny-listed URL patterns
         :extraction_rules,     # Contains domains extraction rules
+        :schedule,             # For scheduled jobs; not used outside of CLI
 
         :robots_txt_service,   # Service to fetch robots.txt
         :output_sink,          # The type of output, either :console | :file | :elasticsearch
