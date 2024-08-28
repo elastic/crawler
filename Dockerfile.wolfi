@@ -1,4 +1,4 @@
-FROM docker.elastic.co/wolfi/jdk:openjdk-21-dev@sha256:03cfba9d47c191d3fd0f8f7321d25d7be48b6ef3f7f3c42110e0145d832a3d05
+FROM docker.elastic.co/wolfi/jdk:openjdk-21.35-r1-dev@sha256:d7ca36452a68f28e4c4683062241e817b548844820a0ffd087451214e61eb188
 
 # TODO we may need to use root for some steps in the Dockerfile, but we should switch to
 # another user for running the application itself inside the container
