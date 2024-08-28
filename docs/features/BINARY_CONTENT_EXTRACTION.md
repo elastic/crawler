@@ -23,7 +23,7 @@ binary_content_extraction_mime_types:
   - application/msword
 
 elasticsearch:
-   pipeline: ent-search-ingestion-pipeline
+   pipeline: ent-search-generic-ingestion
    pipeline_enabled: true
 ```
 
