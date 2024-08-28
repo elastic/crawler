@@ -55,7 +55,7 @@
 #max_crawl_depth: 2
 #
 ## Scheduling using cron expressions
-#scheduling:
+#schedule:
 #  - interval: "0 12 * * *"     # every day at noon
 #
 ## Crawl result field size limits
