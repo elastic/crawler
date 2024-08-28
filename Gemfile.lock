@@ -146,6 +146,7 @@ GEM
 PLATFORMS
   universal-java-17
   universal-java-21
+  universal-java-22
 
 DEPENDENCIES
   activesupport (= 6.1.7.7)

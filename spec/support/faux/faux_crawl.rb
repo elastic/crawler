@@ -162,8 +162,8 @@ class FauxCrawl # rubocop:disable Metrics/ClassLength
           sitemap_urls: sitemap_urls
         }
       ],
-      content_extraction_enabled: content_extraction.fetch(:enabled),
-      content_extraction_mime_types: content_extraction.fetch(:mime_types),
+      binary_content_extraction_enabled: content_extraction.fetch(:enabled),
+      binary_content_extraction_mime_types: content_extraction.fetch(:mime_types),
       output_sink: :mock,
       results_collection: results,
       http_auth_allowed: true,
