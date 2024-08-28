@@ -6,7 +6,7 @@ domains:
       - https://localhost:80/news/
 
 schedule:
-  interval: '* * * * *'
+  pattern: '* * * * *'
 
 # Where to send the results. Possible values are console, file, or elasticsearch
 output_sink: elasticsearch
