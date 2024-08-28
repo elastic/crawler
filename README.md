@@ -146,15 +146,21 @@ See [CONFIG.md](docs/CONFIG.md) for in-depth details on Open Crawler configurati
 
 ### Scheduling Recurring Crawl Jobs
 
-Crawl jobs can also be scheduled to recur based on a cron expression.
+Crawl jobs can also be scheduled to recur.
+Scheduled crawl jobs run until terminated by the user.
+
+These schedules are defined through a cron expression.
 This expression needs to be included in the Crawler config file.
 You can use the tool https://crontab.guru to test different cron expressions.
+Crawler supports all standard cron expressions.
+
+See an example below for a crawl schedule that will execute once every 30 minutes.
 
 ```yaml
 domains:
   - url: "https://elastic.co"
 schedule:
-  - interval: "* * * * *" # run every minute
+  - interval: "*/30 * * * *" # run every 30th minute
 ```
 
 Then, use the CLI to then begin the crawl job schedule:
@@ -166,7 +172,7 @@ docker exec -it crawler bin/crawler schedule path/to/my-crawler.yml
 **Scheduled crawl jobs from a single execution will not overlap.**
 If you have a schedule that triggers once per minute, but your crawl job takes 5 minutes to complete, the crawl schedule will effectively trigger about every 6 minutes.
 
-**Concurrently executed crawl schedules _will_ overlap**.
+**Executing multiple crawl schedules _can_ cause overlap**.
 Be wary of executing multiple schedules against the same index.
 As with ad-hoc triggered crawl jobs, two crawlers simultaneously interacting with a single index can lead to data loss.
 
