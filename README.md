@@ -76,6 +76,12 @@ If using an API key, ensure that the API key has read and write permissions to a
 
 #### Running Open Crawler from Docker
 
+> [!IMPORTANT]
+> **Be wary of triggering multiple crawl jobs that reference the same index**.
+A single crawl execution can be thought of as a single crawler.
+Even if two crawl executions share a configuration file, the two crawl processes will not communicate with each other.
+Two crawlers simultaneously interacting with a single index can lead to data loss.
+
 Open Crawler has a Dockerfile that can be built and run locally.
 
 1. Clone the repository: `git clone https://github.com/elastic/crawler.git`
@@ -137,6 +143,32 @@ Open Crawler has a Dockerfile that can be built and run locally.
 ### Configuring Crawlers
 
 See [CONFIG.md](docs/CONFIG.md) for in-depth details on Open Crawler configuration files.
+
+### Scheduling Recurring Crawl Jobs
+
+Crawl jobs can also be scheduled to recur based on a cron expression.
+This expression needs to be included in the Crawler config file.
+You can use the tool https://crontab.guru to test different cron expressions.
+
+```yaml
+domains:
+  - url: "https://elastic.co"
+schedule:
+  - interval: "* * * * *" # run every minute
+```
+
+Then, use the CLI to then begin the crawl job schedule:
+
+```bash
+docker exec -it crawler bin/crawler schedule path/to/my-crawler.yml
+```
+
+**Scheduled crawl jobs from a single execution will not overlap.**
+If you have a schedule that triggers once per minute, but your crawl job takes 5 minutes to complete, the crawl schedule will effectively trigger about every 6 minutes.
+
+**Concurrently executed crawl schedules _will_ overlap**.
+Be wary of executing multiple schedules against the same index.
+As with ad-hoc triggered crawl jobs, two crawlers simultaneously interacting with a single index can lead to data loss.
 
 ### Crawler Document Schema and Mappings
 

@@ -25,19 +25,26 @@ module Crawler
           raise ArgumentError, 'No schedule found in config file'
         end
 
-        crawl_config.system_logger.info("Schedule initialized with an interval of #{crawl_config.schedule[:interval]}")
+        run_schedule(crawl_config.schedule[:interval], crawl_config)
+      end
 
-        # Schedule a recurrent task based on the value in `schedule.interval`.
-        # Setting overlap=false prevents multiple tasks from spawning when a crawl
+      def run_schedule(interval, crawl_config)
+        crawl_config.system_logger.info("Schedule initialized with an interval of #{interval}")
+
+        # Schedule a recurrent task based on the config value `schedule.interval`.
+        # The arg `overlap: false` prevents multiple tasks from spawning when a crawl
         # task is longer than the schedule interval.
+        # This will run until the Crawler is terminated.
         scheduler = Rufus::Scheduler.new
-
-        # TODO overlap not working, investigate
-        scheduler.cron(crawl_config.schedule[:interval], blocking=true, overlap=false) do
-          crawl_config.system_logger.info("Beginning a scheduled crawl...")
+        scheduler.cron(interval, overlap: false) do |job|
+          crawl_config.system_logger.info(
+            "Beginning scheduled crawl for #{job.previous_time} (actual trigger time: #{Time.now})."
+          )
           crawl = Crawler::API::Crawl.new(crawl_config)
           crawl.start!
-          crawl_config.system_logger.info("Scheduled crawl complete.")
+          crawl_config.system_logger.info(
+            "Scheduled crawl ended at #{Time.now}. Next scheduled crawl should trigger around #{job.next_time}."
+          )
         end
         scheduler.join
       end

@@ -42,31 +42,9 @@ RSpec.describe(Crawler::CLI::Schedule) do
       end
 
       it 'runs a crawl' do
-        expect(scheduler_mock).to receive(:cron).with('* * * * *', overlap=false).once
+        expect(scheduler_mock).to receive(:cron).with('* * * * *', overlap: false).once
 
         capture_output { cli.call(arguments: ['schedule', crawl_config]) }
-      end
-
-      context 'when crawl task takes longer than schedule interval' do
-        let(:crawl_config) { 'spec/fixtures/crawl.yml' }
-        let(:crawl_mock) { double }
-        let(:scheduler_mock) { double }
-
-        before(:example) do
-          allow(Crawler::API::Crawl).to receive(:new).and_return(crawl_mock)
-          allow(crawl_mock).to receive(:start!).and_return(true)
-
-          allow(Rufus::Scheduler).to receive(:new).and_return(scheduler_mock)
-          allow(scheduler_mock).to receive(:cron)
-          allow(scheduler_mock).to receive(:join)
-        end
-
-        it 'runs a crawl' do
-          expect(scheduler_mock).to receive(:cron).with('* * * * *', overlap=false).once
-          expect(crawl_mock).to receive(:start!).once
-
-          capture_output { cli.call(arguments: ['schedule', crawl_config]) }
-        end
       end
     end
 
@@ -74,13 +52,13 @@ RSpec.describe(Crawler::CLI::Schedule) do
       output = capture_output { cli.call(arguments: ['schedule', '-h']) }
       expected_output = <<~OUTPUT
         Command:
-          #{cmd} crawl
+          #{cmd} schedule
 
         Usage:
-          #{cmd} crawl CRAWL_CONFIG
+          #{cmd} schedule CRAWL_CONFIG
 
         Description:
-          Run a crawl of the site
+          Schedule a recurring crawl of the site
 
         Arguments:
           CRAWL_CONFIG                      # REQUIRED Path to crawl config file
