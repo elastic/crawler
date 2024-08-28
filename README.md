@@ -77,7 +77,7 @@ If using an API key, ensure that the API key has read and write permissions to a
 #### Running Open Crawler from Docker
 
 > [!IMPORTANT]
-> **Be wary of triggering multiple crawl jobs that reference the same index**.
+> **Do not trigger multiple crawl jobs that reference the same index simultaneously.**
 A single crawl execution can be thought of as a single crawler.
 Even if two crawl executions share a configuration file, the two crawl processes will not communicate with each other.
 Two crawlers simultaneously interacting with a single index can lead to data loss.
@@ -160,7 +160,7 @@ See an example below for a crawl schedule that will execute once every 30 minute
 domains:
   - url: "https://elastic.co"
 schedule:
-  - interval: "*/30 * * * *" # run every 30th minute
+  - pattern: "*/30 * * * *" # run every 30th minute
 ```
 
 Then, use the CLI to then begin the crawl job schedule:
@@ -170,7 +170,9 @@ docker exec -it crawler bin/crawler schedule path/to/my-crawler.yml
 ```
 
 **Scheduled crawl jobs from a single execution will not overlap.**
-If you have a schedule that triggers once per minute, but your crawl job takes 5 minutes to complete, the crawl schedule will effectively trigger about every 6 minutes.
+Scheduled jobs will also not wait for existing jobs to complete.
+If a crawl job is already in progress when another schedule is triggered, the job will be dropped.
+For example, if you have a schedule that triggers at every hour, but your crawl job takes 1.5 hours to complete, the crawl schedule will effectively trigger on every 2nd hour.
 
 **Executing multiple crawl schedules _can_ cause overlap**.
 Be wary of executing multiple schedules against the same index.

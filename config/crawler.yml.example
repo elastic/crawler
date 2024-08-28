@@ -56,7 +56,7 @@
 #
 ## Scheduling using cron expressions
 #schedule:
-#  - interval: "0 12 * * *"     # every day at noon
+#  - pattern: "0 12 * * *"     # every day at noon
 #
 ## Crawl result field size limits
 #max_title_size: 1000
