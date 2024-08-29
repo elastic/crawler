@@ -76,6 +76,12 @@ If using an API key, ensure that the API key has read and write permissions to a
 
 #### Running Open Crawler from Docker
 
+> [!IMPORTANT]
+> **Do not trigger multiple crawl jobs that reference the same index simultaneously.**
+A single crawl execution can be thought of as a single crawler.
+Even if two crawl executions share a configuration file, the two crawl processes will not communicate with each other.
+Two crawlers simultaneously interacting with a single index can lead to data loss.
+
 Open Crawler has a Dockerfile that can be built and run locally.
 
 1. Clone the repository: `git clone https://github.com/elastic/crawler.git`
@@ -137,6 +143,40 @@ Open Crawler has a Dockerfile that can be built and run locally.
 ### Configuring Crawlers
 
 See [CONFIG.md](docs/CONFIG.md) for in-depth details on Open Crawler configuration files.
+
+### Scheduling Recurring Crawl Jobs
+
+Crawl jobs can also be scheduled to recur.
+Scheduled crawl jobs run until terminated by the user.
+
+These schedules are defined through a cron expression.
+This expression needs to be included in the Crawler config file.
+You can use the tool https://crontab.guru to test different cron expressions.
+Crawler supports all standard cron expressions.
+
+See an example below for a crawl schedule that will execute once every 30 minutes.
+
+```yaml
+domains:
+  - url: "https://elastic.co"
+schedule:
+  - pattern: "*/30 * * * *" # run every 30th minute
+```
+
+Then, use the CLI to then begin the crawl job schedule:
+
+```bash
+docker exec -it crawler bin/crawler schedule path/to/my-crawler.yml
+```
+
+**Scheduled crawl jobs from a single execution will not overlap.**
+Scheduled jobs will also not wait for existing jobs to complete.
+If a crawl job is already in progress when another schedule is triggered, the job will be dropped.
+For example, if you have a schedule that triggers at every hour, but your crawl job takes 1.5 hours to complete, the crawl schedule will effectively trigger on every 2nd hour.
+
+**Executing multiple crawl schedules _can_ cause overlap**.
+Be wary of executing multiple schedules against the same index.
+As with ad-hoc triggered crawl jobs, two crawlers simultaneously interacting with a single index can lead to data loss.
 
 ### Crawler Document Schema and Mappings
 

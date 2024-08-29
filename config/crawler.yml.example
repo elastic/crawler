@@ -54,6 +54,10 @@
 ## The maximum depth that Crawler will follow links to.
 #max_crawl_depth: 2
 #
+## Scheduling using cron expressions
+#schedule:
+#  - pattern: "0 12 * * *"     # every day at noon
+#
 ## Crawl result field size limits
 #max_title_size: 1000
 #max_body_size: 5_242_880 # 5 megabytes
@@ -82,8 +86,8 @@
 #
 ## Whether document metadata from certain content types will be indexed or not.
 ##     This does not allow binary content to be indexed from these files, only metadata.
-#content_extraction_enabled: true
-#content_extraction_mime_types:
+#binary_content_extraction_enabled: true
+#binary_content_extraction_mime_types:
 #  - application/pdf
 #  - application/msword
 #  - application/vnd.openxmlformats-officedocument.wordprocessingml.document

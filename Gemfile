@@ -29,6 +29,7 @@ group :default do
   gem 'elasticsearch', '~> 8.13.0'
   gem 'jar-dependencies', '0.4.1'
   gem 'json-schema', '~> 4.3.0'
+  gem 'rufus-scheduler', '~> 3.9.1'
   gem 'webrick', '~> 1.8.1'
 
   # Gems that need jruby as the platform

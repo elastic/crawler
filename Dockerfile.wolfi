@@ -1,0 +1,61 @@
+FROM docker.elastic.co/wolfi/jdk:openjdk-21.35-r1-dev@sha256:d7ca36452a68f28e4c4683062241e817b548844820a0ffd087451214e61eb188
+
+# TODO we may need to use root for some steps in the Dockerfile, but we should switch to
+# another user for running the application itself inside the container
+USER root
+
+# ------------------------------------------------------------------------------
+# we need curl and make below, but then we remove them later
+# TODO maybe we can do multi-stage to reduce layers in the final image
+
+RUN apk update && apk add --no-cache curl make
+
+# ------------------------------------------------------------------------------
+# jruby install steps below have been adapted from:
+# https://github.com/jruby/docker-jruby/blob/f325c86e2c2ca0bbe82f64c0aded0719372507fa/9.4/jdk21/Dockerfile
+
+ENV JRUBY_VERSION 9.4.8.0
+ENV JRUBY_SHA256 347b6692bd9c91c480a45af25ce88d77be8b6e4ac4a77bc94870f2c5b54bc929
+RUN mkdir /opt/jruby \
+  && curl -fSL https://repo1.maven.org/maven2/org/jruby/jruby-dist/${JRUBY_VERSION}/jruby-dist-${JRUBY_VERSION}-bin.tar.gz -o /tmp/jruby.tar.gz \
+  && echo "$JRUBY_SHA256 /tmp/jruby.tar.gz" | sha256sum -c - \
+  && tar -zx --strip-components=1 -f /tmp/jruby.tar.gz -C /opt/jruby \
+  && rm /tmp/jruby.tar.gz
+RUN mkdir -p /usr/local/bin && ln -s /opt/jruby/bin/jruby /usr/local/bin/ruby
+ENV PATH /opt/jruby/bin:$PATH
+
+# skip installing gem documentation
+RUN mkdir -p /opt/jruby/etc \
+       && { \
+               echo 'install: --no-document'; \
+               echo 'update: --no-document'; \
+       } >> /opt/jruby/etc/gemrc
+
+RUN gem install bundler rake net-telnet xmlrpc
+
+# don't create ".bundle" in all our apps
+ENV GEM_HOME /usr/local/bundle
+ENV BUNDLE_SILENCE_ROOT_WARNING=1 \
+       BUNDLE_APP_CONFIG="$GEM_HOME"
+ENV PATH $GEM_HOME/bin:$PATH
+
+# adjust permissions of a few directories for running "gem install" as an arbitrary user
+RUN mkdir -p "$GEM_HOME" && chmod 777 "$GEM_HOME"
+
+# ------------------------------------------------------------------------------
+# install the application
+
+COPY . /app
+WORKDIR /app
+
+# skip jenv/rbenv setup
+ENV IS_DOCKER=1
+
+RUN make clean install
+
+# ------------------------------------------------------------------------------
+# remove now-unnecessary packages, as well as the package manager itself
+
+RUN apk del curl make && apk --purge del apk-tools
+
+ENTRYPOINT [ "/bin/bash" ]
