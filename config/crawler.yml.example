@@ -29,7 +29,7 @@
 #        pattern: /blog     # the pattern string for the rule
 #
 #    # An array of content extraction rules
-#    # See docs/features/CONTENT_EXTRACTION.md for more details on this feature
+#    # See docs/features/EXTRACTION_RULES.md for more details on this feature
 #    extraction_rulesets:
 #      - url_filters:
 #          - type: begins           # Filter type, can be: begins | ends | contains | regex
