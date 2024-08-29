@@ -3,10 +3,12 @@
 Configuration files live in the [config](../config) directory.
 There are two kinds of configuration files:
 
-1. Crawler configurations (provided as a positional argument)
-2. Elasticsearch configurations (provided as an optional argument with `--es-config`)
+- Crawler configuration - [config/crawler.yml.example](../config/crawler.yml.example)
+- Elasticsearch configuration - [config/elasticsearch.yml.example](../config/elasticsearch.yml.example)
 
-There two configuration file arguments allow crawl jobs to share Elasticsearch instance configuration.
+The Elasticsearch configuration file is optional.
+It exists to allow users with multiple crawlers to only need a single Elasticsearch configuration.
+
 There are no enforced pathing or naming for these files.
 They are differentiated only by how they are provided to the CLI when running a crawl.
 
@@ -49,7 +51,7 @@ When performing a crawl with only a crawl config:
 $ bin/crawler crawl config/my-crawler.yml
 ```
 
-When performing a crawl with only both a crawl config and an Elasticsearch config:
+When performing a crawl with both a crawl config and an Elasticsearch config:
 
 ```shell
 $ bin/crawler crawl config/my-crawler.yml --es-config config/elasticsearch.yml
