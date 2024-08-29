@@ -330,7 +330,7 @@ module Crawler
 
     #-------------------------------------------------------------------------------------------------
     def content_extractable_file_mime_types
-      config.content_extraction_enabled ? config.content_extraction_mime_types.map(&:downcase) : []
+      config.binary_content_extraction_enabled ? config.binary_content_extraction_mime_types.map(&:downcase) : []
     end
 
     #-------------------------------------------------------------------------------------------------

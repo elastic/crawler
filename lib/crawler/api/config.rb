@@ -110,9 +110,9 @@ module Crawler
         :max_indexed_links_count,   # Number of links to extract for indexing
         :max_headings_count,        # HTML heading tags count limit
 
-        # Content extraction (from files)
-        :content_extraction_enabled,    # Enable content extraction of non-HTML files found during a crawl
-        :content_extraction_mime_types, # Extract files with the following MIME types
+        # Binary content extraction (from files)
+        :binary_content_extraction_enabled,    # Enable content extraction of non-HTML files found during a crawl
+        :binary_content_extraction_mime_types, # Extract files with the following MIME types
 
         # Other crawler tuning settings
         :default_encoding,            # Default encoding used for responses that do not specify a charset
@@ -166,8 +166,8 @@ module Crawler
         max_indexed_links_count: 25,
         max_headings_count: 25,
 
-        content_extraction_enabled: false,
-        content_extraction_mime_types: [],
+        binary_content_extraction_enabled: false,
+        binary_content_extraction_mime_types: [],
 
         output_sink: :console,
         url_queue: :memory_only,
