@@ -10,7 +10,7 @@ This value is picked up by an [Elasticsearch ingest pipeline](https://www.elasti
 2. Enable binary content extraction in the Crawler configuration
 3. Select which MIME types should have their contents extracted
    - The MIME type is determined by the HTTP response’s `Content-Type` header when downloading a given file
-   - While intended primarily for PDF and Microsoft Office formats, you can use any of the supported formats documented by [Apache Tika](https://tika.apache.org/)
+   - While intended primarily for PDF and Microsoft Office formats, you can use any of the formats supported by [Apache Tika](https://tika.apache.org/)
    - No default MIME types are defined, so at least at least one MIME type must be configured in order to extract non-HTML content
    - The ingest attachment processor does not support compressed files, e.g., an archive file containing a set of PDFs
 
