@@ -190,3 +190,33 @@ When given a command, Open Crawler will run until the process is finished.
 OpenCrawler is not kept alive in any way between commands.
 
 See [CLI.md](docs/CLI.md) for a full list of CLI commands available for Crawler.
+
+### Feature Comparison
+
+Elastic also has the cloud-base [Elastic Crawler](https://www.elastic.co/guide/en/enterprise-search/current/crawler.html) with similar features.
+Below is a comparison table below for the features that are available in Open Crawler vs Elastic Crawler (cloud).
+
+|                                                                                                                                                        | Open Crawler | Elastic Crawler (cloud) |
+|--------------------------------------------------------------------------------------------------------------------------------------------------------|--------------|-------------------------|
+| **Interface**                                                                                                                                          | CLI          | GUI (Kibana)            |
+| **Hosting**                                                                                                                                            | Self-hosted  | Elastic Cloud           |
+| **State management**                                                                                                                                   | Stateless    | Elasticsearch indices   |
+| **Compatible with [Elasticsearch Serverless](https://www.elastic.co/docs/current/serverless)**                                                         | Yes          | No                      |
+| **Unrestricted index naming**                                                                                                                          | Yes          | No                      |
+| **Indexing using `_bulk` API**                                                                                                                         | Yes          | No                      |
+| **[Ingest pipelines](./docs/features/INGEST_PIPELINES.md)**                                                                                            | Yes          | Yes                     |
+| **[Binary content extraction](./docs/features/BINARY_CONTENT_EXTRACTION.md)**                                                                          | Yes          | Yes                     |
+| **[Crawler directives](./docs/features/CRAWLER_DIRECTIVES.md)**                                                                                        | Yes *        | Yes                     |
+| **[Scheduling](#scheduling-recurring-crawl-jobs)**                                                                                                     | Yes          | Yes                     |
+| **Crawler results history and metadata**                                                                                                               | No **        | Yes                     |
+| **[Duplicate content handling](https://www.elastic.co/guide/en/enterprise-search/current/crawler-managing.html#crawler-managing-duplicate-documents)** | No           | Yes                     |
+| **Event Logging**                                                                                                                                      | No ***       | Yes                     |
+| **Monitoring**                                                                                                                                         | No           | Yes                     |
+
+*\* Open Crawler does not support [meta tags and data attributes to extract custom fields](https://www.elastic.co/guide/en/enterprise-search/current/crawler-content.html#crawler-content-meta-tags-content-extraction).*\
+*\*\* Crawler results history can be retained manually for Open Crawler through outputting crawl results to log files. It will not show up in Kibana.*\
+*\*\*\* Event logs can be output to the shell or a logfile for Open Crawler, but they are currently not ingested into Elasticsearch.*
+
+### Performance Comparison
+
+[See this blog post](https://www.elastic.co/search-labs/blog/elastic-open-crawler-release#how-does-the-open-crawler-compare-to-the-elastic-crawler) for a performance comparison between Open Crawler and Elastic Crawler.
