@@ -41,14 +41,15 @@ $ bin/crawler --help
 
 > Commands:
 >   crawler crawl CRAWL_CONFIG                   # Run a crawl of the site
+>   crawler schedule CRAWL_CONFIG                # Schedule a recurrent crawl of the site
 >   crawler validate CRAWL_CONFIG                # Validate crawler configuration
 >   crawler version                              # Print version
 ```
 
 ### Commands
 
-
 - [`crawler crawl`](#crawler-crawl)
+- [`crawler schedule`](#crawler-schedule)
 - [`crawler validate`](#crawler-validate)
 - [`crawler version`](#crawler-version)
 
@@ -66,6 +67,25 @@ $ bin/crawler crawl config/examples/parks-australia.yml
 ```bash
 # crawl using crawler config and optional --es-config
 $ bin/crawler crawl config/examples/parks-australia.yml --es-config=config/es.yml
+```
+
+#### `crawler schedule`
+
+Creates a schedule to recurrently crawl the configured domain in the provided config file.
+The scheduler uses a cron expression that is configured in the Crawler configuration file using the field `schedule.pattern`.
+See [scheduling recurring crawl jobs](../README.md#scheduling-recurring-crawl-jobs) for details on scheduling.
+
+Can optionally take a second configuration file for Elasticsearch settings.
+See [CONFIG.md](./CONFIG.md) for details on the configuration files.
+
+```bash
+# schedule crawls using only crawler config
+$ bin/crawler schedule config/examples/parks-australia.yml
+```
+
+```bash
+# schedule crawls using crawler config and optional --es-config
+$ bin/crawler schedule config/examples/parks-australia.yml --es-config=config/es.yml
 ```
 
 #### `crawler validate`

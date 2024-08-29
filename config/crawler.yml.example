@@ -29,7 +29,7 @@
 #        pattern: /blog     # the pattern string for the rule
 #
 #    # An array of content extraction rules
-#    # See docs/features/CONTENT_EXTRACTION.md for more details on this feature
+#    # See docs/features/EXTRACTION_RULES.md for more details on this feature
 #    extraction_rulesets:
 #      - url_filters:
 #          - type: begins           # Filter type, can be: begins | ends | contains | regex
@@ -79,15 +79,16 @@
 #
 ## Authentication configurations.
 ##     Only required if a site has some form of authentication.
-#auth.domain: https://parksaustralia.gov.au
+#auth.domain: https://my-auth-domain.com
 #auth.type: basic
 #auth.username: user
 #auth.password: pass
 #
 ## Whether document metadata from certain content types will be indexed or not.
 ##     This does not allow binary content to be indexed from these files, only metadata.
-#content_extraction_enabled: true
-#content_extraction_mime_types:
+##     See docs/features/BINARY_CONTENT_EXTRACTION.md for more details.
+#binary_content_extraction_enabled: true
+#binary_content_extraction_mime_types:
 #  - application/pdf
 #  - application/msword
 #  - application/vnd.openxmlformats-officedocument.wordprocessingml.document
@@ -96,7 +97,7 @@
 #
 ## ------------------------------- Logging -------------------------------------
 #
-# The log level for system logs. Defaults to `info`
+## The log level for system logs. Defaults to `info`
 #log_level: info
 #
 # Whether or not event logging is enabled for output to the shell running Crawler.

@@ -34,8 +34,8 @@ RSpec.describe(Crawler::HttpExecutor) do
       default_encoding: 'UTF-8',
       max_response_size: 10.megabytes,
       max_redirects: 10,
-      content_extraction_enabled: false,
-      content_extraction_mime_types: [],
+      binary_content_extraction_enabled: false,
+      binary_content_extraction_mime_types: [],
       head_requests_enabled: true
     )
   end
@@ -321,10 +321,10 @@ RSpec.describe(Crawler::HttpExecutor) do
       end
     end
 
-    context 'when content_extraction_enabled is true and mime-type is supported' do
+    context 'when binary_content_extraction_enabled is true and mime-type is supported' do
       before do
-        allow(executor_config).to receive(:content_extraction_enabled).and_return(true)
-        allow(executor_config).to receive(:content_extraction_mime_types).and_return(['Application/PDF'])
+        allow(executor_config).to receive(:binary_content_extraction_enabled).and_return(true)
+        allow(executor_config).to receive(:binary_content_extraction_mime_types).and_return(['Application/PDF'])
       end
 
       it_behaves_like 'supported content'
@@ -347,7 +347,7 @@ RSpec.describe(Crawler::HttpExecutor) do
         end
 
         before(:each) do
-          allow(executor_config).to receive(:content_extraction_mime_types).and_return(['Application/XML'])
+          allow(executor_config).to receive(:binary_content_extraction_mime_types).and_return(['Application/XML'])
         end
 
         it_behaves_like 'supported content'
@@ -365,10 +365,10 @@ RSpec.describe(Crawler::HttpExecutor) do
       end
     end
 
-    context 'when content_extraction_enabled is true but mime-type is not supported' do
+    context 'when binary_content_extraction_enabled is true but mime-type is not supported' do
       before do
-        allow(executor_config).to receive(:content_extraction_enabled).and_return(true)
-        allow(executor_config).to receive(:content_extraction_mime_types).and_return(['image/png'])
+        allow(executor_config).to receive(:binary_content_extraction_enabled).and_return(true)
+        allow(executor_config).to receive(:binary_content_extraction_mime_types).and_return(['image/png'])
       end
 
       it 'returns Crawler::Data::CrawlResult::UnsupportedContentType' do
