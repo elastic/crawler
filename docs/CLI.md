@@ -72,8 +72,11 @@ $ bin/crawler crawl config/examples/parks-australia.yml --es-config=config/es.ym
 #### `crawler schedule`
 
 Creates a schedule to recurrently crawl the configured domain in the provided config file.
+The scheduler uses a cron expression that is configured in the Crawler configuration file using the field `schedule.pattern`.
+See [scheduling recurring crawl jobs](../README.md#scheduling-recurring-crawl-jobs) for details on scheduling.
+
 Can optionally take a second configuration file for Elasticsearch settings.
-See [CONFIG.md](./CONFIG.md) for details on the configuration files, and [scheduling recurring crawl jobs](../README.md#scheduling-recurring-crawl-jobs) for details on scheduling.
+See [CONFIG.md](./CONFIG.md) for details on the configuration files.
 
 ```bash
 # schedule crawls using only crawler config
