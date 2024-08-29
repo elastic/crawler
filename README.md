@@ -30,7 +30,7 @@ Crawls are performed in two stages:
 #### 1. Primary crawl
 
 Beginning with URLs included as `seed_urls`, the Crawler begins crawling web content.
-While crawling, each link it encounters will be added to the crawl queue, unless the link should be ignored due to configuration settings.
+While crawling, each link it encounters will be added to the crawl queue, unless the link should be ignored due to [crawl rules](./docs/features/CRAWL_RULES.md) or [crawler directives](./docs/features/CRAWLER_DIRECTIVES.md).
 
 The crawl results from visiting these webpages are added to a pool of results.
 These are indexed into Elasticsearch using the `_bulk` API once the pool reaches the configured threshold.
@@ -43,7 +43,7 @@ If `last_crawled_at` is earlier than the start time, that means the webpage was 
 
 Crawler then re-crawls all of these webpages.
 If a webpage is still accessible, Crawler will update its Elasticsearch doc.
-A webpage can be inaccessible due to either of the following reasons:
+A webpage can be inaccessible due to any of the following reasons:
 
 - Updated [crawl rules](./docs/features/CRAWL_RULES.md) in the configuration file that now exclude the URL
 - Updated [crawler directives](./docs/features/CRAWLER_DIRECTIVES.md) on the server or webpage that now exclude the URL
