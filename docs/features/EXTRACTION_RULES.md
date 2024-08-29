@@ -1,7 +1,7 @@
 # Extraction Rules
 
-This document contains detailed explanation about the individual fields in the extraction ruleset configuration.
-There are also [example usages](#examples) at the end of this page.
+This page explains the individual fields in the extraction ruleset configuration.
+The last section provides [usage examples](#examples).
 
 ## Summary
 
@@ -132,9 +132,9 @@ The HTML for this page looks like this:
 <html>
   <body>
     <div>Cities:</div>
-    <div class="city">Neverwinter</div>
-    <div class="city">Waterdeep</div>
-    <div class="city">Menzoberranzan</div>
+    <div class="city">Summerstay</div>
+    <div class="city">Drenchwell</div>
+    <div class="city">Mezzoterran</div>
   </body>
 </html>
 ```
@@ -162,7 +162,7 @@ In this example, the output document will include the following field on top of 
 
 ```json
 {
-  "cities": ["Neverwinter", "Waterdeep", "Menzoberranzan"]
+  "cities": ["Summerstay", "Drenchwell", "Mezzoterran"]
 }
 ```
 
