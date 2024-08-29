@@ -72,8 +72,6 @@ If using an API key, ensure that the API key has read and write permissions to a
   ```
 </details>
 
-
-
 #### Running Open Crawler from Docker
 
 > [!IMPORTANT]
@@ -142,7 +140,23 @@ Open Crawler has a Dockerfile that can be built and run locally.
 
 ### Configuring Crawlers
 
-See [CONFIG.md](docs/CONFIG.md) for in-depth details on Open Crawler configuration files.
+Crawler has template configuration files that contain every configuration available.
+
+- [config/crawler.yml.example](config/crawler.yml.example)
+- [config/elasticsearch.yml.example](config/elasticsearch.yml.example)
+
+To use these files, make a copy in the same directory without the `.example` suffix:
+
+```bash
+$ cp config/crawler.yml.example config/crawler.yml
+```
+
+Then remove the `#` comment-out characters from the configurations that you need.
+
+Crawler can be configured using two config files, a Crawler configuration and an Elasticsearch configuration.
+The Elasticsearch configuration file is optional.
+It exists to allow users with multiple crawlers to only need a single Elasticsearch configuration.
+See [CONFIG.md](docs/CONFIG.md) for more details on these files.
 
 ### Scheduling Recurring Crawl Jobs
 
