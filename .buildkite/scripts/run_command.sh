@@ -31,9 +31,9 @@ else
               --workdir /ci                \
               --env HOME=/ci               \
               --env CI                     \
-              --env GIT_REVISION=${BUILDKITE_COMMIT-}        \
-              --env BUILD_ID=${BUILDKITE_BUILD_NUMBER-}      \
+              --env GIT_REVISION="${BUILDKITE_COMMIT-}"        \
+              --env BUILD_ID="${BUILDKITE_BUILD_NUMBER-}"      \
               --entrypoint "${SCRIPT_CMD}" \
-              $DOCKER_IMAGE                \
-              $COMMAND_TO_RUN
+              "$DOCKER_IMAGE"              \
+              "$COMMAND_TO_RUN"
 fi
