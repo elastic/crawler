@@ -68,3 +68,8 @@ coverage
 
 # Downloaded license files
 script/licenses/**/_downloaded_*-LICENSE.txt
+
+# Buildkite
+bin/container-structure-test
+.artifacts
+.buildkite/publish/container-structure-test.yaml
