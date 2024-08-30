@@ -15,7 +15,7 @@ steps:
           imagePrefix: ci-amazonlinux-2
         env:
           ARCHITECTURE: "amd64"
-          DOCKER_ARTIFACT_KEY: "elastic-crawler-docker"
+          DOCKERFILE_PATH: "Dockerfile.wolfi"
         command: ".buildkite/publish/build-docker.sh"
         key: "build_docker_image_amd64"
         artifact_paths: ".artifacts/*.tar.gz"
@@ -26,6 +26,7 @@ steps:
           imagePrefix: ci-amazonlinux-2
         env:
           ARCHITECTURE: "amd64"
+          DOCKERFILE_PATH: "Dockerfile.wolfi"
         depends_on: "build_docker_image_amd64"
         commands:
           - "mkdir -p .artifacts"
@@ -46,7 +47,7 @@ steps:
           diskName: '/dev/xvda'
         env:
           ARCHITECTURE: "arm64"
-          DOCKER_ARTIFACT_KEY: "elastic-crawler-docker"
+          DOCKERFILE_PATH: "Dockerfile.wolfi"
         command: ".buildkite/publish/build-docker.sh"
         key: "build_docker_image_arm64"
         artifact_paths: ".artifacts/*.tar.gz"
@@ -59,6 +60,7 @@ steps:
           diskName: '/dev/xvda'
         env:
           ARCHITECTURE: "arm64"
+          DOCKERFILE_PATH: "Dockerfile.wolfi"
         depends_on: "build_docker_image_arm64"
         commands:
           - "mkdir -p .artifacts"
@@ -76,7 +78,7 @@ steps:
         key: "push_amd64_docker_image"
         env:
           ARCHITECTURE: "amd64"
-          DOCKER_ARTIFACT_KEY: "elastic-crawler-docker"
+          DOCKERFILE_PATH: "Dockerfile.wolfi"
         agents:
           provider: aws
           instanceType: m6i.xlarge
@@ -89,7 +91,7 @@ steps:
         key: "push_arm64_docker_image"
         env:
           ARCHITECTURE: "arm64"
-          DOCKER_ARTIFACT_KEY: "elastic-crawler-docker"
+          DOCKERFILE_PATH: "Dockerfile.wolfi"
         agents:
           provider: aws
           instanceType: m6g.xlarge

@@ -28,8 +28,8 @@ set +x
 
 # Log into Docker
 echo "Logging into docker..."
-DOCKER_USER=$(vault read -address "${VAULT_ADDR}" -field "${DOCKER_USER_KEY}" "${DOCKER_PATH}")
-vault read -address "${VAULT_ADDR}" -field "${DOCKER_PASS_KEY}" "${DOCKER_PATH}" | \
+DOCKER_USER=$(vault read -address "${VAULT_ADDR}" -field "${DOCKER_USER_KEY}" "${VAULT_PATH}")
+vault read -address "${VAULT_ADDR}" -field "${DOCKER_PASS_KEY}" "${VAULT_PATH}" | \
   buildah login --username="${DOCKER_USER}" --password-stdin docker.elastic.co
 
 # Create the manifest for the multiarch image
