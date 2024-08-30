@@ -38,6 +38,8 @@ GEM
       elasticsearch-api (= 8.13.0)
     elasticsearch-api (8.13.0)
       multi_json
+    et-orbi (1.2.11)
+      tzinfo
     factory_bot (6.2.1)
       activesupport (>= 5.0.0)
     faraday (2.8.1)
@@ -46,6 +48,9 @@ GEM
       ruby2_keywords (>= 0.0.4)
     faraday-net_http (3.0.2)
     ffi (1.16.3-java)
+    fugit (1.11.1)
+      et-orbi (~> 1, >= 1.2.11)
+      raabro (~> 1.4)
     hashdiff (1.1.1)
     httpclient (2.8.3)
     i18n (1.14.4)
@@ -75,6 +80,7 @@ GEM
       pry (~> 0.9)
       slop (~> 3.0)
     public_suffix (6.0.1)
+    raabro (1.4.0)
     racc (1.7.3-java)
     rack (2.2.8.1)
     rack-mount (0.8.3)
@@ -118,6 +124,8 @@ GEM
       rake (>= 0.8.1)
     ruby-progressbar (1.13.0)
     ruby2_keywords (0.0.5)
+    rufus-scheduler (3.9.1)
+      fugit (~> 1.1, >= 1.1.6)
     simplecov (0.22.0)
       docile (~> 1.1)
       simplecov-html (~> 0.11)
@@ -146,6 +154,7 @@ GEM
 PLATFORMS
   universal-java-17
   universal-java-21
+  universal-java-22
 
 DEPENDENCIES
   activesupport (= 6.1.7.7)
@@ -174,6 +183,7 @@ DEPENDENCIES
   rubocop-performance (= 1.11.5)
   ruby-debug-base (= 0.11.0)
   ruby-debug-ide
+  rufus-scheduler (~> 3.9.1)
   simplecov
   simplecov-material
   strscan (~> 3.1.0)

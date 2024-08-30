@@ -1,4 +1,9 @@
 # This is a sample config file for crawling the parksaustralia.gov.au website writing output to an ES index
+#
+# The configuration options in this example are not exhaustive. To see all possible configuration options,
+# reference the config templates:
+# - config/crawler.yml.example
+# - config/elasticsearch.yml.example
 
 # Domains allowed for the crawl
 domains:
