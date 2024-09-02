@@ -21,7 +21,7 @@ Indexing web content with the Open Crawler requires:
 
 ### Execution logic
 
-Crawler runs crawl jobs on command based on config files in the `config` directory.
+Crawler runs crawl jobs on command, based on config files in the `config` directory.
 Each URL endpoint found during the crawl will result in one document to be indexed into Elasticsearch.
 Crawler performs crawl jobs in a multithreaded environment, where one thread will be used to visit one URL endpoint.
 

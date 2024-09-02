@@ -1,14 +1,14 @@
 # Crawler Directives
 
-Crawler directives are features that are set up externally that the Open Crawler adheres to.
-These typically require no change to the Open Crawler configuration, and instead changes directly to the webserver or webpage.
+Crawler directives are external features that the Open Crawler adheres to.
+These typically require no change to the Open Crawler configuration; instead, they are set up directly on the webserver or webpage.
 
 These techniques are similar to search engine optimization (SEO) techniques used for other web crawlers and robots.
 For example, you can embed instructions for the web crawler within your HTML content.
 You can also prevent the crawler from following links or indexing any content for certain webpages.
 Use these tools to manage webpage discovery and content extraction.
 
-**Discovery** concerns which web pages and files from crawled domains get indexed:
+**Discovery** concerns which webpages and files from crawled domains get indexed:
 
 - [Canonical URL link tags](#canonical-url-link-tags)
 - [Robots meta tags](#robots-meta-tags)
@@ -29,8 +29,8 @@ The following sections describe crawler instructions you can embed within HTML e
 A canonical URL link tag is an HTML element you can embed within pages that duplicate the content of other pages.
 The canonical URL link tag specifies the canonical URL for that content.
 
-The canonical URL is stored on the document in the url field, while the additional_urls field contains all other URLs where the crawler discovered the same content.
-If your site contains pages that duplicate the content of other pages, use canonical URL link tags to explicitly manage which URL is stored in the url field of the indexed document.
+The canonical URL is stored on the document in the `url` field, while the `additional_urls` field contains all other URLs where the crawler discovered the same content.
+If your site contains pages that duplicate the content of other pages, use canonical URL link tags to explicitly manage which URL is stored in the `url` field of the indexed document.
 
 #### Template
 
@@ -77,19 +77,19 @@ These tags are related to [crawl rules](./CRAWL_RULES.md).
 
 ### Data attributes for inclusion and exclusion
 
-Inject HTML data attributes into your web pages to instruct the web crawler to include or exclude particular sections from extracted content.
+Inject HTML data attributes into your webpages to instruct the web crawler to include or exclude particular sections from extracted content.
 For example, use this feature to exclude navigation and footer content when crawling, or to exclude sections of content only intended for screen readers.
 
 These attributes work as follows:
 
-- For all pages that contain HTML tags with a `data-elastic-include` attribute, the crawler will only index content within those tags
-- For all pages that contain HTML tags with a `data-elastic-exclude` attribute, the crawler will skip those tags from content extraction
-  - You can nest `data-elastic-include` and `data-elastic-exclude` tags, too. 
-- The web crawler will still crawl any links that appear inside excluded sections as long as the configured crawl rules allow them.
+- For all pages that contain HTML tags with a `data-elastic-include` attribute, the crawler will only index content within those tags.
+- For all pages that contain HTML tags with a `data-elastic-exclude` attribute, the crawler will skip those tags from content extraction.
+  - You can nest `data-elastic-include` and `data-elastic-exclude` tags.
+- The web crawler will still crawl any links that appear inside excluded sections, as long as the configured crawl rules allow them.
 
 #### Examples
 
-A simple content exclusion rule example:
+Here's a simple content exclusion rule example:
 
 ```html
 <body>
@@ -122,7 +122,7 @@ In this more complex example with nested exclusion and inclusion rules, the web 
 
 Nofollow links are HTML links that instruct the crawler to not follow the URL.
 
-The web crawler will not follow links that include `rel="nofollow"` (i.e. will not add links to the crawl queue).
+The web crawler will not follow links that include `rel="nofollow"` (that is, will not add links to the crawl queue).
 The link does not prevent the web crawler from indexing the page in which it appears.
 
 #### Template
@@ -162,7 +162,7 @@ You may want to add, remove, or update the `robots.txt` file for each of your do
 To add a `robots.txt` file to the domain `https://shop.example.com`:
 
 1. Determine which paths within the domain you’d like to exclude. 
-2. Create a `robots.txt` file with the appropriate directives from the [robots exclusion standard](https://en.wikipedia.org/wiki/Robots_exclusion_standard), e.g.:
+2. Create a `robots.txt` file with the appropriate directives from the [robots exclusion standard](https://en.wikipedia.org/wiki/Robots_exclusion_standard), for example:
     ```txt
     User-agent: *
     Disallow: /cart
@@ -174,9 +174,9 @@ To add a `robots.txt` file to the domain `https://shop.example.com`:
 The next time the web crawler visits the domain, it will fetch and parse the `robots.txt` file.
 The web crawler will crawl only those paths that are allowed by the [crawl rules](./CRAWL_RULES.md) and the directives within the `robots.txt` file for the domain.
 
-#### Non-standard extensions
+#### Nonstandard extensions
 
-The Elastic web crawler does not support all [nonstandard extensions](https://en.wikipedia.org/wiki/Robots.txt#Nonstandard_extensions) to the robots exclusion standard.
+The Elastic web crawler supports some, but not all, [nonstandard extensions](https://en.wikipedia.org/wiki/Robots.txt#Nonstandard_extensions) to the robots exclusion standard:
 
 | Directive             | Support       |
 |-----------------------|---------------|
@@ -209,13 +209,13 @@ At the start of each crawl, the web crawler fetches and processes each domain’
 The [sitemaps standard](https://www.sitemaps.org/index.html) defines the format and technical specification for sitemaps.
 Refer to the standard for the required and optional elements, character escaping, and other technical considerations and examples.
 
-The web crawler does not process optional meta data defined by the standard.
+The web crawler does not process optional metadata defined by the standard.
 The web crawler extracts a list of URLs from each sitemap and ignores all other information.
 
 There is no guarantee that pages (and their respective linked pages) will be indexed in the order they appear in the sitemap, because crawls are run asynchronously.
 
 Ensure each URL within your sitemap matches the exact domain — here defined as scheme + host + port— for your site.
-Different subdomains (like `www.example.com` and `blog.example.com`), and different schemes (like `http://example.com` and `https://example.com`), require separate sitemaps.
+Different subdomains (like `www.example.com` and `blog.example.com`) and different schemes (like `http://example.com` and `https://example.com`) require separate sitemaps.
 
 The web crawler also supports sitemap index files.
 Refer to [using sitemap index files](https://www.sitemaps.org/protocol.html#index) within the sitemap standard for sitemap index file details and examples.
@@ -226,7 +226,7 @@ To add a sitemap to the domain `https://shop.example.com`:
 
 1. Determine which pages within the domain you’d like to include
    - Ensure these paths are allowed by the domain’s crawl rules and the directives within the domain’s `robots.txt` file
-2. Create a sitemap file with the appropriate elements from the sitemap standard, e.g.:
+2. Create a sitemap file with the appropriate elements from the sitemap standard, for example:
     ```xml
     <?xml version="1.0" encoding="UTF-8"?>
     <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
