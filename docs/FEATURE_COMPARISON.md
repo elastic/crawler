@@ -1,12 +1,12 @@
 # Feature Comparison
 
-Elastic also has the cloud-base [Elastic Crawler](https://www.elastic.co/guide/en/enterprise-search/current/crawler.html) with similar features.
-Below is a comparison table below for the features that are available in Open Crawler vs Elastic Crawler (cloud).
+Elastic also offers the cloud-based [Elastic Crawler](https://www.elastic.co/guide/en/enterprise-search/current/crawler.html), with similar features.
+The following table compares the features of Open Crawler to those of Elastic Crawler (cloud).
 
 |                                                                                               | Open Crawler                                        | Elastic Crawler (cloud)                                                                                                            |
 |-----------------------------------------------------------------------------------------------|-----------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------|
 | Interface                                                                                     | CLI                                                 | GUI (Kibana)                                                                                                                       |
-| Hosting                                                                                       | Self-hosted                                         | Elastic Cloud or Self-hosted Enterprise Search                                                                                     |
+| Hosting                                                                                       | Self-hosted                                         | Elastic Cloud or self-hosted Enterprise Search                                                                                     |
 | State management                                                                              | Stateless                                           | Elasticsearch indices                                                                                                              |
 | Compatible with [Elasticsearch Serverless](https://www.elastic.co/docs/current/serverless)    | Yes                                                 | No                                                                                                                                 |
 | Unrestricted index naming                                                                     | Yes                                                 | No                                                                                                                                 |
