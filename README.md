@@ -21,12 +21,35 @@ Indexing web content with the Open Crawler requires:
 
 ### Execution logic
 
-Open Crawler runs crawl jobs on command based on config files in the `config` directory.
+Crawler runs crawl jobs on command, based on config files in the `config` directory.
 Each URL endpoint found during the crawl will result in one document to be indexed into Elasticsearch.
+Crawler performs crawl jobs in a multithreaded environment, where one thread will be used to visit one URL endpoint.
 
-Open Crawler performs crawl jobs in a multithreaded environment, where one thread will be used to visit one URL endpoint.
-The crawl results from these are added to a pool of results.
-These are indexed into Elasticsearch using the `_bulk` API once the pool reaches a configurable threshold.
+Crawls are performed in two stages:
+
+#### 1. Primary crawl
+
+Beginning with URLs included as `seed_urls`, the Crawler begins crawling web content.
+While crawling, each link it encounters will be added to the crawl queue, unless the link should be ignored due to [crawl rules](./docs/features/CRAWL_RULES.md) or [crawler directives](./docs/features/CRAWLER_DIRECTIVES.md).
+
+The crawl results from visiting these webpages are added to a pool of results.
+These are indexed into Elasticsearch using the `_bulk` API once the pool reaches the configured threshold.
+
+#### 2. Purge crawl
+
+After a primary crawl is completed, Crawler will then fetch every doc from the associated index that was not encountered during the primary crawl.
+It does this through comparing the `last_crawled_at` date on the doc to the primary crawl's start time.
+If `last_crawled_at` is earlier than the start time, that means the webpage was not updated during the primary crawl and should be added to the purge crawl.
+
+Crawler then re-crawls all of these webpages.
+If a webpage is still accessible, Crawler will update its Elasticsearch doc.
+A webpage can be inaccessible due to any of the following reasons:
+
+- Updated [crawl rules](./docs/features/CRAWL_RULES.md) in the configuration file that now exclude the URL
+- Updated [crawler directives](./docs/features/CRAWLER_DIRECTIVES.md) on the server or webpage that now exclude the URL
+- Non-`200` response from the webserver
+
+At the end of the purge crawl, all docs in the index that were not updated during either the primary crawl or the purge crawl are deleted.
 
 ### Setup
 
