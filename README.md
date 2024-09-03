@@ -4,11 +4,11 @@ This repository contains code for the Elastic Open Web Crawler.
 Open Crawler enables users to easily ingest web content into Elasticsearch.
 
 > [!IMPORTANT]
-> _The Open Crawler is currently in **tech-preview**_.
-Tech-preview features are subject to change and are not covered by the support SLA of generally available (GA) features.
+> _The Open Crawler is currently in **beta**_.
+Beta features are subject to change and are not covered by the support SLA of generally available (GA) features.
 Elastic plans to promote this feature to GA in a future release.
 
-_Open Crawler `v0.1` is confirmed to be compatible with Elasticsearch `v8.13.0` and above._
+_Open Crawler `v0.2` is confirmed to be compatible with Elasticsearch `v8.13.0` and above._
 
 ### User workflow
 
