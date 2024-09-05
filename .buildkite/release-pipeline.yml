@@ -11,6 +11,7 @@ steps:
             value: "true"
           - label: "False"
             value: "false"
+  - wait: ~
   # ----
   # Docker builds for amd64
   # ----
