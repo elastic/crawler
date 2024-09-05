@@ -15,7 +15,7 @@ _Open Crawler `v0.2` is confirmed to be compatible with Elasticsearch `v8.13.0` 
 Indexing web content with the Open Crawler requires:
 
 1. Running an instance of Elasticsearch (on-prem, cloud, or serverless)
-2. Cloning of the Open Crawler repository (see [Setup](#setup))
+2. Running the official Docker image (see [Setup](#setup))
 3. Configuring a crawler config file (see [Configuring crawlers](#configuring-crawlers))
 4. Using the CLI to begin a crawl job (see [CLI commands](#cli-commands))
 
@@ -95,7 +95,7 @@ If using an API key, ensure that the API key has read and write permissions to a
   ```
 </details>
 
-#### Running Open Crawler from Docker
+#### Running Open Crawler with Docker
 
 > [!IMPORTANT]
 > **Do not trigger multiple crawl jobs that reference the same index simultaneously.**
@@ -103,25 +103,19 @@ A single crawl execution can be thought of as a single crawler.
 Even if two crawl executions share a configuration file, the two crawl processes will not communicate with each other.
 Two crawlers simultaneously interacting with a single index can lead to data loss.
 
-Open Crawler has a Dockerfile that can be built and run locally.
-
-1. Clone the repository: `git clone https://github.com/elastic/crawler.git`
-2. Create a docker network `docker network create elastic`
-3. Build the image `docker build -t crawler-image .`
-4. Run the container
+1. Run the official Docker image
     ```bash
-    docker run \
-    -i -d \
-    --network elastic \
-    --name crawler \
-    crawler-image
+    docker run -i -d \
+      --network elastic \
+      --name crawler \
+      docker.elastic.co/integrations/crawler:0.2.0
     ```
-   - `-i` allows the container to stay alive so CLI commands can be executed inside it
-   - `-d` allows the container to run "detached" so you don't have to dedicate a terminal window to it
-   - `--network` if you're running Elasticsearch in another docker container on the same machine, they will both need to run on the same network
-5. Confirm that CLI commands are working `docker exec -it crawler bin/crawler version`
-   - Execute other CLI commands from outside of the container by prepending `docker exec -it crawler <command>`
-6. Create a config file for your crawler. See [Configuring crawlers](#configuring-crawlers) for next steps.
+    - `-i` allows the container to stay alive so CLI commands can be executed inside it
+    - `-d` allows the container to run "detached" so you don't have to dedicate a terminal window to it
+    - `--network` if you're running Elasticsearch in another docker container on the same machine, they will both need to run on the same network
+2. Confirm that CLI commands are working `docker exec -it crawler bin/crawler version` 
+3. Create a config file for your crawler
+4. See [Configuring crawlers](#configuring-crawlers) for next steps.
 
 #### Running Open Crawler from source
 
@@ -168,18 +162,27 @@ Crawler has template configuration files that contain every configuration availa
 - [config/crawler.yml.example](config/crawler.yml.example)
 - [config/elasticsearch.yml.example](config/elasticsearch.yml.example)
 
-To use these files, make a copy in the same directory without the `.example` suffix:
+To use these files, make a copy locally without the `.example` suffix.
+Then remove the `#` comment-out characters from the configurations that you need.
+
+You can then copy the file into your running Docker image.
 
 ```bash
-$ cp config/crawler.yml.example config/crawler.yml
+$ docker cp config/my-crawler.yml crawler:app/config/my-crawler.yml
 ```
-
-Then remove the `#` comment-out characters from the configurations that you need.
 
 Crawler can be configured using two config files, a Crawler configuration and an Elasticsearch configuration.
 The Elasticsearch configuration file is optional.
 It exists to allow users with multiple crawlers to only need a single Elasticsearch configuration.
 See [CONFIG.md](docs/CONFIG.md) for more details on these files.
+
+### Running a Crawl Job
+
+Once everything is configured, you can run a crawl job using the CLI:
+
+```bash
+$ docker exec -it crawler bin/crawler schedule path/to/my-crawler.yml
+```
 
 ### Scheduling Recurring Crawl Jobs
 
