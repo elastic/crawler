@@ -99,6 +99,8 @@ module Crawler
 
       if purge_urls.empty?
         system_logger.info('No documents were found for the purge crawl. Skipping purge crawl.')
+        set_outcome(:success, "Successfully finished the #{@crawl_stage} crawl with an empty crawl queue")
+        log_crawl_end_event
         return
       end
 
