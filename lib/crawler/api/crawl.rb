@@ -141,7 +141,7 @@ module Crawler
         end
 
         outcome = combined_outcome(results)
-        message = "#{results[:primary][:message]} | #{results[:purge][:outcome]}"
+        message = "#{results[:primary][:message]} | #{results[:purge][:message]}"
         record_outcome(outcome:, message:)
       end
 
