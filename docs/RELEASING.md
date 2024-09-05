@@ -1,15 +1,15 @@
 # Releasing
 
-The version scheme we use is **MAJOR.MINOR.PATCH** and stored in the [product_version](../product_version) file at the root of this repository.
+This doc is a reference for Elastic employees.
+Non-Elastic users can not publish a release.
 
+The version scheme we use is **MAJOR.MINOR.PATCH** and stored in the [product_version](../product_version) file at the root of this repository.
 Open Crawler follows its own release versioning and does not follow the Elastic stack unified release schedule or versioning.
 
-## How to release
+## How to publish a Docker image
 
 Releasing is done entirely through Buildkite.
-The Open Crawler build can be found here: https://buildkite.com/elastic/crawler-docker-build-publish
-
-Builds will only run from a versioned branch.
+The Open Crawler build job is named `crawler-docker-build-publish`.
 
 Build steps:
 
