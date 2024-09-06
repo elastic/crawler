@@ -25,7 +25,7 @@ module Crawler
       def write(crawl_result)
         doc = to_doc(crawl_result)
         result_file = "#{dir}/#{crawl_result.url_hash}.json"
-        File.write(result_file, doc.to_json)
+        ::File.write(result_file, doc.to_json)
 
         success
       end
