@@ -30,7 +30,7 @@ spec:
       provider_settings:
         skip_pull_request_builds_for_existing_commits: false
       teams:
-        ingestion-team:
+        search-extract-and-transform:
           access_level: MANAGE_BUILD_AND_READ
         everyone:
           access_level: READ_ONLY
@@ -50,7 +50,7 @@ metadata:
       url: "https://buildkite.com/elastic/crawler-docker-build-publish"
 spec:
   type: "buildkite-pipeline"
-  owner: "group:ingestion-team"
+  owner: "group:search-extract-and-transform"
   system: "buildkite"
   implementation:
     apiVersion: "buildkite.elastic.dev/v1"
@@ -63,7 +63,7 @@ spec:
       provider_settings:
         trigger_mode: "none"
       teams:
-        ingestion-team: {}
+        search-extract-and-transform: {}
         search-productivity-team: {}
         everyone:
           access_level: "READ_ONLY"
