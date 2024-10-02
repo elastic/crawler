@@ -181,7 +181,7 @@ See [CONFIG.md](docs/CONFIG.md) for more details on these files.
 Once everything is configured, you can run a crawl job using the CLI:
 
 ```bash
-$ docker exec -it crawler bin/crawler schedule path/to/my-crawler.yml
+$ docker exec -it crawler bin/crawler crawl path/to/my-crawler.yml
 ```
 
 ### Scheduling Recurring Crawl Jobs
