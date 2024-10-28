@@ -20,7 +20,6 @@ module Crawler
         end
 
         def parsed_content
-          # @parsed_content ||= Nokogiri::HTML(content)
           @parsed_content ||= Jsoup.parse(content)
         end
 
@@ -105,14 +104,12 @@ module Crawler
         #---------------------------------------------------------------------------------------------
         # Returns +true+ if the page contains a robots nofollow meta tag
         def meta_nofollow?
-          # !!parsed_content.at_css('meta[name=robots][content*=nofollow]')
-          !!parsed_content.select('meta[name=robots][content*=nofollow]').first
+          !!parsed_content.selectFirst('meta[name=robots][content*=nofollow]')
         end
 
         # Returns +true+ if the page contains a robots noindex meta tag
         def meta_noindex?
-          # !!parsed_content.at_css('meta[name=robots][content*=noindex]')
-          !!parsed_content.select('meta[name=robots][content*=noindex]').first
+          !!parsed_content.selectFirst('meta[name=robots][content*=noindex]')
         end
 
         # Returns the meta tag value for keywords
@@ -130,7 +127,7 @@ module Crawler
         #---------------------------------------------------------------------------------------------
         # Returns the title of the document, cleaned up for indexing
         def document_title(limit: 1000)
-          title_tag = parsed_content.select('title').first
+          title_tag = parsed_content.selectFirst('title')
           title = Crawler::ContentEngine::Utils.node_descendant_text(title_tag)
           Crawler::ContentEngine::Utils.limit_bytesize(title, limit)
         end
@@ -147,7 +144,7 @@ module Crawler
 
         # Returns an array of section headings from the page (using h1-h6 tags to find those)
         def headings(limit: 10)
-          body_tag = parsed_content.select('body').first
+          body_tag = parsed_content.body
           return [] unless body_tag
 
           Set.new.tap do |headings|
@@ -163,15 +160,15 @@ module Crawler
 
         #---------------------------------------------------------------------------------------------
         def extract_attribute_value(tag_name, attribute_name)
-          # parsed_content.css(tag_name)&.attr(attribute_name)&.content
           parsed_content.select(tag_name)&.attr(attribute_name)
         end
 
         # Lookup for content using CSS selector
         #
-        # @param [String] CSS selector or XPath expression
+        # @param [String] selector - CSS selector or XPath expression
         # @return [Array<String>]
         def extract_by_selector(selector, ignore_tags)
+          # TODO: get this working with XPath
           parsed_content.search(selector).map do |node|
             Crawler::ContentEngine::Utils.node_descendant_text(node, ignore_tags)
           end
