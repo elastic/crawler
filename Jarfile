@@ -23,7 +23,7 @@ jar 'org.apache.commons:commons-lang3', '3.10'
 # Indirect dependencies that we needed to upgrade
 jar 'com.google.protobuf:protobuf-java', '3.19.6'
 jar 'com.github.junrar:junrar', '7.4.1'
-jar 'org.jsoup:jsoup', '1.14.3'
+jar 'org.jsoup:jsoup', '1.18.1'
 jar 'commons-io:commons-io', '2.11.0'
 jar 'org.apache.cxf:cxf-rt-transports-http', '3.4.10'
 jar 'org.apache.cxf:cxf-core', '3.4.10'

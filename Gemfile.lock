@@ -171,7 +171,6 @@ DEPENDENCIES
   jar-dependencies (= 0.4.1)
   json (~> 2.7.2)
   json-schema (~> 4.3.0)
-  nokogiri (= 1.13.10)
   pry (~> 0.14.2)
   pry-nav
   pry-remote
