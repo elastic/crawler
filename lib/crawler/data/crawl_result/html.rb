@@ -20,7 +20,8 @@ module Crawler
         end
 
         def parsed_content
-          @parsed_content ||= Nokogiri::HTML(content)
+          # @parsed_content ||= Nokogiri::HTML(content)
+          @parsed_content ||= Jsoup.parse(content)
         end
 
         def to_s
@@ -61,7 +62,7 @@ module Crawler
           links = Set.new
           limit_reached = false
 
-          parsed_content.css('a[href]').each do |a|
+          parsed_content.select('a[href]').each do |a|
             # Parse the link
             link = Link.new(base_url:, node: a)
 
@@ -104,12 +105,14 @@ module Crawler
         #---------------------------------------------------------------------------------------------
         # Returns +true+ if the page contains a robots nofollow meta tag
         def meta_nofollow?
-          !!parsed_content.at_css('meta[name=robots][content*=nofollow]')
+          # !!parsed_content.at_css('meta[name=robots][content*=nofollow]')
+          !!parsed_content.select('meta[name=robots][content*=nofollow]').first
         end
 
         # Returns +true+ if the page contains a robots noindex meta tag
         def meta_noindex?
-          !!parsed_content.at_css('meta[name=robots][content*=noindex]')
+          # !!parsed_content.at_css('meta[name=robots][content*=noindex]')
+          !!parsed_content.select('meta[name=robots][content*=noindex]').first
         end
 
         # Returns the meta tag value for keywords
@@ -127,14 +130,14 @@ module Crawler
         #---------------------------------------------------------------------------------------------
         # Returns the title of the document, cleaned up for indexing
         def document_title(limit: 1000)
-          title_tag = parsed_content.css('title').first
+          title_tag = parsed_content.select('title').first
           title = Crawler::ContentEngine::Utils.node_descendant_text(title_tag)
           Crawler::ContentEngine::Utils.limit_bytesize(title, limit)
         end
 
         # Returns the body of the document, cleaned up for indexing
         def document_body(limit: 5.megabytes)
-          body_tag = parsed_content.at_css('body')
+          body_tag = parsed_content.body
           return '' unless body_tag
 
           body_tag = Crawler::ContentEngine::Transformer.transform(body_tag)
@@ -144,11 +147,11 @@ module Crawler
 
         # Returns an array of section headings from the page (using h1-h6 tags to find those)
         def headings(limit: 10)
-          body_tag = parsed_content.css('body').first
+          body_tag = parsed_content.select('body').first
           return [] unless body_tag
 
           Set.new.tap do |headings|
-            body_tag.css('h1, h2, h3, h4, h5, h6').each do |heading|
+            body_tag.select('h1, h2, h3, h4, h5, h6').each do |heading|
               heading = heading.text.to_s.squish
               next if heading.empty?
 
@@ -160,7 +163,8 @@ module Crawler
 
         #---------------------------------------------------------------------------------------------
         def extract_attribute_value(tag_name, attribute_name)
-          parsed_content.css(tag_name)&.attr(attribute_name)&.content
+          # parsed_content.css(tag_name)&.attr(attribute_name)&.content
+          parsed_content.select(tag_name)&.attr(attribute_name)
         end
 
         # Lookup for content using CSS selector

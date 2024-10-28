@@ -494,6 +494,7 @@ module Crawler
 
       Set.new.tap do |good_links|
         links.each do |link|
+          system_logger.info(link)
           unless link.valid?
             system_logger.warn("Failed to parse a link '#{link.link}' on '#{crawl_result.url}': #{link.error}")
             next

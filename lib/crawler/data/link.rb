@@ -20,15 +20,17 @@ module Crawler
         raise ArgumentError, 'Needs an node or a string link argument' unless node || link
         raise ArgumentError, 'The :link argument needs to be a String' if link && !link.is_a?(String)
 
-        if node && !node.is_a?(Nokogiri::XML::Element)
-          raise ArgumentError,
-                'The :node argument needs to be a Nokogiri::XML::Element'
-        end
+        # TODO: change to jsoup error
+        # if node && !node.is_a?(Nokogiri::XML::Element)
+        #   raise ArgumentError,
+        #         'The :node argument needs to be a Nokogiri::XML::Element'
+        # end
         raise ArgumentError, 'Needs only one link argument' if node && link
 
         @base_url = base_url
         @node = node
-        @link = node ? node['href'] : link
+        # @link = node ? node['href'] : link
+        @link = node ? node.attr('abs:href') : link
         @error = nil
       end
 
@@ -91,7 +93,8 @@ module Crawler
       # Returns an array with all the values of the rel attribute for the link
       # See https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel for details
       def rel
-        node ? node['rel'].to_s.squish.downcase.split : []
+        # node ? node['rel'].to_s.squish.downcase.split : []
+        node ? node.attr('rel').squish.downcase.split : []
       end
 
       # Returns +true+ if the link contains a rel=nofollow attribute
