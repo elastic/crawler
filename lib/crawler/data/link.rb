@@ -14,7 +14,7 @@ module Crawler
 
       # There are two ways to pass a link in:
       # - `link` - a string representation of a link
-      # - `node` - a Nokogiri::XML::Element object
+      # - `node` - a Java::OrgJsoupNodes::Element object
       def initialize(base_url:, node: nil, link: nil) # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
         raise ArgumentError, 'Base URL needs to be a URL object' unless base_url.is_a?(URL)
         raise ArgumentError, 'Needs an node or a string link argument' unless node || link

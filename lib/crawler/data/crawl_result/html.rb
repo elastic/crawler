@@ -165,11 +165,20 @@ module Crawler
 
         # Lookup for content using CSS selector
         #
-        # @param [String] selector - CSS selector or XPath expression
+        # @param [String] selector - CSS selector
         # @return [Array<String>]
-        def extract_by_selector(selector, ignore_tags)
-          # TODO: get this working with XPath
-          parsed_content.search(selector).map do |node|
+        def extract_by_css_selector(selector, ignore_tags)
+          parsed_content.select(selector).map do |node|
+            Crawler::ContentEngine::Utils.node_descendant_text(node, ignore_tags)
+          end
+        end
+
+        # Lookup for content using XPath selector
+        #
+        # @param [String] selector - XPath selector
+        # @return [Array<String>]
+        def extract_by_xpath_selector(selector, ignore_tags)
+          parsed_content.selectXpath(selector).map do |node|
             Crawler::ContentEngine::Utils.node_descendant_text(node, ignore_tags)
           end
         end
