@@ -88,7 +88,7 @@ GEM
     rainbow (3.1.1)
     rake (13.2.1)
     regexp_parser (2.9.0)
-    rexml (3.3.8)
+    rexml (3.3.9)
     rspec (3.13.0)
       rspec-core (~> 3.13.0)
       rspec-expectations (~> 3.13.0)
@@ -151,6 +151,7 @@ GEM
     zeitwerk (2.6.13)
 
 PLATFORMS
+  universal-java-11
   universal-java-17
   universal-java-21
   universal-java-22
@@ -177,7 +178,7 @@ DEPENDENCIES
   pry-remote
   racc (~> 1.7.3)
   rack (~> 2.2.8.1)
-  rexml (~> 3.3.8)
+  rexml (~> 3.3.9)
   rspec (~> 3.13.0)
   rubocop (~> 1.63)
   rubocop-performance (= 1.11.5)
