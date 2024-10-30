@@ -18,6 +18,7 @@ module Crawler
         def initialize(url:, request_start_time:, request_end_time:)
           raise ArgumentError, 'Need a Crawler URL object!' unless url.is_a?(Crawler::Data::URL)
 
+          @url = url
           @request_start_time = request_start_time
           @request_end_time = request_end_time
         end

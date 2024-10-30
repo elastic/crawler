@@ -6,6 +6,8 @@
 
 # frozen_string_literal: true
 
+java_import org.htmlunit.TextPage
+
 require_dependency(File.join(__dir__, 'base'))
 
 module Crawler
@@ -27,9 +29,17 @@ module Crawler
         end
 
         def body
+          content =
+            if @response.class == Java::OrgHtmlunit::TextPage
+              # for robots.txt
+              @response.content
+            else
+              @response.as_xml
+            end
+
           # asXml adds a heap of line breaks and stuff that we want to remove
           # white space is handled during content extraction later
-          @response.asXml.gsub(/[\n\r]/, '')
+          content.gsub(/[\n\r]/, '')
         end
 
         def web_response
