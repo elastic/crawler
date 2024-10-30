@@ -7,7 +7,6 @@
 # frozen_string_literal: true
 
 require 'active_support/core_ext/string/filters'
-require_dependency File.join(__dir__, '..', 'response', 'apache')
 require_dependency(File.join(__dir__, 'base'))
 
 module Crawler
@@ -19,14 +18,19 @@ module Crawler
         java_import org.apache.hc.core5.http.message.StatusLine
 
         def initialize(apache_response:, **kwargs)
+          @type = :apache
           @response = apache_response
           @http_entity = apache_response.entity
 
           super(**kwargs)
         end
 
+        def type
+          :apache
+        end
+
         def release_connection
-          response.close
+          @response.close
         end
 
         def body(
@@ -65,48 +69,11 @@ module Crawler
         end
 
         def headers
-          @headers ||= response.headers.each_with_object({}) do |h, o|
-            key = h.get_name.downcase
-
-            if o.key?(key)
-              o[key] = Array(o[key]) unless o[key].is_a?(Array)
-              o[key].push(h.get_value)
-            else
-              o[key] = h.get_value
-            end
-          end
-        end
-
-        def content_length
-          headers['content-length'].to_i
+          @headers ||= aggregate_headers(response.headers)
         end
 
         def content_type
           http_entity&.content_type || headers['content-type']
-        end
-
-        def mime_type
-          (content_type || '').downcase.split(';').first.presence&.strip
-        end
-
-        def time_since_request_start
-          Time.now - request_start_time
-        end
-
-        def redirect?
-          code >= 300 && code <= 399
-        end
-
-        def error?
-          code >= 400
-        end
-
-        def unsupported_method?
-          code == 405
-        end
-
-        def redirect_location
-          url.join(headers['location'])
         end
 
         private
