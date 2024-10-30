@@ -95,7 +95,7 @@ module Crawler
       apache_response = client.execute(http_head)
       end_time = Time.now
 
-      Crawler::HttpUtils::Response.new(
+      Crawler::Http::Response::Apache.new(
         apache_response:,
         url:,
         request_start_time: start_time,
@@ -131,7 +131,7 @@ module Crawler
       apache_response = client.execute(http_get)
       end_time = Time.now
 
-      Crawler::HttpUtils::Response.new(
+      Crawler::Http::Response::Apache.new(
         apache_response:,
         url:,
         request_start_time: start_time,
@@ -370,6 +370,6 @@ end
 
 require_dependency File.join(__dir__, 'http_utils', 'exceptions')
 require_dependency File.join(__dir__, 'http_utils', 'config')
-require_dependency File.join(__dir__, 'http_utils', 'response')
+require_dependency File.join(__dir__, 'http', 'response', 'apache')
 require_dependency File.join(__dir__, 'http_utils', 'filtering_dns_resolver')
 require_dependency File.join(__dir__, 'http_utils', 'all_trusting_trust_manager')
