@@ -127,7 +127,6 @@ module Crawler
           end
         end
 
-        #-------------------------------------------------------------------------------------------------
         # Returns a byte buffer to be used for reading the response
         def create_response_buffer(max_response_size)
           content_length = http_entity.content_length
@@ -135,7 +134,6 @@ module Crawler
           ByteArrayBuffer.new(buffer_capacity)
         end
 
-        #-------------------------------------------------------------------------------------------------
         # Load data from the input http entity into a byte buffer, controlling for response size limits
         def consume_http_entity(max_response_size:, request_timeout:) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
           stream = http_entity.content
@@ -175,21 +173,18 @@ module Crawler
           stream.close
         end
 
-        #-------------------------------------------------------------------------------------------------
         # Returns the list of content encodings applied to the response
         def response_content_encodings
           content_encoding = http_entity.content_encoding.to_s
           content_encoding.downcase.split(',').map(&:strip).reject(&:blank?)
         end
 
-        #-------------------------------------------------------------------------------------------------
         # Makes sure the content-encoding used by the server is supported by our client
         #
         # The client usually takes care of the encoding transparently for us, but
         # if an encoding is not supported, it will pass it through to us here and we
         # need to detect unsupported encoding values and raise an error instead of
         # ingesting binary garbage as content.
-        #
         def check_content_encoding
           response_content_encodings.each do |encoding|
             next if Crawler::Http::Client::Base::CONTENT_DECODERS.include?(encoding)
