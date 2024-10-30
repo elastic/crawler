@@ -118,7 +118,8 @@ module Crawler
         :default_encoding,            # Default encoding used for responses that do not specify a charset
         :compression_enabled,         # Enable/disable HTTP content compression
         :sitemap_discovery_disabled,  # Enable/disable crawling of sitemaps defined in robots.txt
-        :head_requests_enabled        # Fetching HEAD requests before GET requests enabled
+        :head_requests_enabled,       # Fetching HEAD requests before GET requests enabled
+        :dynamic_content_enabled      # Crawl dynamic content using HtmlUnit (rendered client-side by JS)
 
       ].freeze
 
@@ -180,7 +181,8 @@ module Crawler
 
         extraction_rules: {},
         crawl_rules: {},
-        purge_crawl_enabled: true
+        purge_crawl_enabled: true,
+        dynamic_content_enabled: false
       }.freeze
 
       # Settings we are not allowed to log due to their sensitive nature
