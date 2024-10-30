@@ -27,6 +27,8 @@ module Crawler
 
     # Returns a hash with a set of crawl-specific HTTP client metrics
     def http_client_status
+      return {} if config.dynamic_content_enabled
+
       pool = http_client.connection_pool_stats
       {
         max_connections: pool.max,
@@ -133,6 +135,8 @@ module Crawler
 
     # Returns an HTTP client to be used for all requests
     def http_client
+      return html_unit_client if config.dynamic_content_enabled
+
       apache_client
     end
 
@@ -227,7 +231,7 @@ module Crawler
       result_args = {
         url: crawl_task.url,
         status_code: response.code,
-        content_type: response['content-type'],
+        content_type: response.content_type,
         start_time: response.request_start_time,
         end_time: response.request_end_time
       }
@@ -253,11 +257,17 @@ module Crawler
       end
 
       # Extract the body for responses that need it
-      response_body = response.body(
-        max_response_size: config.max_response_size,
-        request_timeout: config.request_timeout,
-        default_encoding: Encoding.find(config.default_encoding)
-      )
+      response_body =
+        case response.type
+        when :apache
+          response.body(
+            max_response_size: config.max_response_size,
+            request_timeout: config.request_timeout,
+            default_encoding: Encoding.find(config.default_encoding)
+          )
+        when :html_unit
+          response.body
+        end
 
       # Special responses for robots.txt tasks (no matter the content type)
       if crawl_task.robots_txt?

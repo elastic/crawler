@@ -13,6 +13,8 @@ require_dependency File.join(__dir__, '..', 'config')
 require_dependency File.join(__dir__, '..', 'filtering_dns_resolver')
 require_dependency File.join(__dir__, '..', 'all_trusting_trust_manager')
 
+java_import org.apache.commons.compress.compressors.brotli.BrotliCompressorInputStream
+
 class BrotliInputStreamFactory
   java_import org.apache.hc.client5.http.entity.InputStreamFactory
   include InputStreamFactory
@@ -53,6 +55,10 @@ module Crawler
 
           @client = new_http_client
           finalize(client, :close)
+        end
+
+        def content_decoders
+          CONTENT_DECODERS
         end
 
         private

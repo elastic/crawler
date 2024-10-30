@@ -12,8 +12,6 @@ java_import javax.net.ssl.SSLContext
 java_import javax.net.ssl.TrustManagerFactory
 java_import javax.net.ssl.X509TrustManager
 
-java_import org.apache.commons.compress.compressors.brotli.BrotliCompressorInputStream
-
 require_dependency File.join(__dir__, 'base')
 require_dependency File.join(__dir__, '..', 'response', 'apache')
 
@@ -160,11 +158,6 @@ module Crawler
           builder.set_content_decoder_registry(content_decoders)
           builder.set_proxy(proxy_host)
           builder.build
-        end
-
-        #-------------------------------------------------------------------------------------------------
-        def content_decoders
-          CONTENT_DECODERS
         end
 
         #-------------------------------------------------------------------------------------------------
