@@ -6,14 +6,21 @@
 
 # frozen_string_literal: true
 
-java_import org.htmlunit.WebClient
 java_import org.htmlunit.BrowserVersion
+java_import org.htmlunit.ProxyConfig
 java_import org.htmlunit.SilentCssErrorHandler
+java_import org.htmlunit.WebClient
+
+require_dependency File.join(__dir__, 'base')
 
 module Crawler
   module Http
     module Client
-      class HtmlUnit
+      class HtmlUnit < Base
+        java_import org.apache.http.auth.AuthScope
+        java_import org.apache.http.auth.UsernamePasswordCredentials
+        java_import org.apache.http.impl.client.BasicCredentialsProvider
+
         def initialize(options = {})
           @config = Crawler::Http::Config.new(options)
           @logger = @config.fetch(:logger)
@@ -57,24 +64,60 @@ module Crawler
         end
 
         def connection_pool_stats
-          # TODO implement
+          # TODO: implement
           # This isn't really trackable as we only have 1 client per thread?
           raise NotImplementedError
         end
 
         private
 
-        def new_connection_manager
-          raise NotImplementedError
+        def new_http_client
+          client = WebClient.new(BrowserVersion::CHROME)
+
+          # Non-configurable settings
+          client.options.throw_exception_on_script_error = false
+          client.options.throw_exception_on_failing_status_code = false
+          client.options.redirect_enabled = false
+          client.cookie_manager.cookies_enabled = false
+
+          # Configurable options
+          # client.options.user_agent = @config.user_agent
+          client.options.timeout = @config.timeout_in_milliseconds
+          client.options.proxy_config = proxy_config
+          client.credentials_provider = credentials_provider
+
+          # TODO: confirm if needed:
+          # connection manager (?)
+          # disable compression
+          # set content decoder registry
+
+          client
         end
 
-        def new_http_client
-          # TODO make these configurable
-          client = WebClient.new(BrowserVersion::CHROME)
-          client.getOptions.setThrowExceptionOnScriptError(false)
-          client.getOptions.setThrowExceptionOnFailingStatusCode(false)
-          client.getOptions.setRedirectEnabled(false)
-          client
+        def proxy_config
+          ProxyConfig.new(@config.http_proxy_host, @config.http_proxy_port, @config.http_proxy_scheme)
+        end
+
+        # Returns a credentials provider to be used for all requests
+        # By default, it will be empty and not have any credentials in it
+        def credentials_provider
+          BasicCredentialsProvider.new.tap do |provider|
+            next unless @config.http_proxy_host && proxy_credentials
+
+            logger.debug('Enabling proxy auth!')
+            proxy_auth_scope = AuthScope.new(proxy_host)
+            provider.set_credentials(proxy_auth_scope, proxy_credentials)
+          end
+        end
+
+        # Returns HTTP credentials to be used for proxy requests
+        def proxy_credentials
+          return unless @config.http_proxy_username && @config.http_proxy_password
+
+          UsernamePasswordCredentials.new(
+            @config.http_proxy_username,
+            @config.http_proxy_password.to_java_string.to_char_array
+          )
         end
       end
     end

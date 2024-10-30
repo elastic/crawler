@@ -15,6 +15,8 @@ org.htmlunit:htmlunit-websocket-client:4.5.0:compile:
 commons-logging:commons-logging:1.3.4:compile:
 commons-net:commons-net:3.11.1:compile:
 org.brotli:dec:0.1.2:compile:
+org.apache.httpcomponents:httpclient:4.5.14:compile:
+org.apache.httpcomponents:httpcore:4.4.16:compile:
 org.apache.tika:tika-parsers:1.27:compile:
 org.apache.tika:tika-core:1.27:compile:
 xerces:xercesImpl:2.12.1:compile:
@@ -87,8 +89,6 @@ net.sf.ehcache:ehcache-core:2.6.2:compile:
 org.quartz-scheduler:quartz:2.3.2:compile:
 com.zaxxer:HikariCP-java7:2.4.13:compile:
 edu.ucar:httpservices:4.5.5:compile:
-org.apache.httpcomponents:httpclient:4.5.13:compile:
-org.apache.httpcomponents:httpcore:4.4.13:compile:
 org.apache.commons:commons-csv:1.8:compile:
 org.apache.sis.core:sis-utility:1.0:compile:
 javax.measure:unit-api:1.0:compile:

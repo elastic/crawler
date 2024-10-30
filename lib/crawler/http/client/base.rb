@@ -31,7 +31,6 @@ module Crawler
       class Base
         # Please note: We cannot have these java_import calls at the top level
         # because it causes conflicts with Manticore's imports of httpclient v4.5
-
         java_import org.apache.hc.client5.http.entity.GZIPInputStreamFactory
         java_import org.apache.hc.client5.http.entity.DeflateInputStreamFactory
 
@@ -48,7 +47,7 @@ module Crawler
 
         def initialize(options = {})
           @config = Crawler::Http::Config.new(options)
-          @logger = config.fetch(:logger)
+          @logger = @config.fetch(:logger)
 
           @finalizers = []
           self.class.shutdown_on_finalize(self, finalizers)

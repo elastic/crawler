@@ -16,6 +16,9 @@ jar 'org.apache.httpcomponents.client5:httpclient5', '5.1'
 # For loading dynamic content
 jar 'org.htmlunit:htmlunit', '4.5.0'
 
+# This version is required for HtmlUnit
+jar 'org.apache.httpcomponents:httpclient', '4.5.14'
+
 #---------------------------------------------------------------------------------------------------
 # Text extraction and other utilities
 jar 'org.apache.tika:tika-parsers', '1.27'
