@@ -9,7 +9,7 @@
 require_dependency File.join(__dir__, '..', 'api', 'config')
 
 module Crawler
-  module HttpUtils
+  module Http
     class Config < SimpleDelegator
       DEFAULT_MAX_POOL_SIZE = 50
       DEFAULT_CONNECTION_REQUEST_TIMEOUT = 60

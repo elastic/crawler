@@ -6,10 +6,10 @@
 
 # frozen_string_literal: true
 
-require_dependency File.join(__dir__, '..', 'http_client')
+require_dependency File.join(__dir__, 'client', 'apache')
 
 module Crawler
-  module HttpUtils
+  module Http
     class FilteringDnsResolver
       java_import org.apache.hc.client5.http.DnsResolver
       java_import org.apache.hc.client5.http.SystemDefaultDnsResolver
@@ -51,7 +51,7 @@ module Crawler
 
         if valid_addresses.empty?
           error = "Unable to request #{host.inspect} because it resolved to only private/invalid addresses"
-          raise Crawler::HttpUtils::InvalidHost, error
+          raise Crawler::Http::InvalidHost, error
         end
 
         valid_addresses

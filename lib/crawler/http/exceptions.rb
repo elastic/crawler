@@ -7,7 +7,7 @@
 # frozen_string_literal: true
 
 module Crawler
-  module HttpUtils
+  module Http
     class BaseError < StandardError
       # No suggestions by default
       def suggestion_message
@@ -35,7 +35,7 @@ module Crawler
       end
 
       def supported_encodings
-        Crawler::HttpClient::CONTENT_DECODERS.keys
+        Crawler::Http::Client::Base::CONTENT_DECODERS.keys
       end
 
       def suggestion_message

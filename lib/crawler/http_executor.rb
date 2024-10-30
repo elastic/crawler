@@ -102,26 +102,26 @@ module Crawler
 
     def handling_http_errors(crawl_task)
       yield
-    rescue Crawler::HttpUtils::ResponseTooLarge => e
+    rescue Crawler::Http::ResponseTooLarge => e
       logger.warn(e.message)
       Crawler::Data::CrawlResult::Error.new(
         url: crawl_task.url,
         error: e.message
       )
-    rescue Crawler::HttpUtils::ConnectTimeout => e
+    rescue Crawler::Http::ConnectTimeout => e
       timeout_error(crawl_task:, exception: e, error: 'connection_timeout')
-    rescue Crawler::HttpUtils::SocketTimeout => e
+    rescue Crawler::Http::SocketTimeout => e
       timeout_error(crawl_task:, exception: e, error: 'read_timeout')
-    rescue Crawler::HttpUtils::RequestTimeout => e
+    rescue Crawler::Http::RequestTimeout => e
       timeout_error(crawl_task:, exception: e, error: e.message)
-    rescue Crawler::HttpUtils::SslException => e
+    rescue Crawler::Http::SslException => e
       logger.error("SSL error while performing HTTP request: #{e.message}. #{e.suggestion_message}")
       Crawler::Data::CrawlResult::Error.new(
         url: crawl_task.url,
         error: e.message,
         suggestion_message: e.suggestion_message
       )
-    rescue Crawler::HttpUtils::BaseError => e
+    rescue Crawler::Http::BaseError => e
       error = "Failed HTTP request: #{e}. #{e.suggestion_message}"
       logger.error(error)
       Crawler::Data::CrawlResult::Error.new(
@@ -133,7 +133,36 @@ module Crawler
 
     # Returns an HTTP client to be used for all requests
     def http_client
-      @http_client ||= Crawler::HttpClient.new(
+      apache_client
+    end
+
+    def apache_client
+      @apache_client ||= Crawler::Http::Client::Apache.new(
+        pool_max: 100,
+        user_agent: config.user_agent,
+        loopback_allowed: config.loopback_allowed,
+        private_networks_allowed: config.private_networks_allowed,
+        connect_timeout: config.connect_timeout,
+        socket_timeout: config.socket_timeout,
+        request_timeout: config.request_timeout,
+        ssl_ca_certificates: config.ssl_ca_certificates,
+        ssl_verification_mode: config.ssl_verification_mode,
+        http_proxy_host: config.http_proxy_host,
+        http_proxy_port: config.http_proxy_port,
+        http_proxy_username: config.http_proxy_username,
+        http_proxy_password: config.http_proxy_password,
+        http_proxy_scheme: config.http_proxy_protocol,
+        compression_enabled: config.compression_enabled,
+        logger:
+      )
+    end
+
+    def html_unit_client
+      # HtmlUnit's WebClient doesn't handle multithreading well,
+      # because a shared client retains JavaScript state across requests.
+      # In a multi-threaded environment, this can cause incorrect scraping results.
+      # That means we should not memoize this client, we want a new client every request.
+      @http_client = Crawler::Http::Client::HtmlUnit.new(
         pool_max: 100,
         user_agent: config.user_agent,
         loopback_allowed: config.loopback_allowed,
