@@ -18,6 +18,9 @@ jar 'org.apache.httpcomponents.client5:httpclient5', '5.1'
 # For loading dynamic content
 jar 'org.htmlunit:htmlunit', '4.5.0'
 
+# This version is required for HtmlUnit
+jar 'org.apache.httpcomponents:httpclient', '4.5.14'
+
 # For managing Brotli input streams
 jar 'org.apache.commons:commons-compress', '1.27.1'
 jar 'org.brotli:dec', '0.1.2'

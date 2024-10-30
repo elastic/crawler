@@ -12,7 +12,6 @@ module Crawler
   module Http
     module Response
       class HtmlUnit < Base
-
         def initialize(response:, **kwargs)
           @response = response
 
@@ -57,7 +56,6 @@ module Crawler
         def content_type
           web_response.getContentType || headers['content-type']
         end
-
       end
     end
   end

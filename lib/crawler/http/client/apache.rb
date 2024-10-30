@@ -42,13 +42,12 @@ module Crawler
         java_import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder
 
         def initialize(options = {})
-          super(options)
+          super
 
           @connection_manager = new_connection_manager
           finalize(connection_manager, :shutdown)
         end
 
-        #-------------------------------------------------------------------------------------------------
         def head(url, headers: nil) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
           raise ArgumentError, 'Need a Crawler URL object!' unless url.is_a?(Crawler::Data::URL)
 
@@ -80,13 +79,12 @@ module Crawler
         rescue Java::OrgApacheHcCore5Http::NoHttpResponseException => e
           raise NoHttpResponseError.for_proxy_host(
             error: e,
-            proxy_host: config.http_proxy_host
+            proxy_host: @config.http_proxy_host
           )
         rescue Java::JavaLang::Exception => e
           raise BaseErrorFromJava, e
         end
 
-        #-------------------------------------------------------------------------------------------------
         def get(url, headers: nil) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
           raise ArgumentError, 'Need a Crawler URL object!' unless url.is_a?(Crawler::Data::URL)
 
@@ -117,18 +115,16 @@ module Crawler
         rescue Java::OrgApacheHcCore5Http::NoHttpResponseException => e
           raise Crawler::Http::NoHttpResponseError.for_proxy_host(
             error: e,
-            proxy_host: config.http_proxy_host
+            proxy_host: @config.http_proxy_host
           )
         rescue Java::JavaLang::Exception => e
           raise Crawler::Http::BaseErrorFromJava, e
         end
 
-        #-------------------------------------------------------------------------------------------------
         def connection_pool_stats
           connection_manager.total_stats
         end
 
-        #-------------------------------------------------------------------------------------------------
         def self.shutdown_on_finalize(client, objs)
           ObjectSpace.define_finalizer(
             client,
@@ -146,33 +142,31 @@ module Crawler
 
         attr_reader :config, :client, :connection_manager, :logger, :finalizers
 
-        def new_http_client # rubocop:disable Metrics/AbcSize
+        def new_http_client
           builder = HttpClientBuilder.create
-          builder.set_user_agent(config.user_agent)
+          builder.set_user_agent(@config.user_agent)
           builder.disable_cookie_management
           builder.disable_connection_state
           builder.set_default_request_config(default_request_config)
           builder.set_default_credentials_provider(credentials_provider)
           builder.set_connection_manager(connection_manager)
-          builder.disable_content_compression unless config.compression_enabled
+          builder.disable_content_compression unless @config.compression_enabled
           builder.set_content_decoder_registry(content_decoders)
           builder.set_proxy(proxy_host)
           builder.build
         end
 
-        #-------------------------------------------------------------------------------------------------
         def new_connection_manager
           builder = PoolingHttpClientConnectionManagerBuilder.create
           builder.set_ssl_socket_factory(https_socket_factory)
           builder.set_dns_resolver(dns_resolver)
-          builder.set_validate_after_inactivity(TimeValue.of_seconds(config.check_connection_timeout))
-          builder.set_max_conn_per_route(config.pool_max_per_route)
-          builder.set_max_conn_total(config.max_pool_size)
+          builder.set_validate_after_inactivity(TimeValue.of_seconds(@config.check_connection_timeout))
+          builder.set_max_conn_per_route(@config.pool_max_per_route)
+          builder.set_max_conn_total(@config.max_pool_size)
           builder.set_default_socket_config(default_socket_config)
           builder.build
         end
 
-        #-------------------------------------------------------------------------------------------------
         def https_socket_factory
           # Initialize an SSL context using a relevant st of trust managers
           ssl_context = SSLContext.get_instance('TLS')
@@ -182,9 +176,8 @@ module Crawler
           SSLConnectionSocketFactory.new(ssl_context, ssl_hostname_verifier)
         end
 
-        #-------------------------------------------------------------------------------------------------
         def ssl_trust_managers
-          if config.ssl_verification_mode == 'none'
+          if @config.ssl_verification_mode == 'none'
             [Crawler::Http::AllTrustingTrustManager.new]
           else
             # Create a new trust store
@@ -206,16 +199,14 @@ module Crawler
           end
         end
 
-        #-------------------------------------------------------------------------------------------------
         # Adds all configured custom CA certificates to the given keystore
         # Certificates could be specified as file names or as PEM-formatted strings
         def add_custom_ca_certificates(keystore)
-          config.ssl_ca_certificates.each_with_index do |cert, index|
+          @config.ssl_ca_certificates.each_with_index do |cert, index|
             keystore.setCertificateEntry("custom_ca_#{index}", cert)
           end
         end
 
-        #-------------------------------------------------------------------------------------------------
         # Loads default Root CA certificates into the given keystore
         # Generally, the certs are loaded from JAVA_HOME/lib/cacerts
         def add_default_root_certificates(keystore)
@@ -235,73 +226,67 @@ module Crawler
           end
         end
 
-        #-------------------------------------------------------------------------------------------------
         # Returns an SSL hostname verifier instance based on our configuration
         def ssl_hostname_verifier
-          case config.ssl_verification_mode
+          case @config.ssl_verification_mode
           when 'full'
             DefaultHostnameVerifier.new
           when 'certificate', 'none'
             NoopHostnameVerifier.new
           else
-            raise ArgumentError, "Invalid SSL verification mode: #{config.ssl_verification_mode}"
+            raise ArgumentError, "Invalid SSL verification mode: #{@config.ssl_verification_mode}"
           end
         end
 
-        #-------------------------------------------------------------------------------------------------
         # Returns our custom DNS resolver to be used for all connections
         def dns_resolver
           Crawler::Http::FilteringDnsResolver.new(
-            loopback_allowed: config.loopback_allowed?,
-            private_networks_allowed: config.private_networks_allowed?,
+            loopback_allowed: @config.loopback_allowed?,
+            private_networks_allowed: @config.private_networks_allowed?,
             logger:
           )
         end
 
-        #-------------------------------------------------------------------------------------------------
         # Returns a socket config to be used for all connections
         def default_socket_config
           builder = SocketConfig.custom
-          builder.set_so_timeout(Timeout.of_seconds(config.socket_timeout))
+          builder.set_so_timeout(Timeout.of_seconds(@config.socket_timeout))
           builder.build
         end
 
-        #-------------------------------------------------------------------------------------------------
-        # Returns a request config to be used for all connections
+        # Returns a request @config to be used for all connections
         def default_request_config
           builder = RequestConfig.custom
-          builder.set_connection_request_timeout(Timeout.of_seconds(config.connection_request_timeout))
-          builder.set_connect_timeout(Timeout.of_seconds(config.connect_timeout))
-          builder.set_response_timeout(Timeout.of_seconds(config.socket_timeout))
+          builder.set_connection_request_timeout(Timeout.of_seconds(@config.connection_request_timeout))
+          builder.set_connect_timeout(Timeout.of_seconds(@config.connect_timeout))
+          builder.set_response_timeout(Timeout.of_seconds(@config.socket_timeout))
           builder.set_redirects_enabled(false)
           builder.build
         end
 
-        #-------------------------------------------------------------------------------------------------
         # Returns a proxy host object to be used for all connections
         def proxy_host
-          return nil unless config.http_proxy_host
+          return nil unless @config.http_proxy_host
 
           logger.debug(<<~LOG.squish)
             Proxy configuration:
-            scheme=#{config.http_proxy_scheme},
-            host=#{config.http_proxy_host},
-            port=#{config.http_proxy_port}
+            scheme=#{@config.http_proxy_scheme},
+            host=#{@config.http_proxy_host},
+            port=#{@config.http_proxy_port}
           LOG
 
           HttpHost.new(
-            config.http_proxy_scheme,
-            config.http_proxy_host,
-            config.http_proxy_port
+            @config.http_proxy_scheme,
+            @config.http_proxy_host,
+            @config.http_proxy_port
           )
         end
 
-        #-------------------------------------------------------------------------------------------------
         # Returns a credentials provider to be used for all requests
         # By default, it will be empty and not have any credentials in it
         def credentials_provider
           BasicCredentialsProvider.new.tap do |provider|
-            next unless config.http_proxy_host && proxy_credentials
+            next unless @config.http_proxy_host && proxy_credentials
 
             logger.debug('Enabling proxy auth!')
             proxy_auth_scope = AuthScope.new(proxy_host)
@@ -309,18 +294,16 @@ module Crawler
           end
         end
 
-        #-------------------------------------------------------------------------------------------------
         # Returns HTTP credentials to be used for proxy requests
         def proxy_credentials
-          return unless config.http_proxy_username && config.http_proxy_password
+          return unless @config.http_proxy_username && @config.http_proxy_password
 
           UsernamePasswordCredentials.new(
-            config.http_proxy_username,
-            config.http_proxy_password.to_java_string.to_char_array
+            @config.http_proxy_username,
+            @config.http_proxy_password.to_java_string.to_char_array
           )
         end
 
-        #-------------------------------------------------------------------------------------------------
         # Checks the status of the connection pool and logs information about it
         def check_connection_pool_stats!
           stats = connection_pool_stats

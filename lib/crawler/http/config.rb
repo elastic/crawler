@@ -112,6 +112,11 @@ module Crawler
         fetch(:connect_timeout, crawler_default(:connect_timeout))
       end
 
+      def timeout_in_milliseconds
+        # HtmlUnit doesn't offer granular timeouts, so we are just combining everything
+        (connect_timeout + connection_request_timeout + socket_timeout) * 1000
+      end
+
       def check_connection_timeout
         fetch(:check_connection_timeout, DEFAULT_CHECK_CONNECTION_TIMEOUT)
       end
