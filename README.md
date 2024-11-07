@@ -111,7 +111,7 @@ Two crawlers simultaneously interacting with a single index can lead to data los
     ```
     - `-i` allows the container to stay alive so CLI commands can be executed inside it
     - `-d` allows the container to run "detached" so you don't have to dedicate a terminal window to it
-    - ⚠️ If you are runninig Elasticsearch in another docker container on the same machine, they will need to share a [docker network](https://docs.docker.com/engine/network/)
+    - ⚠️ If you are running Elasticsearch in another docker container on the same machine, they will need to share a [docker network](https://docs.docker.com/engine/network/)
         - This is done by using the `--network` flag when running both containers, e.g. `--network elastic`
 2. Confirm that CLI commands are working `docker exec -it crawler bin/crawler version` 
 3. Create a config file for your crawler
