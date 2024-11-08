@@ -10,8 +10,8 @@
 ## ------------------------------- Elasticsearch -------------------------------
 #
 ## The host of the Elasticsearch deployment, excluding the port.
-##     If your Elasticsearch is running on Docker and is on the same machine as
-##     Crawler, this value should be `http://host.docker.internal`
+##    If your Elasticsearch is running on Docker and is on the same machine as
+##    Crawler, this value should be `http://host.docker.internal`
 #elasticsearch.host: http://localhost
 #
 #
