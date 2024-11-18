@@ -13,11 +13,18 @@ jar 'com.github.crawler-commons:crawler-commons', '1.2'
 # Apache HTTP client used by the crawler
 jar 'org.apache.httpcomponents.client5:httpclient5', '5.1'
 
+# For loading dynamic content
+jar 'org.htmlunit:htmlunit', '4.5.0'
+
+# This version is required for HtmlUnit
+jar 'org.apache.httpcomponents:httpclient', '4.5.14'
+
 #---------------------------------------------------------------------------------------------------
 # Text extraction and other utilities
 jar 'org.apache.tika:tika-parsers', '1.27'
 jar 'org.slf4j:slf4j-nop', '1.7.26'
-jar 'org.apache.commons:commons-lang3', '3.10'
+jar 'org.apache.commons:commons-lang3', '3.17.0'
+jar 'org.apache.commons:commons-text', '1.12.0'
 
 #---------------------------------------------------------------------------------------------------
 # Indirect dependencies that we needed to upgrade
