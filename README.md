@@ -139,7 +139,7 @@ Two crawlers simultaneously interacting with a single index can lead to data los
       $ ruby --version
 
       # should output the same version as `.java-version`
-      $ java --version
+      $ java -version
       ```
 
   3. If the versions seem correct, you can install dependencies:
