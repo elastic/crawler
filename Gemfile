@@ -31,7 +31,6 @@ group :default do
   gem 'json-schema', '~> 4.3.0'
   gem 'rexml', '~> 3.3.8'
   gem 'rufus-scheduler', '~> 3.9.1'
-  gem 'webrick', '~> 1.8.1'
 
   # Gems that need jruby as the platform
   gem 'bson', '~> 4.15.0', platform: :jruby
@@ -52,8 +51,6 @@ group :default do
   # See https://github.com/tzinfo/tzinfo/wiki/Resolving-TZInfo::DataSourceNotFound-Errors for details
   gem 'tzinfo-data', '~> 1.2024.1'
 
-  # Local gem for testing fake sites
-  gem 'faux', path: 'vendor/faux', require: false
 end
 
 group :development do
@@ -70,6 +67,11 @@ group :test do
   gem 'webmock', '~> 3.23.1'
   gem 'simplecov'
   gem 'simplecov-material', require: false
+
+  gem 'webrick', '~> 1.8.2'
+
+  # Local gem for testing fake sites
+  gem 'faux', path: 'vendor/faux', require: false
 end
 
 group :development, :test do
