@@ -1,0 +1,17 @@
+# This is an example config using the bare minimum configuration options possible.
+#
+# To see all possible configuration options, reference the config templates:
+# - config/crawler.yml.example
+# - config/elasticsearch.yml.example
+
+domains:
+  - url: https://example.com
+
+output_sink: elasticsearch
+output_index: my-index
+
+elasticsearch:
+  host: http://localhost
+  port: 9200
+  username: elastic
+  password: changeme
