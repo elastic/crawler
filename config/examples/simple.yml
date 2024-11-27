@@ -12,6 +12,7 @@ output_index: my-index
 
 elasticsearch:
   host: http://localhost
+  # host: http://host.docker.internal  # use this host instead if Elasticsearch is running on Docker on the same machine
   port: 9200
   username: elastic
   password: changeme
