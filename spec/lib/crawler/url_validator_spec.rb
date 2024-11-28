@@ -4,10 +4,12 @@
 # you may not use this file except in compliance with the Elastic License 2.0.
 #
 
-RSpec.describe Crawler::UrlValidator do
+# frozen_string_literal: true
+
+RSpec.describe(Crawler::UrlValidator) do
   let(:valid_url) { 'http://example.com' }
-  let(:invalid_url) { 'invalid_url' }
-  let(:crawl_config) { double('CrawlConfig', domain_allowlist: ['example.com']) }
+  let(:domain_allowlist) { ['example.com'] }
+  let(:crawl_config) { double('CrawlConfig', domain_allowlist: domain_allowlist) }
   let(:validator) { described_class.new(url: valid_url, crawl_config: crawl_config) }
 
   describe '#initialize' do
@@ -15,7 +17,9 @@ RSpec.describe Crawler::UrlValidator do
       let(:crawl_config) { double('CrawlConfig', domain_allowlist: []) }
 
       it 'raises an InvalidCrawlConfigError' do
-        expect { described_class.new(url: valid_url, crawl_config: crawl_config) }.to raise_error(Crawler::UrlValidator::InvalidCrawlConfigError)
+        expect {
+          described_class.new(url: valid_url, crawl_config: crawl_config)
+        }.to raise_error(Crawler::UrlValidator::InvalidCrawlConfigError)
       end
     end
 
@@ -150,7 +154,9 @@ RSpec.describe Crawler::UrlValidator do
 
     context 'when the check method does not exist' do
       it 'raises an ArgumentError' do
-        expect { validator.send(:perform_check, 'non_existent_check') }.to raise_error(ArgumentError, 'Invalid check name: "non_existent_check"')
+        expect {
+          validator.send(:perform_check, 'x')
+        }.to raise_error(ArgumentError, 'Invalid check name: "x"')
       end
     end
   end
