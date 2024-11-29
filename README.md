@@ -10,6 +10,25 @@ Elastic plans to promote this feature to GA in a future release.
 
 _Open Crawler `v0.2` is confirmed to be compatible with Elasticsearch `v8.13.0` and above._
 
+### Quickstart
+
+The following will clone the Crawler repo, run Crawler in a Docker container, and prepare a simple configuration file to use.
+It mounts the `config` directory as a shared volume, so any changes made to files there are automatically accessible to Crawler.
+
+1. Run the init script, which will output the current Crawler version when complete:
+    ```
+    git clone git@github.com:elastic/crawler.git && \
+    cd crawler && \
+    docker-compose up -d && \
+    cp config/examples/simple.yml config/my-crawler.yml && \
+    docker exec -it crawler bin/crawler version
+    ```
+2. Update the new config file `config/my-crawler.yml` if necessary
+3. Run a crawl:
+    ```
+    docker exec -it crawler bin/crawler crawl config/my-crawler.yml
+    ```
+
 ### User workflow
 
 Indexing web content with the Open Crawler requires:
@@ -103,16 +122,8 @@ A single crawl execution can be thought of as a single crawler.
 Even if two crawl executions share a configuration file, the two crawl processes will not communicate with each other.
 Two crawlers simultaneously interacting with a single index can lead to data loss.
 
-1. Run the official Docker image
-    ```bash
-    docker run -i -d \
-      --name crawler \
-      docker.elastic.co/integrations/crawler:0.2.0
-    ```
-    - `-i` allows the container to stay alive so CLI commands can be executed inside it
+1. Run the official Docker image through the docker-compose file `docker-compose up -d`
     - `-d` allows the container to run "detached" so you don't have to dedicate a terminal window to it
-    - ⚠️ If you are running Elasticsearch in another docker container on the same machine, they will need to share a [docker network](https://docs.docker.com/engine/network/)
-        - This is done by using the `--network` flag when running both containers, e.g. `--network elastic`
 2. Confirm that CLI commands are working `docker exec -it crawler bin/crawler version` 
 3. Create a config file for your crawler
 4. See [Configuring crawlers](#configuring-crawlers) for next steps.
