@@ -388,6 +388,12 @@ module Crawler
         system_logger = Logger.new($stdout)
         system_logger.level = LOG_LEVELS[log_level]
 
+        # Set custom formatter to include timestamp
+        system_logger.formatter = proc do |_severity, datetime, _progname, msg|
+          timestamp = datetime.strftime('%Y-%m-%dT%H:%M:%S.%LZ')
+          "[#{timestamp}] #{msg}\n"
+        end
+
         # Add crawl id and stage to all logging events produced by this crawl
         tagged_system_logger = StaticallyTaggedLogger.new(system_logger)
         @system_logger = tagged_system_logger.tagged("crawl:#{crawl_id}", crawl_stage)
