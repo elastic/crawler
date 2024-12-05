@@ -15,6 +15,7 @@ module Crawler
 
     register 'version', Crawler::CLI::Version, aliases: ['v', '--version']
     register 'crawl', Crawler::CLI::Crawl, aliases: %w[r run]
+    register 'schedule', Crawler::CLI::Schedule
     register 'validate', Crawler::CLI::Validate
   end
 end

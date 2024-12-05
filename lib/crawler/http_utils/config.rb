@@ -51,7 +51,7 @@ module Crawler
         end
 
         validate_required_options(config, REQUIRED_OPTIONS)
-        super(config)
+        super
       end
 
       def http_proxy_host

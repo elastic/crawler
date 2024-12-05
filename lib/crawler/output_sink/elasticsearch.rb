@@ -20,6 +20,7 @@ module Crawler
         _run_ml_inference: true,
         _extract_binary_content: true
       }.freeze
+      SEARCH_PAGINATION_SIZE = 1_000
 
       def initialize(config)
         super
@@ -45,7 +46,7 @@ module Crawler
 
         begin
           doc = parametrized_doc(crawl_result)
-          index_op = { 'index' => { '_index' => index_name, '_id' => doc['id'] } }
+          index_op = { index: { _index: index_name, _id: doc[:id] } }
 
           flush unless operation_queue.will_fit?(index_op, doc)
 
@@ -53,21 +54,65 @@ module Crawler
             index_op,
             doc
           )
-          system_logger.debug("Added doc #{doc['id']} to bulk queue. Current stats: #{operation_queue.current_stats}")
+          system_logger.debug("Added doc #{doc[:id]} to bulk queue. Current stats: #{operation_queue.current_stats}")
 
           increment_ingestion_stats(doc)
-          success("Successfully added #{doc['id']} to the bulk queue")
+          success("Successfully added #{doc[:id]} to the bulk queue")
         ensure
           @queue_lock.unlock
         end
       end
 
+      def fetch_purge_docs(crawl_start_time)
+        query = {
+          _source: ['url'],
+          query: {
+            range: {
+              last_crawled_at: {
+                lt: crawl_start_time.rfc3339
+              }
+            }
+          },
+          size: SEARCH_PAGINATION_SIZE,
+          sort: [{ last_crawled_at: 'asc' }]
+        }.deep_stringify_keys
+        system_logger.debug(
+          "Fetching docs for pages that were not encountered during the sync. Full query: #{query.inspect}"
+        )
+
+        client.indices.refresh(index: [index_name])
+        hits = client.paginated_search(index_name, query)
+        hits.map { |h| h['_source']['url'] }
+      end
+
+      def purge(crawl_start_time)
+        query = {
+          _source: ['url'],
+          query: {
+            range: {
+              last_crawled_at: {
+                lt: crawl_start_time.rfc3339
+              }
+            }
+          }
+        }.deep_stringify_keys
+
+        system_logger.info('Deleting docs for pages that were not accessible during the purge crawl.')
+        system_logger.debug("Full delete query: #{query}")
+
+        client.indices.refresh(index: [index_name])
+        response = client.delete_by_query(index: [index_name], body: query)
+        system_logger.debug("Delete by query response: #{response}")
+
+        @deleted = response['deleted']
+      end
+
       def close
-        flush
         msg = <<~LOG.squish
           All indexing operations completed.
-          Successfully indexed #{@completed[:docs_count]} docs with a volume of #{@completed[:docs_volume]} bytes.
+          Successfully upserted #{@completed[:docs_count]} docs with a volume of #{@completed[:docs_volume]} bytes.
           Failed to index #{@failed[:docs_count]} docs with a volume of #{@failed[:docs_volume]} bytes.
+          Deleted #{@deleted} outdated docs from the index.
         LOG
         system_logger.info(msg)
       end
@@ -134,7 +179,7 @@ module Crawler
       end
 
       def pipeline_params
-        @pipeline_params ||= DEFAULT_PIPELINE_PARAMS.merge(es_config[:pipeline_params] || {}).deep_stringify_keys
+        @pipeline_params ||= DEFAULT_PIPELINE_PARAMS.merge(es_config[:pipeline_params] || {})
       end
 
       private
@@ -158,6 +203,7 @@ module Crawler
           docs_count: 0,
           docs_volume: 0
         }
+        @deleted = 0
       end
 
       def increment_ingestion_stats(doc)

@@ -314,6 +314,7 @@ module Crawler
         Crawler::Data::CrawlResult::ContentExtractableFile.new(
           url: crawl_task.url,
           status_code: response.code,
+          content_length: response.content_length,
           content_type: response['content-type'],
           content: response_body,
           start_time: response.request_start_time,
@@ -329,7 +330,7 @@ module Crawler
 
     #-------------------------------------------------------------------------------------------------
     def content_extractable_file_mime_types
-      config.content_extraction_enabled ? config.content_extraction_mime_types.map(&:downcase) : []
+      config.binary_content_extraction_enabled ? config.binary_content_extraction_mime_types.map(&:downcase) : []
     end
 
     #-------------------------------------------------------------------------------------------------

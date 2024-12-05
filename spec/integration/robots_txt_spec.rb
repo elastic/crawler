@@ -138,6 +138,9 @@ RSpec.describe 'robots.txt support' do
 
       it 'should abort the redirect and allow all due to robots.txt being treated as missing' do
         expect_any_instance_of(Logger).to receive(:warn).with(
+          /Purge crawls are not supported for sink type mock. Skipping purge crawl./
+        ).at_least(:once).and_call_original
+        expect_any_instance_of(Logger).to receive(:warn).with(
           /Not following the HTTP redirect.*because the redirect chain is too long/
         ).at_least(:once).and_call_original
 

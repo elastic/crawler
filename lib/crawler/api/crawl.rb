@@ -91,10 +91,7 @@ module Crawler
         )
         coordinator.run_crawl!
 
-        record_outcome(
-          outcome: coordinator.crawl_outcome,
-          message: coordinator.outcome_message
-        )
+        record_overall_outcome(coordinator.crawl_results)
       rescue StandardError => e
         log_exception(e, 'Unexpected error while running the crawl')
         record_outcome(
@@ -135,6 +132,22 @@ module Crawler
       end
 
       private
+
+      def record_overall_outcome(results)
+        if config.output_sink != 'elasticsearch' || !config.purge_crawl_enabled
+          # only need primary crawl results in this situation
+          record_outcome(outcome: results[:primary][:outcome], message: results[:primary][:message])
+          return
+        end
+
+        outcome = combined_outcome(results)
+        message = "#{results[:primary][:message]} | #{results[:purge][:message]}"
+        record_outcome(outcome:, message:)
+      end
+
+      def combined_outcome(results)
+        results[:primary][:outcome] == :success && results[:purge][:outcome] == :success ? :success : :failure
+      end
 
       def record_outcome(outcome:, message:)
         @outcome = outcome

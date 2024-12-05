@@ -25,7 +25,7 @@ RSpec.describe(Crawler::Coordinator) do
 
   let(:crawl_config) { Crawler::API::Config.new(crawl_configuration) }
 
-  let(:events) { double(:events) }
+  let(:events) { Crawler::EventGenerator.new(crawl_config) }
   let(:system_logger) { Logger.new($stdout, level: :debug) }
   let(:rule_engine) do
     double(
@@ -38,6 +38,7 @@ RSpec.describe(Crawler::Coordinator) do
   let(:sink) { Crawler::OutputSink::Mock.new(crawl_config) }
   let(:crawl_queue) { Crawler::Data::UrlQueue::MemoryOnly.new(crawl_config) }
   let(:seen_urls) { Crawler::Data::SeenUrls.new }
+  let(:crawl_result) { FactoryBot.build(:html_crawl_result, content: '<p>BOO!</p>') }
 
   let(:crawl) do
     double(
@@ -50,10 +51,110 @@ RSpec.describe(Crawler::Coordinator) do
       shutdown_started?: false,
       crawl_queue:,
       seen_urls:,
-      allow_resume?: false
+      allow_resume?: false,
+      status: {},
+      executor: double(:executor, run: crawl_result)
     )
   end
   let(:coordinator) { Crawler::Coordinator.new(crawl) }
+
+  describe '#run_crawl!' do
+    let(:crawl_configuration) do
+      {
+        domains:,
+        output_sink: 'elasticsearch',
+        output_index: 'totally-real-index',
+        elasticsearch: {
+          host: 'http://192.0.0.1',
+          port: 9200,
+          username: 'elastic',
+          password: 'changeme'
+        }
+      }
+    end
+    let(:sink) { Crawler::OutputSink::Elasticsearch.new(crawl_config) }
+    let(:es_client) { double }
+    let(:search_result) do
+      {
+        _id: '1234',
+        _source: { url: 'https://example.com/outdated' }
+      }.stringify_keys
+    end
+
+    before do
+      allow(ES::Client).to receive(:new).and_return(es_client)
+      allow(es_client).to receive(:bulk)
+      allow(es_client).to receive(:delete_by_query).and_return({ deleted: 1 }.stringify_keys)
+      allow(es_client)
+        .to receive(:paginated_search).and_return([search_result])
+      allow(es_client).to receive(:indices).and_return(double(:indices, refresh: double))
+
+      allow(sink).to receive(:purge).and_call_original
+      allow(crawl_result).to receive(:extract_links).and_return(double)
+
+      allow(coordinator).to receive(:run_primary_crawl!).and_call_original
+      allow(coordinator).to receive(:run_purge_crawl!).and_call_original
+
+      allow(system_logger).to receive(:debug)
+      allow(system_logger).to receive(:info)
+      allow(system_logger).to receive(:warn)
+    end
+
+    context 'when purge_crawl_enabled is true' do
+      it 'should run a primary and a purge crawl' do
+        coordinator.send(:run_crawl!)
+
+        expect(coordinator).to have_received(:run_primary_crawl!).once
+        expect(coordinator).to have_received(:run_purge_crawl!).once
+        expect(coordinator.crawl_stage).to eq(Crawler::Coordinator::CRAWL_STAGE_PURGE)
+      end
+    end
+
+    context 'when purge_crawl_enabled is false' do
+      let(:crawl_configuration) do
+        {
+          domains:,
+          output_sink: 'elasticsearch',
+          output_index: 'totally-real-index',
+          purge_crawl_enabled: false,
+          elasticsearch: {
+            host: 'http://192.0.0.1',
+            port: 9200,
+            username: 'elastic',
+            password: 'changeme'
+          }
+        }
+      end
+
+      it 'should run a primary crawl only' do
+        coordinator.send(:run_crawl!)
+
+        expect(coordinator).to have_received(:run_primary_crawl!).once
+        expect(coordinator).not_to have_received(:run_purge_crawl!)
+        expect(coordinator.crawl_stage).to eq(Crawler::Coordinator::CRAWL_STAGE_PRIMARY)
+      end
+    end
+
+    context 'when sink is not elasticsearch' do
+      let(:crawl_configuration) do
+        {
+          domains:,
+          results_collection:,
+          output_sink: 'console',
+          purge_crawl_enabled: true
+        }
+      end
+      let(:sink) { Crawler::OutputSink::Mock.new(crawl_config) }
+
+      it 'should run a primary crawl only' do
+        coordinator.send(:run_crawl!)
+
+        expect(coordinator).to have_received(:run_primary_crawl!).once
+        expect(coordinator).not_to have_received(:run_purge_crawl!)
+        expect(coordinator.crawl_stage).to eq(Crawler::Coordinator::CRAWL_STAGE_PRIMARY)
+      end
+    end
+  end
 
   #-------------------------------------------------------------------------------------------------
   describe '#process_crawl_result' do
@@ -288,7 +389,6 @@ RSpec.describe(Crawler::Coordinator) do
             end_time: kind_of(Time),
             duration: kind_of(Benchmark::Tms),
             outcome: :success,
-            redirect_location:,
             message: 'Crawler was redirected to http://example.com/redirected'
           )
         )
@@ -465,7 +565,6 @@ RSpec.describe(Crawler::Coordinator) do
 
       it 'should remove the URL from the seen URLs list' do
         allow(events).to receive(:url_discover_denied)
-        allow(system_logger).to receive(:debug)
         expect(seen_urls).to receive(:delete).with(url)
         add_url_to_backlog
       end
@@ -489,8 +588,8 @@ RSpec.describe(Crawler::Coordinator) do
 
       it 'should set the outcome' do
         crawl_finished?
-        expect(coordinator.crawl_outcome).to eq(:success)
-        expect(coordinator.outcome_message).to match(/success/i)
+        expect(coordinator.crawl_results[:primary][:outcome]).to eq(:success)
+        expect(coordinator.crawl_results[:primary][:message]).to match(/success/i)
       end
     end
 
@@ -506,8 +605,8 @@ RSpec.describe(Crawler::Coordinator) do
 
       it 'should set the outcome' do
         crawl_finished?
-        expect(coordinator.crawl_outcome).to eq(:shutdown)
-        expect(coordinator.outcome_message).to match(/shutdown/)
+        expect(coordinator.crawl_results[:primary][:outcome]).to eq(:shutdown)
+        expect(coordinator.crawl_results[:primary][:message]).to match(/shutdown/)
       end
     end
 
@@ -524,8 +623,8 @@ RSpec.describe(Crawler::Coordinator) do
 
       it 'should set the outcome' do
         crawl_finished?
-        expect(coordinator.crawl_outcome).to eq(:warning)
-        expect(coordinator.outcome_message).to match(/max_duration/)
+        expect(coordinator.crawl_results[:primary][:outcome]).to eq(:warning)
+        expect(coordinator.crawl_results[:primary][:message]).to match(/max_duration/)
       end
     end
   end

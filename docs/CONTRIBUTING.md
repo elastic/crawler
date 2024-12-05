@@ -57,7 +57,7 @@ Enhancements that can be done after your initial contribution:
 ### Acceptance criteria
 
 All patch changes should have a corresponding GitHub issue filed within the repository.
-If you need changes that are complex, or you are not sure about how to do something, reach out to the [Ingestion team](https://github.com/orgs/elastic/teams/ingestion-team/members) and/or file an issue.
+If you need changes that are complex, or you are not sure about how to do something, reach out to the [Ingestion team](https://github.com/orgs/elastic/teams/search-extract-and-transform/members) and/or file an issue.
 
 ### Correct code/file organization
 

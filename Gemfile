@@ -29,13 +29,14 @@ group :default do
   gem 'elasticsearch', '~> 8.13.0'
   gem 'jar-dependencies', '0.4.1'
   gem 'json-schema', '~> 4.3.0'
-  gem 'webrick', '~> 1.8.1'
+  gem 'rexml', '~> 3.3.8'
+  gem 'rufus-scheduler', '~> 3.9.1'
 
   # Gems that need jruby as the platform
   gem 'bson', '~> 4.15.0', platform: :jruby
   gem 'bigdecimal', '~> 3.1.7', platform: :jruby
   gem 'json', '~> 2.7.2', platform: :jruby
-  gem 'nokogiri', '= 1.13.10', platform: :jruby
+  gem 'nokogiri', '~> 1.16.5', platform: :jruby
   gem 'racc', '~> 1.7.3', platform: :jruby
   gem 'strscan', '~> 3.1.0', platform: :jruby
   gem 'thread_safe', '~> 0.3.6', platform: :jruby
@@ -50,8 +51,6 @@ group :default do
   # See https://github.com/tzinfo/tzinfo/wiki/Resolving-TZInfo::DataSourceNotFound-Errors for details
   gem 'tzinfo-data', '~> 1.2024.1'
 
-  # Local gem for testing fake sites
-  gem 'faux', path: 'vendor/faux', require: false
 end
 
 group :development do
@@ -65,9 +64,14 @@ end
 
 group :test do
   gem 'rspec', '~> 3.13.0'
-  gem 'webmock'
+  gem 'webmock', '~> 3.23.1'
   gem 'simplecov'
   gem 'simplecov-material', require: false
+
+  gem 'webrick', '~> 1.8.2'
+
+  # Local gem for testing fake sites
+  gem 'faux', path: 'vendor/faux', require: false
 end
 
 group :development, :test do

@@ -42,11 +42,12 @@ module Crawler
     #-----------------------------------------------------------------------------------------------
     def log_error(error, message)
       full_message = "#{message}: #{error.class}: #{error.message}"
-      system_logger.error("Crawl Error: #{full_message}")
+      backtrace = error.backtrace&.join("\n")
+      system_logger.error("Crawl Error: #{full_message} #{backtrace}")
       log_event(
         'event.type' => 'error',
         'error.message' => full_message,
-        'error.stack_trace' => error.backtrace&.join("\n")
+        'error.stack_trace' => backtrace
       )
     end
 
@@ -68,6 +69,16 @@ module Crawler
         'event.action' => 'crawl-start',
         'crawler.crawl.config' => config.to_s,
         'crawler.crawl.resume' => resume
+      )
+    end
+
+    def crawl_stage_end(outcome:, message:)
+      system_logger.info("Finished a crawl stage. Result: #{outcome}; #{message}")
+      log_crawl_event(
+        'event.type' => 'change',
+        'event.action' => 'crawl-stage-end',
+        'event.outcome' => outcome,
+        'message' => message
       )
     end
 

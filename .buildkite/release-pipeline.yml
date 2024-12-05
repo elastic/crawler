@@ -1,0 +1,126 @@
+## 🏠/.buildkite/pipeline-release.yml
+# Manual triggered pipeline to build and publish Docker images
+
+steps:
+  - input: "Build information"
+    fields:
+      - select: "Build as SNAPSHOT"
+        key: "is_snapshot"
+        options:
+          - label: "True"
+            value: "true"
+          - label: "False"
+            value: "false"
+  - wait: ~
+  # ----
+  # Docker builds for amd64
+  # ----
+  - group: ":package: amd64 Build and Test"
+    key: "build_and_test_amd64"
+    if: "build.branch =~ /^[0-9]+\\.[0-9x]+.*/"
+    steps:
+      - label: "Building amd64 Docker image"
+        agents:
+          provider: aws
+          instanceType: m6i.xlarge
+          imagePrefix: ci-amazonlinux-2
+        env:
+          ARCHITECTURE: "amd64"
+          DOCKERFILE_PATH: "Dockerfile.wolfi"
+        command: ".buildkite/publish/build-docker.sh"
+        key: "build_docker_image_amd64"
+        artifact_paths: ".artifacts/*.tar.gz"
+      - label: "Testing amd64 Docker image"
+        agents:
+          provider: aws
+          instanceType: m6i.xlarge
+          imagePrefix: ci-amazonlinux-2
+        env:
+          ARCHITECTURE: "amd64"
+          DOCKERFILE_PATH: "Dockerfile.wolfi"
+        depends_on: "build_docker_image_amd64"
+        commands:
+          - "mkdir -p .artifacts"
+          - buildkite-agent artifact download '.artifacts/*.tar.gz*' .artifacts/ --step build_docker_image_amd64
+          - ".buildkite/publish/test-docker.sh"
+  # ----
+  # Docker builds for arm64
+  # ----
+  - group: ":package: arm64 Build and Test"
+    key: "build_and_test_arm64"
+    if: "build.branch =~ /^[0-9]+\\.[0-9x]+.*/"
+    steps:
+      - label: "Building arm64 Docker image"
+        agents:
+          provider: aws
+          instanceType: m6g.xlarge
+          imagePrefix: ci-amazonlinux-2-aarch64
+          diskSizeGb: 40
+          diskName: '/dev/xvda'
+        env:
+          ARCHITECTURE: "arm64"
+          DOCKERFILE_PATH: "Dockerfile.wolfi"
+        command: ".buildkite/publish/build-docker.sh"
+        key: "build_docker_image_arm64"
+        artifact_paths: ".artifacts/*.tar.gz"
+      - label: "Testing arm64 Docker image"
+        agents:
+          provider: aws
+          instanceType: m6g.xlarge
+          imagePrefix: ci-amazonlinux-2-aarch64
+          diskSizeGb: 40
+          diskName: '/dev/xvda'
+        env:
+          ARCHITECTURE: "arm64"
+          DOCKERFILE_PATH: "Dockerfile.wolfi"
+        depends_on: "build_docker_image_arm64"
+        commands:
+          - "mkdir -p .artifacts"
+          - buildkite-agent artifact download '.artifacts/*.tar.gz*' .artifacts/ --step build_docker_image_arm64
+          - ".buildkite/publish/test-docker.sh"
+  # ----
+  # Multiarch Docker image build and push
+  # ----
+  - group: ":truck: Publish images"
+    if: "build.branch =~ /^[0-9]+\\.[0-9x]+.*/"
+    depends_on:
+      - "build_and_test_amd64"
+      - "build_and_test_arm64"
+    steps:
+      - label: "Push amd64 Docker image"
+        key: "push_amd64_docker_image"
+        env:
+          ARCHITECTURE: "amd64"
+          DOCKERFILE_PATH: "Dockerfile.wolfi"
+        agents:
+          provider: aws
+          instanceType: m6i.xlarge
+          imagePrefix: ci-amazonlinux-2
+        commands:
+          - "mkdir -p .artifacts"
+          - buildkite-agent artifact download '.artifacts/*.tar.gz*' .artifacts/ --step build_docker_image_amd64
+          - ".buildkite/publish/push-docker.sh"
+      - label: "Push arm64 Docker image"
+        key: "push_arm64_docker_image"
+        env:
+          ARCHITECTURE: "arm64"
+          DOCKERFILE_PATH: "Dockerfile.wolfi"
+        agents:
+          provider: aws
+          instanceType: m6g.xlarge
+          imagePrefix: ci-amazonlinux-2-aarch64
+          diskSizeGb: 40
+          diskName: '/dev/xvda'
+        commands:
+          - "mkdir -p .artifacts"
+          - buildkite-agent artifact download '.artifacts/*.tar.gz*' .artifacts/ --step build_docker_image_arm64
+          - ".buildkite/publish/push-docker.sh"
+      - label: "Build and push multiarch Docker image"
+        agents:
+          image: "docker.elastic.co/ci-agent-images/drivah:0.25.0"
+          ephemeralStorage: "20G"
+          memory: "4G"
+        command: ".buildkite/publish/build-and-push-multiarch-docker.sh"
+        depends_on:
+          - "push_amd64_docker_image"
+          - "push_arm64_docker_image"

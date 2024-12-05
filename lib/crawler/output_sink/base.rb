@@ -28,15 +28,24 @@ module Crawler
         raise NotImplementedError
       end
 
+      def fetch_purge_docs(_crawl_start_time)
+        raise NotImplementedError
+      end
+
+      def purge(_crawl_start_time)
+        raise NotImplementedError
+      end
+
       def to_doc(crawl_result)
-        doc = { id: crawl_result.url_hash }
-        doc.merge!(document_mapper.document_fields(crawl_result))
-        doc.merge!(document_mapper.url_components(crawl_result.url))
-        doc.merge!(document_mapper.extract_by_rules(crawl_result, config.extraction_rules))
-        doc.deep_stringify_keys!
+        document_mapper.create_doc(crawl_result)
       end
 
       def close
+        # To be implemented by the sink if needed.
+        # Does nothing by default.
+      end
+
+      def flush
         # To be implemented by the sink if needed.
         # Does nothing by default.
       end

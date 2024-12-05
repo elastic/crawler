@@ -1,0 +1,18 @@
+# This is an example config using the bare minimum configuration options possible.
+#
+# To see all possible configuration options, reference the config templates:
+# - config/crawler.yml.example
+# - config/elasticsearch.yml.example
+
+domains:
+  - url: https://example.com
+
+output_sink: elasticsearch
+output_index: my-index
+
+elasticsearch:
+  host: http://localhost
+  # host: http://host.docker.internal  # use this host instead if Elasticsearch is running on Docker on the same machine
+  port: 9200
+  username: elastic
+  password: changeme
