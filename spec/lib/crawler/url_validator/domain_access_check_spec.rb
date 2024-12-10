@@ -9,9 +9,9 @@
 RSpec.describe(Crawler::UrlValidator) do
   let(:valid_url) { Crawler::Data::URL.parse('http://example.com') }
   let(:domain_allowlist) { ['example.com'] }
-  let(:crawl_config) { double('CrawlConfig', domain_allowlist: domain_allowlist) }
+  let(:crawl_config) { double('CrawlConfig', domain_allowlist:) }
   let(:url) { instance_double('Crawler::Data::URL', domain: domain_allowlist[0], domain_name: domain_allowlist[0]) }
-  let(:validator) { described_class.new(url: valid_url, crawl_config: crawl_config) }
+  let(:validator) { described_class.new(url: valid_url, crawl_config:) }
 
   describe '#validate_domain_access' do
     before do
@@ -27,7 +27,7 @@ RSpec.describe(Crawler::UrlValidator) do
         validator.validate_domain_access
         expect(validator)
           .to have_received(:validation_ok)
-                .with(:domain_access, 'The URL matches one of the configured domains', domain: 'example.com')
+          .with(:domain_access, 'The URL matches one of the configured domains', domain: 'example.com')
       end
     end
 
@@ -38,9 +38,8 @@ RSpec.describe(Crawler::UrlValidator) do
         validator.validate_domain_access
         expect(validator)
           .to have_received(:validation_fail)
-                .with(:domain_access, 'The URL does not match any configured domains')
+          .with(:domain_access, 'The URL does not match any configured domains')
       end
     end
   end
-
 end

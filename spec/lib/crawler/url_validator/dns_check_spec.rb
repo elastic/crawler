@@ -9,8 +9,8 @@
 RSpec.describe(Crawler::UrlValidator) do
   let(:valid_url) { Crawler::Data::URL.parse('http://example.com') }
   let(:domain_allowlist) { ['example.com'] }
-  let(:crawl_config) { double('CrawlConfig', domain_allowlist: domain_allowlist) }
-  let(:validator) { described_class.new(url: valid_url, crawl_config: crawl_config) }
+  let(:crawl_config) { double('CrawlConfig', domain_allowlist:) }
+  let(:validator) { described_class.new(url: valid_url, crawl_config:) }
 
   describe '#validate_dns' do
     before do
@@ -27,7 +27,7 @@ RSpec.describe(Crawler::UrlValidator) do
         validator.validate_dns
         expect(validator)
           .to have_received(:validation_warn)
-                .with(:dns, 'DNS resolution check could not be performed via an HTTP proxy.')
+          .with(:dns, 'DNS resolution check could not be performed via an HTTP proxy.')
       end
     end
 
@@ -48,7 +48,7 @@ RSpec.describe(Crawler::UrlValidator) do
           validator.validate_dns
           expect(validator)
             .to have_received(:validation_ok)
-                  .with(:dns, 'Domain name resolution successful: 1 addresses found', addresses: addresses)
+            .with(:dns, 'Domain name resolution successful: 1 addresses found', addresses:)
         end
       end
 
@@ -59,7 +59,7 @@ RSpec.describe(Crawler::UrlValidator) do
           validator.validate_dns
           expect(validator)
             .to have_received(:validation_fail)
-                  .with(:dns, 'DNS name resolution failed. No suitable addresses found!')
+            .with(:dns, 'DNS name resolution failed. No suitable addresses found!')
         end
       end
 
@@ -72,10 +72,9 @@ RSpec.describe(Crawler::UrlValidator) do
           validator.validate_dns
           expect(validator)
             .to have_received(:validation_fail)
-                  .with(:dns, /DNS resolution failure: DNS error. Please check the spelling of your domain/)
+            .with(:dns, /DNS resolution failure: DNS error. Please check the spelling of your domain/)
         end
       end
     end
   end
-
 end

@@ -7,23 +7,24 @@
 # frozen_string_literal: true
 
 # Mock class definitions
-class Crawler::RuleEngine::Elasticsearch
-  def initialize(crawl_config) end
-
-  def crawl_rules_outcome(url) end
+module Crawler
+  module RuleEngine
+    class Elasticsearch
+      def crawl_rules_outcome(url) end
+    end
+  end
 end
 
 RSpec.describe(Crawler::UrlValidator) do
   let(:valid_url) { Crawler::Data::URL.parse('http://example.com') }
   let(:domain_allowlist) { ['example.com'] }
-  let(:crawl_config) { double('CrawlConfig', domain_allowlist: domain_allowlist) }
-  let(:validator) { described_class.new(url: valid_url, crawl_config: crawl_config) }
+  let(:crawl_config) { double('CrawlConfig', domain_allowlist:) }
+  let(:validator) { described_class.new(url: valid_url, crawl_config:) }
   let(:rule_engine) { double('Crawler::RuleEngine::Elasticsearch') }
-  let(:outcome) { double('Outcome', allowed?: allowed, details: { rule: rule }) }
+  let(:outcome) { double('Outcome', allowed?: allowed, details: { rule: }) }
   let(:rule) { double('Rule', source: 'some_rule_source') }
 
   describe '#validate_crawl_rules' do
-
     before do
       allow(Crawler::RuleEngine::Elasticsearch).to receive(:new).with(crawl_config).and_return(rule_engine)
       allow(rule_engine).to receive(:crawl_rules_outcome).with(validator.normalized_url).and_return(outcome)
@@ -38,7 +39,7 @@ RSpec.describe(Crawler::UrlValidator) do
         validator.validate_crawl_rules
         expect(validator)
           .to have_received(:validation_ok)
-                .with(:crawl_rules, 'The URL is allowed by one of the crawl rules', rule: 'some_rule_source')
+          .with(:crawl_rules, 'The URL is allowed by one of the crawl rules', rule: 'some_rule_source')
       end
     end
 
@@ -49,7 +50,7 @@ RSpec.describe(Crawler::UrlValidator) do
         validator.validate_crawl_rules
         expect(validator)
           .to have_received(:validation_fail)
-                .with(:crawl_rules, 'The URL is denied by a crawl rule', rule: 'some_rule_source')
+          .with(:crawl_rules, 'The URL is denied by a crawl rule', rule: 'some_rule_source')
       end
     end
 
@@ -61,9 +62,8 @@ RSpec.describe(Crawler::UrlValidator) do
         validator.validate_crawl_rules
         expect(validator)
           .to have_received(:validation_fail)
-                .with(:crawl_rules, 'The URL is denied because it did not match any rules')
+          .with(:crawl_rules, 'The URL is denied because it did not match any rules')
       end
     end
   end
-
 end

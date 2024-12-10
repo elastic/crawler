@@ -9,15 +9,16 @@
 RSpec.describe(Crawler::UrlValidator) do
   let(:valid_url) { Crawler::Data::URL.parse('http://example.com') }
   let(:domain_allowlist) { ['example.com'] }
-  let(:crawl_config) { double('CrawlConfig', domain_allowlist: domain_allowlist) }
-  let(:validator) { described_class.new(url: valid_url, crawl_config: crawl_config) }
+  let(:crawl_config) { double('CrawlConfig', domain_allowlist:) }
+  let(:validator) { described_class.new(url: valid_url, crawl_config:) }
   let(:crawl_task) { instance_double('Crawler::Data::CrawlTask') }
   let(:http_executor) { double('HttpExecutor') }
   let(:crawler_api_config) { double('CrawlerApiConfig', user_agent: 'TestAgent') }
-  let(:crawl_result) { Crawler::Data::CrawlResult::Error.new(url: Crawler::Data::URL.parse(valid_url), error:"error", status_code: 500) }
+  let(:crawl_result) do
+    Crawler::Data::CrawlResult::Error.new(url: Crawler::Data::URL.parse(valid_url), error: 'error', status_code: 500)
+  end
 
   describe '#validate_robots_txt' do
-
     before do
       allow(validator).to receive(:http_executor).and_return(http_executor)
       allow(validator).to receive(:crawler_api_config).and_return(crawler_api_config)
@@ -106,7 +107,8 @@ RSpec.describe(Crawler::UrlValidator) do
         end
 
         it 'returns a validation warning' do
-          expect(validator).to receive(:validation_warn).with(:robots_txt, /allows us access to the domain with some restrictions/)
+          expect(validator).to receive(:validation_warn).with(:robots_txt,
+                                                              /allows us access to the domain with some restrictions/)
           validator.validate_robots_txt
         end
       end
@@ -124,5 +126,4 @@ RSpec.describe(Crawler::UrlValidator) do
       end
     end
   end
-
 end

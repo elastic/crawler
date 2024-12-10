@@ -9,8 +9,8 @@
 RSpec.describe(Crawler::UrlValidator) do
   let(:valid_url) { Crawler::Data::URL.parse('http://example.com') }
   let(:domain_allowlist) { ['example.com'] }
-  let(:crawl_config) { double('CrawlConfig', domain_allowlist: domain_allowlist) }
-  let(:validator) { described_class.new(url: valid_url, crawl_config: crawl_config) }
+  let(:crawl_config) { double('CrawlConfig', domain_allowlist:) }
+  let(:validator) { described_class.new(url: valid_url, crawl_config:) }
   let(:url) { instance_double('Crawler::Data::URL', domain: domain_allowlist[0], domain_name: domain_allowlist[0]) }
 
   describe '#validate_domain_uniqueness' do
@@ -27,7 +27,7 @@ RSpec.describe(Crawler::UrlValidator) do
         validator.validate_domain_uniqueness
         expect(validator)
           .to have_received(:validation_fail)
-                .with(:domain_uniqueness, 'Domain name already exists')
+          .with(:domain_uniqueness, 'Domain name already exists')
       end
     end
 
@@ -38,9 +38,8 @@ RSpec.describe(Crawler::UrlValidator) do
         validator.validate_domain_uniqueness
         expect(validator)
           .to have_received(:validation_ok)
-                .with(:domain_uniqueness, 'Domain name is new', domain: 'newexample.com')
+          .with(:domain_uniqueness, 'Domain name is new', domain: 'newexample.com')
       end
     end
   end
-
 end

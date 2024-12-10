@@ -9,17 +9,17 @@
 RSpec.describe(Crawler::UrlValidator) do
   let(:valid_url) { 'http://example.com' }
   let(:domain_allowlist) { ['example.com'] }
-  let(:crawl_config) { double('CrawlConfig', domain_allowlist: domain_allowlist) }
-  let(:validator) { described_class.new(url: valid_url, crawl_config: crawl_config) }
+  let(:crawl_config) { double('CrawlConfig', domain_allowlist:) }
+  let(:validator) { described_class.new(url: valid_url, crawl_config:) }
 
   describe '#initialize' do
     context 'when crawl_config has no domain_allowlist' do
       let(:crawl_config) { double('CrawlConfig', domain_allowlist: []) }
 
       it 'raises an InvalidCrawlConfigError' do
-        expect {
-          described_class.new(url: valid_url, crawl_config: crawl_config)
-        }.to raise_error(Crawler::UrlValidator::InvalidCrawlConfigError)
+        expect do
+          described_class.new(url: valid_url, crawl_config:)
+        end.to raise_error(Crawler::UrlValidator::InvalidCrawlConfigError)
       end
     end
 
@@ -64,7 +64,7 @@ RSpec.describe(Crawler::UrlValidator) do
 
   describe '#validate' do
     it 'performs all checks and populates the results array' do
-      allow(validator).to receive(:perform_check) do |check_name|
+      allow(validator).to receive(:perform_check) do |_check_name|
         validator.results << double('Result', failure?: false)
       end
       validator.validate
@@ -74,7 +74,7 @@ RSpec.describe(Crawler::UrlValidator) do
 
   describe '#url' do
     it 'parses the raw_url' do
-      expect(::Crawler::Data::URL).to receive(:parse).with(valid_url)
+      expect(Crawler::Data::URL).to receive(:parse).with(valid_url)
       validator.url
     end
   end
@@ -154,11 +154,10 @@ RSpec.describe(Crawler::UrlValidator) do
 
     context 'when the check method does not exist' do
       it 'raises an ArgumentError' do
-        expect {
+        expect do
           validator.send(:perform_check, 'x')
-        }.to raise_error(ArgumentError, 'Invalid check name: "x"')
+        end.to raise_error(ArgumentError, 'Invalid check name: "x"')
       end
     end
   end
-
 end

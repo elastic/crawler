@@ -9,12 +9,12 @@
 RSpec.describe(Crawler::UrlValidator) do
   let(:valid_url) { Crawler::Data::URL.parse('http://example.com') }
   let(:domain_allowlist) { ['example.com'] }
-  let(:crawl_config) { double('CrawlConfig', domain_allowlist: domain_allowlist) }
-  let(:validator) { described_class.new(url: valid_url, crawl_config: crawl_config) }
+  let(:crawl_config) { double('CrawlConfig', domain_allowlist:) }
+  let(:validator) { described_class.new(url: valid_url, crawl_config:) }
   let(:host) { domain_allowlist[0] }
   let(:port) { 80 }
-  let(:details) { { host: host, port: port } }
-  let(:url) { instance_double('Crawler::Data::URL', host: host, inferred_port: port) }
+  let(:details) { { host:, port: } }
+  let(:url) { instance_double('Crawler::Data::URL', host:, inferred_port: port) }
 
   describe '#validate_tcp' do
     before do
@@ -33,7 +33,7 @@ RSpec.describe(Crawler::UrlValidator) do
         validator.validate_tcp
         expect(validator)
           .to have_received(:validation_warn)
-                .with(:tcp, 'TCP connection check could not be performed via an HTTP proxy.')
+          .with(:tcp, 'TCP connection check could not be performed via an HTTP proxy.')
       end
     end
 
@@ -44,14 +44,14 @@ RSpec.describe(Crawler::UrlValidator) do
         before do
           allow(Socket)
             .to receive(:tcp)
-                  .with(host, port, connect_timeout: Crawler::UrlValidator::TCP_CHECK_TIMEOUT).and_yield
+            .with(host, port, connect_timeout: Crawler::UrlValidator::TCP_CHECK_TIMEOUT).and_yield
         end
 
         it 'calls validation_ok with the correct parameters' do
           validator.validate_tcp
           expect(validator)
             .to have_received(:validation_ok)
-                  .with(:tcp, 'TCP connection successful', details)
+            .with(:tcp, 'TCP connection successful', details)
         end
       end
 
@@ -59,14 +59,14 @@ RSpec.describe(Crawler::UrlValidator) do
         before do
           allow(Socket)
             .to receive(:tcp)
-                  .with(host, port, connect_timeout: Crawler::UrlValidator::TCP_CHECK_TIMEOUT).and_raise(Errno::ETIMEDOUT)
+            .with(host, port, connect_timeout: Crawler::UrlValidator::TCP_CHECK_TIMEOUT).and_raise(Errno::ETIMEDOUT)
         end
 
         it 'calls validation_fail with the correct parameters' do
           validator.validate_tcp
           expect(validator)
             .to have_received(:validation_fail)
-                  .with(:tcp, /TCP connection to #{host}:#{port} timed out/, details)
+            .with(:tcp, /TCP connection to #{host}:#{port} timed out/, details)
         end
       end
 
@@ -74,14 +74,15 @@ RSpec.describe(Crawler::UrlValidator) do
         before do
           allow(Socket)
             .to receive(:tcp)
-                  .with(host, port, connect_timeout: Crawler::UrlValidator::TCP_CHECK_TIMEOUT).and_raise(SocketError, 'socket error')
+            .with(host, port, connect_timeout: Crawler::UrlValidator::TCP_CHECK_TIMEOUT)
+            .and_raise(SocketError, 'socket error')
         end
 
         it 'calls validation_fail with the correct parameters' do
           validator.validate_tcp
           expect(validator)
             .to have_received(:validation_fail)
-                  .with(:tcp, /TCP connection to #{host}:#{port} failed: socket error/, details)
+            .with(:tcp, /TCP connection to #{host}:#{port} failed: socket error/, details)
         end
       end
 
@@ -89,17 +90,17 @@ RSpec.describe(Crawler::UrlValidator) do
         before do
           allow(Socket)
             .to receive(:tcp)
-                  .with(host, port, connect_timeout: Crawler::UrlValidator::TCP_CHECK_TIMEOUT).and_raise(SystemCallError, 'system call error')
+            .with(host, port, connect_timeout: Crawler::UrlValidator::TCP_CHECK_TIMEOUT)
+            .and_raise(SystemCallError, 'system call error')
         end
 
         it 'calls validation_fail with the correct parameters' do
           validator.validate_tcp
           expect(validator)
             .to have_received(:validation_fail)
-                  .with(:tcp, /TCP connection to #{host}:#{port} failed:/, details)
+            .with(:tcp, /TCP connection to #{host}:#{port} failed:/, details)
         end
       end
     end
   end
-
 end

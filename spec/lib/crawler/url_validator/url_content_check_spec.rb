@@ -9,8 +9,8 @@
 RSpec.describe(Crawler::UrlValidator) do
   let(:valid_url) { Crawler::Data::URL.parse('http://example.com') }
   let(:domain_allowlist) { ['example.com'] }
-  let(:crawl_config) { double('CrawlConfig', domain_allowlist: domain_allowlist) }
-  let(:validator) { described_class.new(url: valid_url, crawl_config: crawl_config) }
+  let(:crawl_config) { double('CrawlConfig', domain_allowlist:) }
+  let(:validator) { described_class.new(url: valid_url, crawl_config:) }
   let(:url) { Crawler::Data::URL.parse(valid_url) }
   let(:content) do
     <<~HTML
@@ -28,11 +28,27 @@ RSpec.describe(Crawler::UrlValidator) do
       </html>
     HTML
   end
-  let(:url_crawl_result_html) { Crawler::Data::CrawlResult::HTML.new(status_code: 200, content: content, url: url) }
-  let(:url_crawl_result_error) { Crawler::Data::CrawlResult::Error.new(url:url, suggestion_message: 'suggestion message', error: 'error') }
-  let(:url_crawl_result_redirect) { instance_double('Crawler::Data::CrawlResult::Redirect', redirect?: true, location: 'http://redirected.com') }
-  let(:url_crawl_result_redirect_error) { instance_double('Crawler::Data::CrawlResult::RedirectError', redirect?: false, suggestion_message: 'suggestion message', content_type: 'unknown') }
-  let(:crawler_api_config) { instance_double('CrawlConfig', max_title_size: 100, max_keywords_size: 100, max_description_size: 100) }
+  let(:url_crawl_result_html) { Crawler::Data::CrawlResult::HTML.new(status_code: 200, content:, url:) }
+  let(:url_crawl_result_error) do
+    Crawler::Data::CrawlResult::Error.new(url:, suggestion_message: 'suggestion message', error: 'error')
+  end
+  let(:url_crawl_result_redirect) do
+    instance_double('Crawler::Data::CrawlResult::Redirect',
+                    redirect?: true,
+                    location: 'http://redirected.com')
+  end
+  let(:url_crawl_result_redirect_error) do
+    instance_double('Crawler::Data::CrawlResult::RedirectError',
+                    redirect?: false,
+                    suggestion_message: 'suggestion message',
+                    content_type: 'unknown')
+  end
+  let(:crawler_api_config) do
+    instance_double('CrawlConfig',
+                    max_title_size: 100,
+                    max_keywords_size: 100,
+                    max_description_size: 100)
+  end
 
   describe '#validate_url_content' do
     before do
@@ -55,7 +71,7 @@ RSpec.describe(Crawler::UrlValidator) do
         validator.validate_url_content
         expect(validator)
           .to have_received(:validation_warn)
-                .with(:url_content, "The web page at #{validator.url} did not return enough content to index.")
+          .with(:url_content, "The web page at #{validator.url} did not return enough content to index.")
       end
     end
 
@@ -68,11 +84,9 @@ RSpec.describe(Crawler::UrlValidator) do
         validator.validate_url_content
         expect(validator).to have_received(:validation_ok).twice
       end
-
     end
 
     context 'when there are links in the content' do
-
       before do
         allow(validator).to receive(:url_crawl_result).and_return(url_crawl_result_html)
       end
@@ -117,7 +131,9 @@ RSpec.describe(Crawler::UrlValidator) do
         validator.validate_url_content
         expect(validator).to have_received(:validation_warn).with(
           :url_content,
-          "The web page at #{validator.url} redirected us to http://redirected.com,\nplease make sure the destination page contains some indexable\ncontent and is allowed by crawl rules before starting your crawl.\n",
+          "The web page at #{validator.url} redirected us to http://redirected.com,\nplease make sure the " \
+          "destination page contains some indexable\ncontent and is allowed by crawl rules before starting " \
+          "your crawl.\n",
           location: 'http://redirected.com'
         )
       end
@@ -131,7 +147,8 @@ RSpec.describe(Crawler::UrlValidator) do
           validator.validate_url_content
           expect(validator).to have_received(:validation_fail).with(
             :url_content,
-            "When we fetched the web page at #{validator.url}, the server returned data that was not HTML.\nsuggestion message\n",
+            "When we fetched the web page at #{validator.url}, the server returned data that was not HTML.\n" \
+            "suggestion message\n",
             content_type: 'unknown'
           )
         end
@@ -147,12 +164,11 @@ RSpec.describe(Crawler::UrlValidator) do
         validator.validate_url_content
         expect(validator).to have_received(:validation_fail).with(
           :url_content,
-          "When we fetched the web page at #{validator.url}, an unexpected error occurred: error.\nsuggestion message\n",
+          "When we fetched the web page at #{validator.url}, an unexpected error occurred: error.\n" \
+          "suggestion message\n",
           content_type: 'unknown'
         )
       end
     end
-
   end
-
 end
