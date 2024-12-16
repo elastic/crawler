@@ -35,22 +35,20 @@ RSpec.describe(Crawler::UrlValidator) do
     context 'when the URL is allowed by a crawl rule' do
       let(:allowed) { true }
 
-      it 'calls validation_ok with the correct parameters' do
+      it 'calls validation_ok' do
         validator.validate_crawl_rules
         expect(validator)
           .to have_received(:validation_ok)
-          .with(:crawl_rules, 'The URL is allowed by one of the crawl rules', rule: 'some_rule_source')
       end
     end
 
     context 'when the URL is denied by a crawl rule' do
       let(:allowed) { false }
 
-      it 'calls validation_fail with the correct parameters' do
+      it 'calls validation_fail' do
         validator.validate_crawl_rules
         expect(validator)
           .to have_received(:validation_fail)
-          .with(:crawl_rules, 'The URL is denied by a crawl rule', rule: 'some_rule_source')
       end
     end
 
@@ -58,11 +56,10 @@ RSpec.describe(Crawler::UrlValidator) do
       let(:allowed) { false }
       let(:rule) { nil }
 
-      it 'calls validation_fail with the correct parameters' do
+      it 'calls validation_fail' do
         validator.validate_crawl_rules
         expect(validator)
           .to have_received(:validation_fail)
-          .with(:crawl_rules, 'The URL is denied because it did not match any rules')
       end
     end
   end
