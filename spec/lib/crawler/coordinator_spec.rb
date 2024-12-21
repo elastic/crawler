@@ -140,7 +140,7 @@ RSpec.describe(Crawler::Coordinator) do
         {
           domains:,
           results_collection:,
-          output_sink: 'console',
+          output_sink: 'elasticsearch',
           purge_crawl_enabled: true
         }
       end

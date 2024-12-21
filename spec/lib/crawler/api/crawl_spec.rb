@@ -41,7 +41,7 @@ RSpec.describe(Crawler::API::Crawl) do
   #-------------------------------------------------------------------------------------------------
   it 'has a config' do
     expect(subject.config.seed_urls.map(&:to_s).to_a).to eq(["#{url}/"])
-    expect(subject.config.output_sink).to eq(:console)
+    expect(subject.config.output_sink).to eq(:elasticsearch)
   end
 
   it 'has a output sink' do

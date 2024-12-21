@@ -24,7 +24,7 @@ RSpec.describe(Crawler::OutputSink) do
     it 'should return a new sink object of a correct type' do
       config = Crawler::API::Config.new(
         domains:,
-        output_sink: 'console'
+        output_sink: 'elasticsearch'
       )
 
       sink = Crawler::OutputSink.create(config)
