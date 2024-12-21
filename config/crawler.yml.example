@@ -41,6 +41,8 @@
 #            join_as: array         # How to concatenate multiple values, can be: array | string
 #            value: yes             # The value to use, only applicable if action is `set`
 #            source: html           # The source to extract from, can be: html | url
+#     http_headers:
+#       - "Cookie": "jwt-token=token"
 #
 ## Where to send the results. Possible values are console, file, or elasticsearch
 #output_sink: elasticsearch
