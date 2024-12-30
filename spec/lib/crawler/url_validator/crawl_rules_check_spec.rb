@@ -9,7 +9,7 @@
 # Mock class definitions
 module Crawler
   module RuleEngine
-    class Elasticsearch
+    class Elasticsearch < Crawler::RuleEngine::Base
       def crawl_rules_outcome(url) end
     end
   end
