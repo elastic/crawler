@@ -13,8 +13,16 @@ RSpec.describe(Crawler::API::Crawl) do
   let(:crawl_config) do
     Crawler::API::Config.new(
       domains: [
-        { url: }
-      ]
+        { url: url}
+      ],
+      output_sink: :elasticsearch,
+      output_index: 'some-index-name',
+      elasticsearch: {
+        host: 'http://localhost',
+        port: 1234,
+        api_key: 'key'
+      }
+
     )
   end
 

@@ -24,11 +24,18 @@ RSpec.describe(Crawler::OutputSink) do
     it 'should return a new sink object of a correct type' do
       config = Crawler::API::Config.new(
         domains:,
-        output_sink: 'elasticsearch'
+        output_sink: :elasticsearch,
+        output_index: 'some-index-name',
+        elasticsearch: {
+          host: 'http://localhost',
+          port: 1234,
+          api_key: 'key'
+        }
+
       )
 
       sink = Crawler::OutputSink.create(config)
-      expect(sink).to be_kind_of(Crawler::OutputSink::Console)
+      expect(sink).to be_kind_of(Crawler::OutputSink::Elasticsearch)
     end
   end
 end
