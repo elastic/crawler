@@ -31,7 +31,6 @@ RSpec.describe(Crawler::OutputSink) do
           port: 1234,
           api_key: 'key'
         }
-
       )
 
       sink = Crawler::OutputSink.create(config)
