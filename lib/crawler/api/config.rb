@@ -169,7 +169,7 @@ module Crawler
         binary_content_extraction_enabled: false,
         binary_content_extraction_mime_types: [],
 
-        output_sink: :console,
+        output_sink: :elasticsearch,
         url_queue: :memory_only,
         threads_per_crawl: 10,
 
