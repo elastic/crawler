@@ -35,6 +35,7 @@ module Crawler
         http_proxy_scheme
         http_proxy_username
         http_proxy_password
+        http_headers
       ].freeze
 
       REQUIRED_OPTIONS = %i[
@@ -120,6 +121,10 @@ module Crawler
 
       def compression_enabled
         fetch(:compression_enabled, true)
+      end
+
+      def http_headers
+        fetch(:http_headers, [])
       end
 
       private

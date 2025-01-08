@@ -7,7 +7,6 @@
 # frozen_string_literal: true
 
 require 'weakref'
-
 java_import java.util.LinkedHashMap
 java_import java.security.KeyStore
 java_import javax.net.ssl.SSLContext
@@ -53,6 +52,7 @@ module Crawler
     java_import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider
     java_import org.apache.hc.client5.http.impl.classic.HttpClientBuilder
     java_import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder
+    java_import org.apache.hc.core5.http.message.BasicHeader
 
     # Scoped this import to the class only to avoid conflicts with Ruby's Timeout module
     java_import org.apache.hc.core5.util.Timeout
@@ -188,7 +188,18 @@ module Crawler
       builder.disable_content_compression unless config.compression_enabled
       builder.set_content_decoder_registry(content_decoders)
       builder.set_proxy(proxy_host)
+      builder.set_default_headers(http_headers)
       builder.build
+    end
+
+    #-------------------------------------------------------------------------------------------------
+    # Loads a list of HTTP Headers from the configuration
+    def http_headers
+      return [] if config.http_headers.empty?
+
+      config.http_headers.map do |header|
+        headers = BasicHeader.new(header[0].to_s, header[1])
+      end
     end
 
     #-------------------------------------------------------------------------------------------------

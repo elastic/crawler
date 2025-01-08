@@ -152,6 +152,7 @@ module Crawler
         http_proxy_password: config.http_proxy_password,
         http_proxy_scheme: config.http_proxy_protocol,
         compression_enabled: config.compression_enabled,
+        http_headers: config.http_headers,
         logger:
       )
     end
