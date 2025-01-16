@@ -129,7 +129,9 @@ module Crawler
         system_logger.info("Sending bulk request with #{indexing_docs_count} items and resetting queue...")
 
         begin
-          client.bulk(body:, pipeline:) # TODO: parse response
+          client.bulk(
+            **{ body: body }.merge(pipeline_enabled? ? { pipeline: pipeline } : {})
+          ) # TODO: parse response
           system_logger.info("Successfully indexed #{indexing_docs_count} docs.")
           reset_ingestion_stats(true)
         rescue ES::Client::IndexingFailedError => e
