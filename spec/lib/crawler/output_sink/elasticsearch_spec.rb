@@ -105,7 +105,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       end
     end
 
-    context 'when elasticsearch.pipeline is not provided' do
+    context 'when elasticsearch.pipeline is provided' do
       let(:config) do
         Crawler::API::Config.new(
           domains:,
