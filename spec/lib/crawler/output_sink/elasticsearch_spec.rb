@@ -206,8 +206,6 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
         expect(subject.pipeline_enabled?).to eq(false)
         expect(subject.pipeline).to eq(nil)
       end
-
-
     end
   end
 

@@ -130,7 +130,7 @@ module Crawler
 
         begin
           client.bulk(
-            **{ body: body }.merge(pipeline_enabled? ? { pipeline: pipeline } : {})
+            body:, **(pipeline_enabled? ? { pipeline: } : {})
           ) # TODO: parse response
           system_logger.info("Successfully indexed #{indexing_docs_count} docs.")
           reset_ingestion_stats(true)
