@@ -105,7 +105,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       end
     end
 
-    context 'when elasticsearch.pipeline is not provided' do
+    context 'when elasticsearch.pipeline is provided' do
       let(:config) do
         Crawler::API::Config.new(
           domains:,
@@ -120,11 +120,34 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
         )
       end
 
-      it 'uses the default pipeline' do
+      it 'uses the specified pipeline' do
         expect { subject }.not_to raise_error
         expect(subject.pipeline).to eq('my-pipeline')
         expect(system_logger).to have_received(:info).with(
           "Elasticsearch sink initialized for index [#{index_name}] with pipeline [my-pipeline]"
+        )
+      end
+    end
+
+    context 'when elasticsearch.pipeline is not provided' do
+      let(:config) do
+        Crawler::API::Config.new(
+          domains:,
+          output_sink: 'elasticsearch',
+          output_index: index_name,
+          elasticsearch: {
+            host: 'http://localhost',
+            port: 1234,
+            api_key: 'key'
+          }
+        )
+      end
+
+      it 'uses the default pipeline' do
+        expect { subject }.not_to raise_error
+        expect(subject.pipeline).to eq('ent-search-generic-ingestion')
+        expect(system_logger).to have_received(:info).with(
+          "Elasticsearch sink initialized for index [#{index_name}] with pipeline [ent-search-generic-ingestion]"
         )
       end
     end
@@ -178,9 +201,10 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
         )
       end
 
-      it 'overrides the specified default params and includes new ones' do
+      it 'overrides the specified default params' do
         expect { subject }.not_to raise_error
         expect(subject.pipeline_enabled?).to eq(false)
+        expect(subject.pipeline).to eq(nil)
       end
     end
   end
