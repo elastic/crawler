@@ -87,7 +87,7 @@ RSpec.describe(Crawler::Coordinator) do
       allow(es_client).to receive(:delete_by_query).and_return({ deleted: 1 }.stringify_keys)
       allow(es_client)
         .to receive(:paginated_search).and_return([search_result])
-      allow(es_client).to receive(:indices).and_return(double(:indices, refresh: double))
+      allow(es_client).to receive(:indices).and_return(double(:indices, refresh: double, get: double))
 
       allow(sink).to receive(:purge).and_call_original
       allow(crawl_result).to receive(:extract_links).and_return(double)

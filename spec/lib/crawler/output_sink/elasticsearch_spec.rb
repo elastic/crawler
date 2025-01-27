@@ -104,7 +104,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
 
     context 'when output index is provided and index exists in ES' do
       before(:each) do
-        allow(es_client).to receive(:get).and_return({ "some": "response" })
+        allow(es_client).to receive(:get).and_return({ 'some' => 'response' })
       end
 
       it 'does not raise an error' do
