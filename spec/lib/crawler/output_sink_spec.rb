@@ -10,7 +10,7 @@ RSpec.describe(Crawler::OutputSink) do
   let(:domains) { [{ url: 'http://example.com' }] }
 
   let(:es_client) { double }
-  let(:es_client_indices) { double(:es_client_indices, get: double) }
+  let(:es_client_indices) { double(:es_client_indices, exists: double) }
 
   before(:each) do
     allow(ES::Client).to receive(:new).and_return(es_client)

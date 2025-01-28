@@ -29,7 +29,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
   let(:default_pipeline_params) { Crawler::OutputSink::Elasticsearch::DEFAULT_PIPELINE_PARAMS }
   let(:system_logger) { double }
   let(:es_client) { double }
-  let(:es_client_indices) { double(:es_client_indices, refresh: double, get: double) }
+  let(:es_client_indices) { double(:es_client_indices, refresh: double, exists: double) }
   let(:bulk_queue) { double }
   let(:serializer) { double }
 
@@ -91,20 +91,20 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
 
     context 'when output index is provided but index does not exist in ES' do
       before(:each) do
-        allow(es_client_indices).to receive(:get).and_raise(StandardError)
+        allow(es_client_indices).to receive(:exists).and_return(false)
       end
 
-      it 'raises a SystemExit' do
-        expect { subject.ping_output_index }.to raise_error(SystemExit)
+      it 'raises an IndexDoesNotExistError' do
+        expect { subject.ping_output_index }.to raise_error(Errors::IndexDoesNotExistError)
         expect(system_logger).to have_received(:info).with(
-          "Failed to find index #{index_name}, aborting"
+          "Failed to find index #{index_name}"
         )
       end
     end
 
     context 'when output index is provided and index exists in ES' do
       before(:each) do
-        allow(es_client).to receive(:get).and_return({ 'some' => 'response' })
+        allow(es_client).to receive(:exists).and_return({ 'some' => 'response' })
       end
 
       it 'does not raise an error' do

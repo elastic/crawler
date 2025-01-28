@@ -44,12 +44,8 @@ module Crawler
       end
 
       def ping_output_index
-        # when the index is not found, indices.get() fails in an 'ugly' way.
-        # rescue, log, then raise a SystemExit to make termination more graceful
-        client.indices.get(index: config.output_index)
-      rescue StandardError
-        system_logger.info("Failed to find index #{config.output_index}, aborting")
-        raise SystemExit
+        raise Errors::IndexDoesNotExistError, system_logger.info("Failed to find index #{config.output_index}") unless
+          client.indices.exists(index: config.output_index)
       end
 
       def write(crawl_result)
