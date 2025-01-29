@@ -18,4 +18,10 @@ class Errors
   # overloading the queue if Elasticsearch indexing is failing repeatedly and performing
   # exponential backoff. This error should be treated as retryable.
   class SinkLockedError < StandardError; end
+
+  # Raised when the desired output index does not exist. This is specific for Elasticsearch
+  # sink. During initialization of the Elasticsearch sink, it will call indices.exists()
+  # against the output_index value, and will continue if the index is found.
+  # If it is not found, this error will be raised, which causes a system exit to occur.
+  class IndexDoesNotExistError < SystemExit; end
 end
