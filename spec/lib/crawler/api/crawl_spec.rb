@@ -27,6 +27,9 @@ RSpec.describe(Crawler::API::Crawl) do
   end
   let(:executor) { Crawler::MockExecutor.new(url => mock_crawl_result) }
 
+  let(:es_client) { double }
+  let(:es_client_indices) { double(:es_client_indices, exists: double) }
+
   subject do
     described_class.new(crawl_config).tap do |crawl|
       crawl.executor = executor
@@ -36,6 +39,9 @@ RSpec.describe(Crawler::API::Crawl) do
   before do
     # Replace the event logger with a fake one to capture logged events
     crawl_config.instance_variable_set(:@event_logger, Crawler::MockEventLogger.new)
+
+    allow(ES::Client).to receive(:new).and_return(es_client)
+    allow(es_client).to receive(:indices).and_return(es_client_indices)
   end
 
   #-------------------------------------------------------------------------------------------------

@@ -33,11 +33,19 @@ module Crawler
         # initialize client now to fail fast if config is bad
         client
 
+        # ping ES by attempting to reach the index specified in config
+        ping_output_index
+
         @queue_lock = Mutex.new
         init_ingestion_stats
         system_logger.info(
           "Elasticsearch sink initialized for index [#{index_name}] with pipeline [#{pipeline}]"
         )
+      end
+
+      def ping_output_index
+        raise Errors::IndexDoesNotExistError, system_logger.info("Failed to find index #{config.output_index}") unless
+          client.indices.exists(index: config.output_index)
       end
 
       def write(crawl_result)
