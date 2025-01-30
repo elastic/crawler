@@ -19,9 +19,14 @@ class Errors
   # exponential backoff. This error should be treated as retryable.
   class SinkLockedError < StandardError; end
 
+  # Raised when there is a connection error to Elasticsearch. Specific for Elasticsearch sink.
+  # During initialization of the Elasticsearch sink, it will attempt to make contact to
+  # the host provided in the configuration. If contact cannot  be established, a system exit will occur.
+  class ESConnectionError < SystemExit; end
+
   # Raised when the desired output index does not exist. This is specific for Elasticsearch
   # sink. During initialization of the Elasticsearch sink, it will call indices.exists()
   # against the output_index value, and will continue if the index is found.
   # If it is not found, this error will be raised, which causes a system exit to occur.
-  class IndexDoesNotExistError < SystemExit; end
+  class UnableToCreateIndex < SystemExit; end
 end
