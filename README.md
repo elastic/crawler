@@ -168,6 +168,10 @@ Two crawlers simultaneously interacting with a single index can lead to data los
 
 ### Configuring Crawlers
 
+If you ran Crawler using `docker-compose up`, config YAML files should be placed in your _local_ `./config` directory.
+This is because the Crawler docker image uses a mounted volume to connect your local `./config` to the Crawler container's `/app/config` directory.
+This means any edits you make to config files in the `./config` directory are immediately accessible to the running Crawler image.
+
 Crawler has template configuration files that contain every configuration available.
 
 - [config/crawler.yml.example](config/crawler.yml.example)
@@ -175,12 +179,6 @@ Crawler has template configuration files that contain every configuration availa
 
 To use these files, make a copy locally without the `.example` suffix.
 Then remove the `#` comment-out characters from the configurations that you need.
-
-You can then copy the file into your running Docker image.
-
-```bash
-$ docker cp config/my-crawler.yml crawler:app/config/my-crawler.yml
-```
 
 Crawler can be configured using two config files, a Crawler configuration and an Elasticsearch configuration.
 The Elasticsearch configuration file is optional.
