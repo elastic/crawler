@@ -43,6 +43,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
     allow(config).to receive(:system_logger).and_return(system_logger)
 
     allow(es_client).to receive(:bulk)
+    allow(es_client).to receive(:info).and_return(true)
     allow(es_client).to receive(:indices).and_return(es_client_indices)
     allow(es_client).to receive(:paginated_search)
 
@@ -89,15 +90,49 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       end
     end
 
+    context 'when connection to Elasticsearch cannot be established' do
+      before(:each) do
+        allow(es_client).to receive(:info).and_raise(StandardError)
+      end
+
+      it 'should raise an ESConnectionError' do
+        expect { subject.verify_es_connection }.to raise_error(Errors::ESConnectionError)
+        expect(system_logger).to have_received(:info).with(
+          "Failed to reach #{config.elasticsearch[:host]}:#{config.elasticsearch[:port]}"
+        )
+      end
+    end
+
+    context 'when connection to Elasticsearch has been verified' do
+      it 'should not raise an ESConnectionError' do
+        expect { subject.verify_es_connection }.not_to raise_error
+      end
+    end
+
     context 'when output index is provided but index does not exist in ES' do
       before(:each) do
         allow(es_client_indices).to receive(:exists).and_return(false)
+        allow(es_client_indices).to receive(:create).and_return({ 'some' => 'response' })
       end
 
-      it 'raises an IndexDoesNotExistError' do
-        expect { subject.ping_output_index }.to raise_error(Errors::IndexDoesNotExistError)
+      it 'should create the index' do
+        expect { subject.create_index }.not_to raise_error
         expect(system_logger).to have_received(:info).with(
-          "Failed to find index #{index_name}"
+          "Index [#{index_name}] did not exist, but was successfully created!"
+        )
+      end
+    end
+
+    context 'when output index is provided and index does not exist, but creation fails' do
+      before(:each) do
+        allow(es_client_indices).to receive(:exists).and_return(false)
+        allow(es_client_indices).to receive(:create).and_return(false)
+      end
+
+      it 'raises UnableToCreateIndex' do
+        expect { subject.create_index }.to raise_error(Errors::UnableToCreateIndex)
+        expect(system_logger).to have_received(:info).with(
+          "Failed to create #{index_name}"
         )
       end
     end
@@ -108,7 +143,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       end
 
       it 'does not raise an error' do
-        expect { subject.ping_output_index }.not_to raise_error
+        expect { subject.verify_output_index }.not_to raise_error
       end
     end
 
