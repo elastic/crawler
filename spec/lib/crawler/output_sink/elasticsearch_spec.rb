@@ -96,7 +96,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       end
 
       it 'should raise an ESConnectionError' do
-        expect { subject.verify_es_connection }.to raise_error(Errors::ESConnectionError)
+        expect { subject.verify_es_connection }.to raise_error(Errors::ExitIfESConnectionError)
         expect(system_logger).to have_received(:info).with(
           "Failed to reach #{config.elasticsearch[:host]}:#{config.elasticsearch[:port]}"
         )
@@ -129,8 +129,8 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
         allow(es_client_indices).to receive(:create).and_return(false)
       end
 
-      it 'raises UnableToCreateIndex' do
-        expect { subject.create_index }.to raise_error(Errors::UnableToCreateIndex)
+      it 'raises ExitIfUnableToCreateIndex' do
+        expect { subject.attempt_index_creation_or_exit }.to raise_error(Errors::ExitIfUnableToCreateIndex)
         expect(system_logger).to have_received(:info).with(
           "Failed to create #{index_name}"
         )

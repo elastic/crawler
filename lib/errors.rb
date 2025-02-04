@@ -22,11 +22,11 @@ class Errors
   # Raised when there is a connection error to Elasticsearch. Specific for Elasticsearch sink.
   # During initialization of the Elasticsearch sink, it will attempt to make contact to
   # the host provided in the configuration. If contact cannot  be established, a system exit will occur.
-  class ESConnectionError < SystemExit; end
+  class ExitIfESConnectionError < SystemExit; end
 
   # Raised when the desired output index does not exist. This is specific for Elasticsearch
   # sink. During initialization of the Elasticsearch sink, it will call indices.exists()
   # against the output_index value, and will continue if the index is found.
   # If it is not found, this error will be raised, which causes a system exit to occur.
-  class UnableToCreateIndex < SystemExit; end
+  class ExitIfUnableToCreateIndex < SystemExit; end
 end
