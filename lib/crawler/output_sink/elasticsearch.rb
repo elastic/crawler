@@ -47,21 +47,22 @@ module Crawler
 
       def verify_es_connection
         client.info
-      rescue StandardError # rescue because client.info crashes ungracefully when ES is unreachable
+      rescue Elastic::Transport::Transport::Error # rescue bc client.info crashes ungracefully when ES is unreachable
         system_logger.info("Failed to reach #{config.elasticsearch[:host]}:#{config.elasticsearch[:port]}")
         raise Errors::ESConnectionError
       end
 
       def verify_output_index
         if client.indices.exists(index: config.output_index) == false
-          create_index # this method will system exit upon failure
+          attempt_index_creation_or_exit
           system_logger.info("Index [#{config.output_index}] did not exist, but was successfully created!")
         else
           system_logger.info("Index [#{config.output_index}] was found!")
         end
       end
 
-      def create_index
+      def attempt_index_creation_or_exit
+        # helper method for verify_output_index
         raise Errors::UnableToCreateIndex, system_logger.info("Failed to create #{config.output_index}") unless
           client.indices.create(index: config.output_index)
       end

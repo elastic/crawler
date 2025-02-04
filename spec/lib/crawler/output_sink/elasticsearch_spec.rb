@@ -92,7 +92,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
 
     context 'when connection to Elasticsearch cannot be established' do
       before(:each) do
-        allow(es_client).to receive(:info).and_raise(StandardError)
+        allow(es_client).to receive(:info).and_raise(Elastic::Transport::Transport::Error)
       end
 
       it 'should raise an ESConnectionError' do
@@ -113,10 +113,10 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       before(:each) do
         allow(es_client_indices).to receive(:exists).and_return(false)
         allow(es_client_indices).to receive(:create).and_return({ 'some' => 'response' })
+        allow(subject).to receive(:verify_output_index)
       end
 
       it 'should create the index' do
-        expect { subject.create_index }.not_to raise_error
         expect(system_logger).to have_received(:info).with(
           "Index [#{index_name}] did not exist, but was successfully created!"
         )
