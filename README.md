@@ -200,7 +200,7 @@ See an example below for a crawl schedule that will execute once every 30 minute
 domains:
   - url: "https://elastic.co"
 schedule:
-  - pattern: "*/30 * * * *" # run every 30th minute
+  pattern: "*/30 * * * *" # run every 30th minute
 ```
 
 Then, use the CLI to then begin the crawl job schedule:
