@@ -54,7 +54,8 @@ module Crawler
         :results_collection,   # An Enumerable collection for storing mock crawl results
         :user_agent,           # The User-Agent used for requests made from the crawler.
         :stats_dump_interval,  # How often should we output stats in the logs during a crawl
-        :purge_crawl_enabled, # Whether or not to purge ES docs after a crawl, only possible for elasticsearch sinks
+        :purge_crawl_enabled,  # Whether or not to purge ES docs after a crawl, only possible for elasticsearch sinks
+        :http_headers,         # Custom HTTP headers
 
         # Elasticsearch settings
         :elasticsearch, # Elasticsearch connection settings
@@ -180,13 +181,15 @@ module Crawler
 
         extraction_rules: {},
         crawl_rules: {},
-        purge_crawl_enabled: true
+        purge_crawl_enabled: true,
+        http_headers: []
       }.freeze
 
       # Settings we are not allowed to log due to their sensitive nature
       SENSITIVE_FIELDS = %i[
         auth
         http_header_service
+        http_headers
         http_proxy_username
         http_proxy_password
         elasticsearch
