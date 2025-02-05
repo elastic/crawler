@@ -56,6 +56,9 @@ ENV IS_DOCKER=1
 
 RUN make clean install
 
+# Clean up build dependencies
+RUN rm -r /root/.m2
+
 # ------------------------------------------------------------------------------
 # remove now-unnecessary packages and directories
 
