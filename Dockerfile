@@ -10,4 +10,7 @@ COPY . /app
 WORKDIR /app
 RUN make clean install
 
+# Clean up build dependencies
+RUN rm -r /root/.m2
+
 ENTRYPOINT [ "/bin/bash" ]
