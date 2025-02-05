@@ -42,6 +42,7 @@ RSpec.describe(Crawler::API::Crawl) do
 
     allow(ES::Client).to receive(:new).and_return(es_client)
     allow(es_client).to receive(:indices).and_return(es_client_indices)
+    allow(es_client).to receive(:info).and_return(true)
   end
 
   #-------------------------------------------------------------------------------------------------
