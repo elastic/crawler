@@ -5,8 +5,7 @@ USER root
 # ------------------------------------------------------------------------------
 # we need curl and make below, but then we remove them later
 # TODO maybe we can do multi-stage to reduce layers in the final image
-
-RUN apk update && apk add --no-cache curl make curl-dev
+RUN apk update && apk add --no-cache curl=8.11.1-r0 make
 
 # ------------------------------------------------------------------------------
 # jruby install steps below have been adapted from:
