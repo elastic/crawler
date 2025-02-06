@@ -80,10 +80,12 @@ RSpec.describe(Crawler::Coordinator) do
         _source: { url: 'https://example.com/outdated' }
       }.stringify_keys
     end
+    let(:build_info) { { version: { number: '8.99.0', build_flavor: 'default' } }.deep_stringify_keys }
 
     before do
       allow(ES::Client).to receive(:new).and_return(es_client)
       allow(es_client).to receive(:bulk)
+      allow(es_client).to receive(:info).and_return(build_info)
       allow(es_client).to receive(:delete_by_query).and_return({ deleted: 1 }.stringify_keys)
       allow(es_client)
         .to receive(:paginated_search).and_return([search_result])
@@ -140,7 +142,7 @@ RSpec.describe(Crawler::Coordinator) do
         {
           domains:,
           results_collection:,
-          output_sink: 'console',
+          output_sink: :console,
           purge_crawl_enabled: true
         }
       end

@@ -54,7 +54,8 @@ module Crawler
         :results_collection,   # An Enumerable collection for storing mock crawl results
         :user_agent,           # The User-Agent used for requests made from the crawler.
         :stats_dump_interval,  # How often should we output stats in the logs during a crawl
-        :purge_crawl_enabled, # Whether or not to purge ES docs after a crawl, only possible for elasticsearch sinks
+        :purge_crawl_enabled,  # Whether or not to purge ES docs after a crawl, only possible for elasticsearch sinks
+        :full_html_extraction_enabled, # Whether or not to include the full HTML in the crawl result JSON
 
         # Elasticsearch settings
         :elasticsearch, # Elasticsearch connection settings
@@ -169,7 +170,7 @@ module Crawler
         binary_content_extraction_enabled: false,
         binary_content_extraction_mime_types: [],
 
-        output_sink: :console,
+        output_sink: :elasticsearch,
         url_queue: :memory_only,
         threads_per_crawl: 10,
 
@@ -180,7 +181,8 @@ module Crawler
 
         extraction_rules: {},
         crawl_rules: {},
-        purge_crawl_enabled: true
+        purge_crawl_enabled: true,
+        full_html_extraction_enabled: false
       }.freeze
 
       # Settings we are not allowed to log due to their sensitive nature

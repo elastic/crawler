@@ -131,6 +131,26 @@ RSpec.describe(Crawler::DocumentMapper) do
           expect(result).to eq(expected_result_limited)
         end
       end
+
+      context 'when full HTML extraction is enabled' do
+        let(:config_params) do
+          {
+            domains: [{ url: url.to_s }],
+            full_html_extraction_enabled: true
+          }
+        end
+        let(:expected_result_extracted) do
+          expected_result.merge(
+            full_html: Nokogiri::HTML(content).inner_html
+          )
+        end
+
+        it 'includes the full HTML in the result' do
+          result = subject.create_doc(crawl_result)
+
+          expect(result).to eq(expected_result_extracted)
+        end
+      end
     end
 
     context 'when crawl result is a binary file' do

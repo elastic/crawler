@@ -13,8 +13,9 @@ require_dependency File.join(__dir__, '..', '..', 'errors')
 
 module Crawler
   module OutputSink
-    class Elasticsearch < OutputSink::Base
-      DEFAULT_PIPELINE = 'ent-search-generic-ingestion'
+    class Elasticsearch < OutputSink::Base # rubocop:disable Metrics/ClassLength
+      DEFAULT_PIPELINE_8_X = 'ent-search-generic-ingestion'
+      DEFAULT_PIPELINE_9_X = 'search-default-ingestion'
       DEFAULT_PIPELINE_PARAMS = {
         _reduce_whitespace: true,
         _run_ml_inference: true,
@@ -33,19 +34,50 @@ module Crawler
         # initialize client now to fail fast if config is bad
         client
 
-        # ping ES by attempting to reach the index specified in config
-        ping_output_index
+        # ping ES to verify the provided config is good
+        verify_es_connection
+        # ping the output_index provided in the config, and create it if it does not exist
+        verify_output_index
 
         @queue_lock = Mutex.new
         init_ingestion_stats
+
+        pipeline_log = pipeline_enabled? ? "with pipeline [#{pipeline}]" : 'with pipeline disabled'
         system_logger.info(
-          "Elasticsearch sink initialized for index [#{index_name}] with pipeline [#{pipeline}]"
+          "Elasticsearch sink initialized for index [#{index_name}] #{pipeline_log}"
         )
       end
 
-      def ping_output_index
-        raise Errors::IndexDoesNotExistError, system_logger.info("Failed to find index #{config.output_index}") unless
-          client.indices.exists(index: config.output_index)
+      def verify_es_connection
+        es_host = "#{config.elasticsearch[:host]}:#{config.elasticsearch[:port]}"
+        response = client.info
+        build_flavor = response['version']['build_flavor']
+        version = response['version']['number']
+
+        # use ES major version to determine default pipeline
+        @default_pipeline = version.split('.').first == '9' ? DEFAULT_PIPELINE_9_X : DEFAULT_PIPELINE_8_X
+
+        system_logger.info(
+          "Connected to ES at #{es_host} - version: #{version}; build flavor: #{build_flavor}"
+        )
+      rescue Elastic::Transport::Transport::Error # rescue bc client.info crashes ungracefully when ES is unreachable
+        system_logger.info("Failed to reach ES at #{es_host}")
+        raise Errors::ExitIfESConnectionError
+      end
+
+      def verify_output_index
+        if client.indices.exists(index: config.output_index) == false
+          attempt_index_creation_or_exit
+          system_logger.info("Index [#{config.output_index}] did not exist, but was successfully created!")
+        else
+          system_logger.info("Index [#{config.output_index}] was found!")
+        end
+      end
+
+      def attempt_index_creation_or_exit
+        # helper method for verify_output_index
+        raise Errors::ExitIfUnableToCreateIndex, system_logger.info("Failed to create #{config.output_index}") unless
+          client.indices.create(index: config.output_index)
       end
 
       def write(crawl_result)
@@ -137,7 +169,9 @@ module Crawler
         system_logger.info("Sending bulk request with #{indexing_docs_count} items and resetting queue...")
 
         begin
-          client.bulk(body:, pipeline:) # TODO: parse response
+          client.bulk(
+            body:, **(pipeline_enabled? ? { pipeline: } : {})
+          ) # TODO: parse response
           system_logger.info("Successfully indexed #{indexing_docs_count} docs.")
           reset_ingestion_stats(true)
         rescue ES::Client::IndexingFailedError => e
@@ -174,7 +208,8 @@ module Crawler
       end
 
       def pipeline
-        @pipeline ||= pipeline_enabled? ? (es_config[:pipeline] || DEFAULT_PIPELINE) : nil
+        @pipeline ||=
+          pipeline_enabled? ? (es_config[:pipeline] || @default_pipeline) : nil
       end
 
       def pipeline_enabled?

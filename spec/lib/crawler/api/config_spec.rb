@@ -30,15 +30,15 @@ RSpec.describe(Crawler::API::Config) do
       end.to raise_error(ArgumentError, /Unexpected configuration options.*fubar/)
     end
 
-    it 'can define a crawl with elasticsearch output' do
+    it 'can define a crawl with console output' do
       config = Crawler::API::Config.new(
         domains:,
-        output_sink: :elasticsearch
+        output_sink: :console
       )
 
       expect(config.domain_allowlist.map(&:to_s)).to match_array(expected_allowlist)
       expect(config.seed_urls.map(&:to_s).to_a).to match_array(expected_seed_urls)
-      expect(config.output_sink).to eq(:elasticsearch)
+      expect(config.output_sink).to eq(:console)
       expect(config.output_dir).to be_nil
     end
 
@@ -62,7 +62,7 @@ RSpec.describe(Crawler::API::Config) do
 
       expect(config.domain_allowlist.map(&:to_s)).to match_array(expected_allowlist)
       expect(config.seed_urls.map(&:to_s).to_a).to match_array(expected_seed_urls)
-      expect(config.output_sink).to eq(:console)
+      expect(config.output_sink).to eq(:elasticsearch)
       expect(config.output_dir).to be_nil
     end
 
