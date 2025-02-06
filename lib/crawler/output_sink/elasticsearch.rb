@@ -13,8 +13,9 @@ require_dependency File.join(__dir__, '..', '..', 'errors')
 
 module Crawler
   module OutputSink
-    class Elasticsearch < OutputSink::Base
-      DEFAULT_PIPELINE = 'ent-search-generic-ingestion'
+    class Elasticsearch < OutputSink::Base # rubocop:disable Metrics/ClassLength
+      DEFAULT_PIPELINE_8_X = 'ent-search-generic-ingestion'
+      DEFAULT_PIPELINE_9_X = 'search-default-ingestion'
       DEFAULT_PIPELINE_PARAMS = {
         _reduce_whitespace: true,
         _run_ml_inference: true,
@@ -40,15 +41,27 @@ module Crawler
 
         @queue_lock = Mutex.new
         init_ingestion_stats
+
+        pipeline_log = pipeline_enabled? ? "with pipeline [#{pipeline}]" : 'with pipeline disabled'
         system_logger.info(
-          "Elasticsearch sink initialized for index [#{index_name}] with pipeline [#{pipeline}]"
+          "Elasticsearch sink initialized for index [#{index_name}] #{pipeline_log}"
         )
       end
 
       def verify_es_connection
-        client.info
+        es_host = "#{config.elasticsearch[:host]}:#{config.elasticsearch[:port]}"
+        response = client.info
+        build_flavor = response['version']['build_flavor']
+        version = response['version']['number']
+
+        # use ES major version to determine default pipeline
+        @default_pipeline = version.split('.').first == '9' ? DEFAULT_PIPELINE_9_X : DEFAULT_PIPELINE_8_X
+
+        system_logger.info(
+          "Connected to ES at #{es_host} - version: #{version}; build flavor: #{build_flavor}"
+        )
       rescue Elastic::Transport::Transport::Error # rescue bc client.info crashes ungracefully when ES is unreachable
-        system_logger.info("Failed to reach #{config.elasticsearch[:host]}:#{config.elasticsearch[:port]}")
+        system_logger.info("Failed to reach ES at #{es_host}")
         raise Errors::ExitIfESConnectionError
       end
 
@@ -195,7 +208,8 @@ module Crawler
       end
 
       def pipeline
-        @pipeline ||= pipeline_enabled? ? (es_config[:pipeline] || DEFAULT_PIPELINE) : nil
+        @pipeline ||=
+          pipeline_enabled? ? (es_config[:pipeline] || @default_pipeline) : nil
       end
 
       def pipeline_enabled?
