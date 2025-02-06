@@ -31,4 +31,4 @@ notice:
 	script/licenses/generate_notice.rb
 
 build-docker-ci:
-	docker build -t crawler-ci .buildkite
+	docker build -t crawler-ci .
