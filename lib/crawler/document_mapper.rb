@@ -57,7 +57,7 @@ module Crawler
       }
     end
 
-    def html_fields(crawl_result)
+    def html_fields(crawl_result) # rubocop:disable Metrics/AbcSize
       remove_empty_values(
         title: crawl_result.document_title(limit: config.max_title_size),
         body: crawl_result.document_body(limit: config.max_body_size),

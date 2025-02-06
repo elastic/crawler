@@ -132,10 +132,10 @@ RSpec.describe(Crawler::DocumentMapper) do
         end
       end
 
-      context "when full HTML extraction is enabled" do
+      context 'when full HTML extraction is enabled' do
         let(:config_params) do
           {
-            domains: [{ url: url.to_s}],
+            domains: [{ url: url.to_s }],
             full_html_extraction_enabled: true
           }
         end
