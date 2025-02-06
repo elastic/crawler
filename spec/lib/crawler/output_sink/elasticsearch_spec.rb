@@ -235,7 +235,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
         expect { subject }.not_to raise_error
         expect(subject.pipeline).to eq(nil)
         expect(system_logger).to have_received(:info).with(
-          "Elasticsearch sink initialized for index [#{index_name}] with pipeline [my-pipeline]"
+          "Elasticsearch sink initialized for index [#{index_name}] with pipeline disabled"
         )
       end
     end
