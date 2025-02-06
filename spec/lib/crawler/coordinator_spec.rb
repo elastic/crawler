@@ -80,7 +80,7 @@ RSpec.describe(Crawler::Coordinator) do
         _source: { url: 'https://example.com/outdated' }
       }.stringify_keys
     end
-    let(:build_info) { { version: { number: "8.99.0", build_flavor: "default" } }.deep_stringify_keys }
+    let(:build_info) { { version: { number: '8.99.0', build_flavor: 'default' } }.deep_stringify_keys }
 
     before do
       allow(ES::Client).to receive(:new).and_return(es_client)
