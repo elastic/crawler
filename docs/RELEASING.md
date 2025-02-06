@@ -13,7 +13,7 @@ The Open Crawler build job is named `crawler-docker-build-publish`.
 
 Build steps in buildkite:
 
-1. Go to the Buildkite job for publishing Crawler
+1. Go to the [Buildkite job for publishing Crawler](https://buildkite.com/elastic/crawler-docker-build-publish)
 2. Click `New Build`
 3. Enter a message (e.g. `x.y release`)
 4. Choose a version branch with the pattern `x.y`
@@ -23,7 +23,8 @@ Build steps in buildkite:
 6. Click `Create Build`
 7. Wait a minute for the Buildkite configuration to be loaded
    - When it has loaded, a `Build Information` button will appear
-8. Enter the build information
+8. Select whether or not the release should be a snapshot
+   - It is recommended to release a snapshot and do a quick test before committing to a full release
 9. Wait for the build to finish
 
 Creating a release in GitHub
