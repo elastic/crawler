@@ -59,7 +59,7 @@
 #
 ## Whether or not to include the full HTML in the crawl result Enabling full HTML extraction can
 ##   dramatically increase the index size if the site being crawled is large. Defaults to false.
-#extract_full_html: false
+#full_html_extraction_enabled: false
 #
 ## Scheduling using cron expressions
 #schedule:

@@ -136,7 +136,7 @@ RSpec.describe(Crawler::DocumentMapper) do
         let(:config_params) do
           {
             domains: [{ url: url.to_s}],
-            extract_full_html: true
+            full_html_extraction_enabled: true
           }
         end
         let(:expected_result_extracted) do

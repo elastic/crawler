@@ -65,7 +65,7 @@ module Crawler
         meta_description: crawl_result.meta_description(limit: config.max_description_size),
         links: crawl_result.links(limit: config.max_indexed_links_count),
         headings: crawl_result.headings(limit: config.max_headings_count),
-        full_html: crawl_result.full_html(enabled: config.extract_full_html)
+        full_html: crawl_result.full_html(enabled: config.full_html_extraction_enabled)
       )
     end
 

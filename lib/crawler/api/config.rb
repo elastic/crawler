@@ -55,7 +55,7 @@ module Crawler
         :user_agent,           # The User-Agent used for requests made from the crawler.
         :stats_dump_interval,  # How often should we output stats in the logs during a crawl
         :purge_crawl_enabled,  # Whether or not to purge ES docs after a crawl, only possible for elasticsearch sinks
-        :extract_full_html,    # Whether or not to include the full HTML in the crawl result JSON
+        :full_html_extraction_enabled, # Whether or not to include the full HTML in the crawl result JSON
 
         # Elasticsearch settings
         :elasticsearch, # Elasticsearch connection settings
@@ -182,7 +182,7 @@ module Crawler
         extraction_rules: {},
         crawl_rules: {},
         purge_crawl_enabled: true,
-        extract_full_html: false
+        full_html_extraction_enabled: false
       }.freeze
 
       # Settings we are not allowed to log due to their sensitive nature
