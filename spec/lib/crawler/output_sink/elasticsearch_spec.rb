@@ -25,7 +25,8 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
   let(:index_name) { 'my-index' }
 
   let(:index_name) { 'some-index-name' }
-  let(:default_pipeline) { Crawler::OutputSink::Elasticsearch::DEFAULT_PIPELINE }
+  let(:default_pipeline_8_x) { Crawler::OutputSink::Elasticsearch::DEFAULT_PIPELINE_8_X }
+  let(:default_pipeline_9_x) { Crawler::OutputSink::Elasticsearch::DEFAULT_PIPELINE_9_X }
   let(:default_pipeline_params) { Crawler::OutputSink::Elasticsearch::DEFAULT_PIPELINE_PARAMS }
   let(:system_logger) { double }
   let(:es_client) { double }
@@ -36,6 +37,9 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
   let(:document) { { id: 15 } }
   let(:serialized_document) { "id: #{document[:id]}, text: 'hoho, haha!'" }
   let(:deleted_id) { 25 }
+  let(:version) { '8.99.0' }
+  let(:build_flavor) { 'default' }
+  let(:build_info) { { version: { number: version, build_flavor: } }.deep_stringify_keys }
 
   before(:each) do
     allow(ES::Client).to receive(:new).and_return(es_client)
@@ -43,7 +47,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
     allow(config).to receive(:system_logger).and_return(system_logger)
 
     allow(es_client).to receive(:bulk)
-    allow(es_client).to receive(:info).and_return(true)
+    allow(es_client).to receive(:info).and_return(build_info)
     allow(es_client).to receive(:indices).and_return(es_client_indices)
     allow(es_client).to receive(:paginated_search)
 
@@ -96,16 +100,40 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       end
 
       it 'should raise an ESConnectionError' do
-        expect { subject.verify_es_connection }.to raise_error(Errors::ExitIfESConnectionError)
+        expect { subject }.to raise_error(Errors::ExitIfESConnectionError)
         expect(system_logger).to have_received(:info).with(
-          "Failed to reach #{config.elasticsearch[:host]}:#{config.elasticsearch[:port]}"
+          "Failed to reach ES at #{config.elasticsearch[:host]}:#{config.elasticsearch[:port]}"
         )
       end
     end
 
-    context 'when connection to Elasticsearch has been verified' do
+    context 'when connection to 8.x Elasticsearch has been verified' do
+      let(:expected_log) do
+        <<~LOG.squish
+          Connected to ES at #{config.elasticsearch[:host]}:#{config.elasticsearch[:port]} -#{' '}
+          version: 8.99.0; build flavor: default
+        LOG
+      end
+
       it 'should not raise an ESConnectionError' do
-        expect { subject.verify_es_connection }.not_to raise_error
+        expect { subject }.not_to raise_error
+        expect(system_logger).to have_received(:info).with(expected_log)
+      end
+    end
+
+    context 'when connection to 9.x Elasticsearch has been verified' do
+      let(:version) { '9.99.0' }
+      let(:build_flavor) { 'serverless' }
+      let(:expected_log) do
+        <<~LOG.squish
+          Connected to ES at #{config.elasticsearch[:host]}:#{config.elasticsearch[:port]} -#{' '}
+          version: 9.99.0; build flavor: serverless
+        LOG
+      end
+
+      it 'should not raise an ESConnectionError' do
+        expect { subject }.not_to raise_error
+        expect(system_logger).to have_received(:info).with(expected_log)
       end
     end
 
@@ -143,7 +171,8 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       end
 
       it 'does not raise an error' do
-        expect { subject.verify_output_index }.not_to raise_error
+        expect { subject }.not_to raise_error
+        expect(system_logger).to have_received(:info).with("Index [#{index_name}] was found!")
       end
     end
 
@@ -154,11 +183,11 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
         expect(subject.es_config).to eq(config.elasticsearch)
         expect(subject.index_name).to eq(index_name)
         expect(subject.pipeline_enabled?).to eq(true)
-        expect(subject.pipeline).to eq(default_pipeline)
+        expect(subject.pipeline).to eq(default_pipeline_8_x)
         expect(subject.pipeline_params).to eq(default_pipeline_params)
 
         expect(system_logger).to have_received(:info).with(
-          "Elasticsearch sink initialized for index [#{index_name}] with pipeline [#{default_pipeline}]"
+          "Elasticsearch sink initialized for index [#{index_name}] with pipeline [#{default_pipeline_8_x}]"
         )
       end
     end
@@ -187,7 +216,31 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       end
     end
 
-    context 'when elasticsearch.pipeline is not provided' do
+    context 'when elasticsearch.pipeline_enabled is false' do
+      let(:config) do
+        Crawler::API::Config.new(
+          domains:,
+          output_sink: 'elasticsearch',
+          output_index: index_name,
+          elasticsearch: {
+            host: 'http://localhost',
+            port: 1234,
+            api_key: 'key',
+            pipeline_enabled: false
+          }
+        )
+      end
+
+      it 'does not use a pipeline' do
+        expect { subject }.not_to raise_error
+        expect(subject.pipeline).to eq(nil)
+        expect(system_logger).to have_received(:info).with(
+          "Elasticsearch sink initialized for index [#{index_name}] with pipeline disabled"
+        )
+      end
+    end
+
+    context 'when elasticsearch.pipeline is not provided for version 8.x' do
       let(:config) do
         Crawler::API::Config.new(
           domains:,
@@ -201,11 +254,35 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
         )
       end
 
-      it 'uses the default pipeline' do
+      it 'uses the ent-search-generic-ingestion pipeline' do
         expect { subject }.not_to raise_error
         expect(subject.pipeline).to eq('ent-search-generic-ingestion')
         expect(system_logger).to have_received(:info).with(
           "Elasticsearch sink initialized for index [#{index_name}] with pipeline [ent-search-generic-ingestion]"
+        )
+      end
+    end
+
+    context 'when elasticsearch.pipeline is not provided for version 9.x' do
+      let(:version) { '9.99.0' }
+      let(:config) do
+        Crawler::API::Config.new(
+          domains:,
+          output_sink: 'elasticsearch',
+          output_index: index_name,
+          elasticsearch: {
+            host: 'http://localhost',
+            port: 1234,
+            api_key: 'key'
+          }
+        )
+      end
+
+      it 'uses the search-default-ingestion pipeline' do
+        expect { subject }.not_to raise_error
+        expect(subject.pipeline).to eq('search-default-ingestion')
+        expect(system_logger).to have_received(:info).with(
+          "Elasticsearch sink initialized for index [#{index_name}] with pipeline [search-default-ingestion]"
         )
       end
     end
@@ -487,7 +564,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
     end
 
     it 'sends data from bulk queue to elasticsearch' do
-      expect(es_client).to receive(:bulk).with(hash_including(body: operation, pipeline: default_pipeline))
+      expect(es_client).to receive(:bulk).with(hash_including(body: operation, pipeline: default_pipeline_8_x))
       expect(system_logger).to receive(:info).with('Successfully indexed 1 docs.')
 
       subject.flush
@@ -499,7 +576,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       end
 
       it 'logs error' do
-        expect(es_client).to receive(:bulk).with(hash_including(body: operation, pipeline: default_pipeline))
+        expect(es_client).to receive(:bulk).with(hash_including(body: operation, pipeline: default_pipeline_8_x))
         expect(system_logger).to receive(:warn).with('Bulk index failed: BOOM')
 
         subject.flush
