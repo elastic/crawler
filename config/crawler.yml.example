@@ -54,6 +54,13 @@
 ## The maximum depth that Crawler will follow links to.
 #max_crawl_depth: 2
 #
+## Whether or not the crawler should purge outdated documents after completing a crawl. Defaults to true
+#purge_crawl_enabled: true
+#
+## Whether or not to include the full HTML in the crawl result Enabling full HTML extraction can
+##   dramatically increase the index size if the site being crawled is large. Defaults to false.
+#full_html_extraction_enabled: false
+#
 ## Scheduling using cron expressions
 #schedule:
 #  pattern: "0 12 * * *"     # every day at noon
