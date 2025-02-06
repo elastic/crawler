@@ -84,6 +84,7 @@ RSpec.describe(Crawler::Coordinator) do
     before do
       allow(ES::Client).to receive(:new).and_return(es_client)
       allow(es_client).to receive(:bulk)
+      allow(es_client).to receive(:info).and_return(true)
       allow(es_client).to receive(:delete_by_query).and_return({ deleted: 1 }.stringify_keys)
       allow(es_client)
         .to receive(:paginated_search).and_return([search_result])

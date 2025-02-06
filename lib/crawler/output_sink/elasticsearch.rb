@@ -33,8 +33,10 @@ module Crawler
         # initialize client now to fail fast if config is bad
         client
 
-        # ping ES by attempting to reach the index specified in config
-        ping_output_index
+        # ping ES to verify the provided config is good
+        verify_es_connection
+        # ping the output_index provided in the config, and create it if it does not exist
+        verify_output_index
 
         @queue_lock = Mutex.new
         init_ingestion_stats
@@ -43,9 +45,26 @@ module Crawler
         )
       end
 
-      def ping_output_index
-        raise Errors::IndexDoesNotExistError, system_logger.info("Failed to find index #{config.output_index}") unless
-          client.indices.exists(index: config.output_index)
+      def verify_es_connection
+        client.info
+      rescue Elastic::Transport::Transport::Error # rescue bc client.info crashes ungracefully when ES is unreachable
+        system_logger.info("Failed to reach #{config.elasticsearch[:host]}:#{config.elasticsearch[:port]}")
+        raise Errors::ExitIfESConnectionError
+      end
+
+      def verify_output_index
+        if client.indices.exists(index: config.output_index) == false
+          attempt_index_creation_or_exit
+          system_logger.info("Index [#{config.output_index}] did not exist, but was successfully created!")
+        else
+          system_logger.info("Index [#{config.output_index}] was found!")
+        end
+      end
+
+      def attempt_index_creation_or_exit
+        # helper method for verify_output_index
+        raise Errors::ExitIfUnableToCreateIndex, system_logger.info("Failed to create #{config.output_index}") unless
+          client.indices.create(index: config.output_index)
       end
 
       def write(crawl_result)
