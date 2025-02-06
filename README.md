@@ -23,6 +23,7 @@ It mounts the `config` directory as a shared volume, so any changes made to file
     cp config/examples/simple.yml config/my-crawler.yml && \
     docker exec -it crawler bin/crawler version
     ```
+   - You can set the Crawler version here by using the ENV variable `CRAWLER_VERSION`, e.g. `CRAWLER_VERSION=0.2.1-SNAPSHOT`
 2. Update the new config file `config/my-crawler.yml` if necessary
 3. Run a crawl:
     ```

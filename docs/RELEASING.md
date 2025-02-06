@@ -26,6 +26,8 @@ Build steps in buildkite:
 8. Select whether or not the release should be a snapshot
    - It is recommended to release a snapshot and do a quick test before committing to a full release
 9. Wait for the build to finish
+10. Test the published Dockerfile
+    - Quickest way to test this is to run the [quick start command](../README.md#quickstart)
 
 Creating a release in GitHub
 
