@@ -36,6 +36,7 @@ RSpec.describe(Crawler::API::Crawl) do
 
   let(:es_client) { double }
   let(:es_client_indices) { double(:es_client_indices, exists: double) }
+  let(:build_info) { { version: { number: "8.99.0", build_flavor: "default" } }.deep_stringify_keys }
 
   subject do
     described_class.new(crawl_config).tap do |crawl|
@@ -49,7 +50,7 @@ RSpec.describe(Crawler::API::Crawl) do
 
     allow(ES::Client).to receive(:new).and_return(es_client)
     allow(es_client).to receive(:indices).and_return(es_client_indices)
-    allow(es_client).to receive(:info).and_return(true)
+    allow(es_client).to receive(:info).and_return(build_info)
   end
 
   #-------------------------------------------------------------------------------------------------
