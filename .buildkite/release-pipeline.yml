@@ -4,12 +4,19 @@
 steps:
   - input: "Build information"
     fields:
-      - select: "Build as SNAPSHOT"
+      - select: "Build as a SNAPSHOT?"
         key: "is_snapshot"
         options:
-          - label: "True"
+          - label: "Yes"
             value: "true"
-          - label: "False"
+          - label: "No"
+            value: "false"
+      - select: "Apply LATEST tag to Docker image?"
+        key: "is_latest"
+        options:
+          - label: "Yes"
+            value: "true"
+          - label: "No"
             value: "false"
   - wait: ~
   # ----
