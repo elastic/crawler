@@ -102,7 +102,8 @@ module Crawler
       end
 
       def redirect?
-        code >= 300 && code <= 399
+        # We should ignore code 304s as they do not contain a location field in the header
+        code >= 300 && code <= 399 && code != 304
       end
 
       def error?
