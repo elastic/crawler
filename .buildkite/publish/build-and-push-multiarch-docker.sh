@@ -18,20 +18,11 @@ source "$CURDIR/publish-common.sh"
 TAG_NAME="${BASE_TAG_NAME}:${VERSION}"
 AMD64_TAG="${BASE_TAG_NAME}:${VERSION}-amd64"
 ARM64_TAG="${BASE_TAG_NAME}:${VERSION}-arm64"
+LATEST_TAG="${BASE_TAG_NAME}:LATEST"
 
 # Pull the images from the registry
 buildah pull "$AMD64_TAG"
 buildah pull "$ARM64_TAG"
-
-# Repeat for LATEST tag if applicable
-if [[ "${APPLY_LATEST_TAG:-}" == "true" ]]; then
-  LATEST_TAG_NAME="${BASE_TAG_NAME}:LATEST"
-  LATEST_AMD64_TAG="${BASE_TAG_NAME}:LATEST-amd64"
-  LATEST_ARM64_TAG="${BASE_TAG_NAME}:LATEST-arm64"
-
-  buildah pull "$LATEST_AMD64_TAG"
-  buildah pull "$LATEST_ARM64_TAG"
-fi
 
 # ensure +x is set to avoid writing any sensitive information to the console
 set +x
@@ -43,10 +34,18 @@ vault read -address "${VAULT_ADDR}" -field "${DOCKER_PASS_KEY}" "${VAULT_PATH}" 
   buildah login --username="${DOCKER_USER}" --password-stdin docker.elastic.co
 
 # Create the manifest for the multiarch image
-echo "Creating ${VERSION} manifest..."
-buildah manifest create "$TAG_NAME" \
-  "$AMD64_TAG" \
-  "$ARM64_TAG"
+if [[ "${APPLY_LATEST_TAG:-}" == "true" ]]; then
+  echo "Creating ${VERSION} manifest with LATEST tag..."
+  buildah manifest create "$TAG_NAME" \
+    "$AMD64_TAG" \
+    "$ARM64_TAG" \
+    "$LATEST_TAG"
+else
+  echo "Creating ${VERSION} manifest..."
+  buildah manifest create "$TAG_NAME" \
+    "$AMD64_TAG" \
+    "$ARM64_TAG"
+fi
 
 # ... and push it
 echo "Pushing ${VERSION} manifest..."
@@ -56,21 +55,4 @@ buildah manifest push "$TAG_NAME" "docker://$TAG_NAME"
 echo "Built and pushed ${VERSION} multiarch image... dumping final manifest..."
 buildah manifest inspect "$TAG_NAME"
 
-# Repeat for LATEST tag if applicable
-if [[ "${APPLY_LATEST_TAG:-}" == "true" ]]; then
-  # Create the manifest for the multiarch image
-  echo "Creating LATEST manifest..."
-  buildah manifest create "$LATEST_TAG_NAME" \
-    "$LATEST_AMD64_TAG" \
-    "$LATEST_ARM64_TAG"
 
-  # ... and push it
-  echo "Pushing LATEST manifest..."
-  buildah manifest push "$LATEST_TAG_NAME" "docker://$LATEST_TAG_NAME"
-
-  # Write out the final manifest for debugging purposes
-  echo "Built and pushed LATEST multiarch image... dumping final manifest..."
-  buildah manifest inspect "$LATEST_TAG_NAME"
-else
-  echo "No LATEST multiarch image to build"
-fi
