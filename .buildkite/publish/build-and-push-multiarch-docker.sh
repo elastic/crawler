@@ -35,24 +35,22 @@ vault read -address "${VAULT_ADDR}" -field "${DOCKER_PASS_KEY}" "${VAULT_PATH}" 
 
 # Create the manifest for the multiarch image
 if [[ "${APPLY_LATEST_TAG:-}" == "true" ]]; then
-  echo "Creating ${VERSION} manifest with LATEST tag..."
+  echo "Creating manifest with LATEST tag..."
   buildah manifest create "$TAG_NAME" \
     "$AMD64_TAG" \
     "$ARM64_TAG" \
     "$LATEST_TAG"
 else
-  echo "Creating ${VERSION} manifest..."
+  echo "Creating manifest..."
   buildah manifest create "$TAG_NAME" \
     "$AMD64_TAG" \
     "$ARM64_TAG"
 fi
 
 # ... and push it
-echo "Pushing ${VERSION} manifest..."
+echo "Pushing manifest..."
 buildah manifest push "$TAG_NAME" "docker://$TAG_NAME"
 
 # Write out the final manifest for debugging purposes
-echo "Built and pushed ${VERSION} multiarch image... dumping final manifest..."
+echo "Built and pushed multiarch image... dumping final manifest..."
 buildah manifest inspect "$TAG_NAME"
-
-
