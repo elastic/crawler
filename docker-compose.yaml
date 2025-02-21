@@ -1,6 +1,6 @@
 services:
   crawler:
-    image: docker.elastic.co/integrations/crawler:${CRAWLER_VERSION:-0.2.1}
+    image: docker.elastic.co/integrations/crawler:${CRAWLER_VERSION:-latest}
     container_name: crawler
     volumes:
       - ./config:/app/config

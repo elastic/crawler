@@ -16,6 +16,7 @@ source "$CURDIR/publish-common.sh"
 
 # Set our tag name as well as the tag names of the individual platform images
 TAG_NAME="${BASE_TAG_NAME}:${VERSION}"
+LATEST_TAG_NAME="${BASE_TAG_NAME}:latest"
 AMD64_TAG="${BASE_TAG_NAME}:${VERSION}-amd64"
 ARM64_TAG="${BASE_TAG_NAME}:${VERSION}-arm64"
 
@@ -33,15 +34,31 @@ vault read -address "${VAULT_ADDR}" -field "${DOCKER_PASS_KEY}" "${VAULT_PATH}" 
   buildah login --username="${DOCKER_USER}" --password-stdin docker.elastic.co
 
 # Create the manifest for the multiarch image
-echo "Creating manifest..."
+echo "Creating ${VERSION} manifest..."
 buildah manifest create "$TAG_NAME" \
   "$AMD64_TAG" \
   "$ARM64_TAG"
 
 # ... and push it
-echo "Pushing manifest..."
+echo "Pushing ${VERSION} manifest..."
 buildah manifest push "$TAG_NAME" "docker://$TAG_NAME"
 
 # Write out the final manifest for debugging purposes
-echo "Built and pushed multiarch image... dumping final manifest..."
+echo "Built and pushed ${VERSION} multiarch image... dumping final manifest..."
 buildah manifest inspect "$TAG_NAME"
+
+# Repeat for latest tag if applicable
+if [[ "${APPLY_LATEST_TAG:-}" == "true" ]]; then
+  echo "Creating :latest manifest..."
+  buildah manifest create "$LATEST_TAG_NAME" \
+    "$AMD64_TAG" \
+    "$ARM64_TAG"
+
+  echo "Pushing :latest manifest..."
+  buildah manifest push "$LATEST_TAG_NAME" "docker://$LATEST_TAG_NAME"
+
+  echo "Built and pushed :latest multiarch image... dumping final manifest..."
+  buildah manifest inspect "$LATEST_TAG_NAME"
+else
+  echo "No :latest manifest required."
+fi
