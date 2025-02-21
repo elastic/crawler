@@ -49,16 +49,16 @@ buildah manifest inspect "$TAG_NAME"
 
 # Repeat for latest tag if applicable
 if [[ "${APPLY_LATEST_TAG:-}" == "true" ]]; then
-  echo "Creating 'latest' manifest..."
+  echo "Creating :latest manifest..."
   buildah manifest create "$LATEST_TAG_NAME" \
     "$AMD64_TAG" \
     "$ARM64_TAG"
 
-  echo "Pushing 'latest' manifest..."
+  echo "Pushing :latest manifest..."
   buildah manifest push "$LATEST_TAG_NAME" "docker://$LATEST_TAG_NAME"
 
-  echo "Built and pushed 'latest' multiarch image... dumping final manifest..."
+  echo "Built and pushed :latest multiarch image... dumping final manifest..."
   buildah manifest inspect "$LATEST_TAG_NAME"
 else
-  echo "No LATEST manifest required."
+  echo "No :latest manifest required."
 fi
