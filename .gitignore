@@ -73,3 +73,6 @@ script/licenses/**/_downloaded_*-LICENSE.txt
 bin/container-structure-test
 .artifacts
 .buildkite/publish/container-structure-test.yaml
+
+# Migration
+/migration/.ipynb_checkpoints/*
