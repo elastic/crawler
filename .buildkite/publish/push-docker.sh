@@ -36,6 +36,3 @@ vault read -address "${VAULT_ADDR}" -field "${DOCKER_PASS_KEY}" "${VAULT_PATH}" 
 TAG_NAME="$BASE_TAG_NAME:${VERSION}-${ARCHITECTURE}"
 echo "Pushing image to docker with tag: $TAG_NAME"
 docker push "$TAG_NAME"
-
-echo "TEMP delete incorrect docker tag"
-docker rmi "$BASE_TAG_NAME:LATEST"
