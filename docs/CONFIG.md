@@ -33,11 +33,19 @@ These are provided in the CLI as a named argument for the option `--es-config`, 
 
 ## Configuration files in Docker
 
-If you are running Crawler in docker, you will need to copy any configuration files into the container before you can crawl content.
+### Quickstart and mounted volumes
+
+If you are running Crawler using the `docker-compose` command in the quickstart guide, then a shared volume will be used to connect your local `./crawler/config` directory with the Docker container.
+This means that Crawler can access any file in your local `./crawler/config` directory.
+Creating and editing files here is enough to have them usable by Crawler.
+
+### Copying files
+
+If you are running Crawler in docker manually without a mounted volume, you will need to copy any configuration files into the container before you can crawl content.
 This will need to be done every time a change is made to these files, unless you are editing the file directly inside the Docker container.
 
 ```bash
-$ docker cp /path/to/my-crawler.yml crawler:app/config/my-crawler.yml
+docker cp /path/to/my-crawler.yml crawler:app/config/my-crawler.yml
 ```
 
 ## Example usage
@@ -48,13 +56,13 @@ The order of the opts is not important.
 When performing a crawl with only a crawl config:
 
 ```shell
-$ bin/crawler crawl config/my-crawler.yml
+bin/crawler crawl config/my-crawler.yml
 ```
 
 When performing a crawl with both a crawl config and an Elasticsearch config:
 
 ```shell
-$ bin/crawler crawl config/my-crawler.yml --es-config config/elasticsearch.yml
+bin/crawler crawl config/my-crawler.yml --es-config config/elasticsearch.yml
 ```
 
 ## Example configurations

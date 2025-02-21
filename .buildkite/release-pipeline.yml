@@ -11,7 +11,7 @@ steps:
             value: "true"
           - label: "No"
             value: "false"
-      - select: "Apply LATEST tag to Docker image?"
+      - select: "Apply 'latest' tag?"
         key: "is_latest"
         options:
           - label: "Yes"

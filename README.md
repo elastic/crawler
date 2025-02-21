@@ -8,11 +8,16 @@ Open Crawler enables users to easily ingest web content into Elasticsearch.
 Beta features are subject to change and are not covered by the support SLA of generally available (GA) features.
 Elastic plans to promote this feature to GA in a future release.
 
-_Open Crawler `v0.2` is confirmed to be compatible with Elasticsearch `v8.13.0` and above._
+### ES Version Compatibility
+
+| Elasticsearch | Open Crawler       |
+|---------------|--------------------|
+| `8.x`         | `v0.2.x`           |
+| `9.x`         | `v0.2.1` and above |
 
 ### Quickstart
 
-The following will clone the Crawler repo, run Crawler in a Docker container, and prepare a simple configuration file to use.
+The following will clone the Crawler repo, run the latest Crawler in a Docker container, and prepare a simple configuration file to use.
 It mounts the `config` directory as a shared volume, so any changes made to files there are automatically accessible to Crawler.
 
 1. Run the init script, which will output the current Crawler version when complete:
