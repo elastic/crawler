@@ -8,6 +8,9 @@ services:
       - elastic
     stdin_open: true   # Equivalent to -i
     tty: true          # Required for interactive mode
+    # Uncomment enviroment variable if running on an M4
+    # environment:
+    #   - "_JAVA_OPTIONS=-XX:UseSVE=0"
 
 networks:
   elastic:
