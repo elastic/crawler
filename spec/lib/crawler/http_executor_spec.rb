@@ -180,7 +180,7 @@ RSpec.describe(Crawler::HttpExecutor) do
     let(:redirect_head_response) do
       double(
         :apache_response,
-        status_code: 302,
+        status_code: 304,
         close: true,
         entity: nil,
         headers: [redirect_header]
@@ -198,7 +198,7 @@ RSpec.describe(Crawler::HttpExecutor) do
 
     before do
       allow(redirect_head_response).to receive(:getVersion)
-      allow(redirect_head_response).to receive(:getCode).and_return(302)
+      allow(redirect_head_response).to receive(:getCode).and_return(304)
       allow(redirect_head_response).to receive(:getReasonPhrase)
 
       allow(http_client).to receive(:head).and_return(redirect_crawler_head_response, crawler_head_response)

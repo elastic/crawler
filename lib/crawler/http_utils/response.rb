@@ -102,8 +102,7 @@ module Crawler
       end
 
       def redirect?
-        # We should ignore code 304s as they do not contain a location field in the header
-        code >= 300 && code <= 399 && code != 304
+        code >= 300 && code <= 399
       end
 
       def error?
@@ -115,7 +114,7 @@ module Crawler
       end
 
       def redirect_location
-        url.join(headers['location'])
+        url.join(headers['location']) if headers.key?('location')
       end
 
       private
