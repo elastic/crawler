@@ -164,6 +164,46 @@ RSpec.describe(Crawler::HttpExecutor) do
     end
   end
 
+  context 'when HEAD returns a redirect with no location' do
+    let(:head_response) do
+      double(
+        :apache_response,
+        status_code: 304,
+        close: true,
+        headers: [],
+        entity: nil
+      )
+    end
+    let(:get_response) do
+      double(
+        :apache_response,
+        status_code: 304,
+        close: true,
+        headers: [content_type_header],
+        entity: response_entity
+      )
+    end
+
+    before do
+      allow(head_response).to receive(:getCode).and_return(304)
+      allow(get_response).to receive(:getCode).and_return(304)
+      allow(logger).to receive(:warn)
+      allow(Crawler::Data::CrawlResult::RedirectError).to receive(:new)
+    end
+
+    it 'receives a RedirectError and log message' do
+      http_executor.run(crawl_task)
+
+      # expect one log message
+      expect(logger).to have_received(:warn).with(
+        match(/^Redirect from #{crawl_task.url} dropped due to lack of redirect location. .*/)
+      ).once
+
+      # expect one RedirectError
+      expect(Crawler::Data::CrawlResult::RedirectError).to have_received(:new).once
+    end
+  end
+
   context 'when HEAD returns a redirect' do
     let(:redirect_url) { 'https://example.com/info' }
     let(:crawler_redirect_url) { Crawler::Data::URL.parse(redirect_url) }
