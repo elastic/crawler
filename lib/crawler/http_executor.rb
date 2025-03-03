@@ -178,11 +178,11 @@ module Crawler
     #-------------------------------------------------------------------------------------------------
 
     def handle_redirect(crawl_task:, response:, result_args:)
-      # 304 responses are not guaranteed to have a location field
-      if response.redirect_location
+      redirect_location = response.redirect_location
+      if redirect_location
         return Crawler::Data::CrawlResult::Redirect.new(
           **result_args.merge(
-            location: response.redirect_location,
+            location: redirect_location,
             redirect_chain: crawl_task.redirect_chain
           )
         )
