@@ -114,7 +114,7 @@ module Crawler
       end
 
       def redirect_location
-        url.join(headers['location'])
+        url.join(headers['location']) if headers.key?('location')
       end
 
       private

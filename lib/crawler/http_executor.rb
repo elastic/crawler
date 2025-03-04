@@ -176,6 +176,29 @@ module Crawler
     end
 
     #-------------------------------------------------------------------------------------------------
+
+    def handle_redirect(crawl_task:, response:, result_args:)
+      redirect_location = response.redirect_location
+      if redirect_location
+        return Crawler::Data::CrawlResult::Redirect.new(
+          **result_args.merge(
+            location: redirect_location,
+            redirect_chain: crawl_task.redirect_chain
+          )
+        )
+      end
+      # drop this redirect if no location field was provided
+      error = <<~LOG.squish
+        Redirect from #{crawl_task.url} dropped due to lack of
+        redirect location. The response code from this URL was #{response.code}.
+      LOG
+      logger.warn(error)
+      Crawler::Data::CrawlResult::RedirectError.new(
+        url: crawl_task.url,
+        error:
+      )
+    end
+
     def generate_crawl_result(crawl_task:, response:)
       result_args = {
         url: crawl_task.url,
@@ -189,11 +212,10 @@ module Crawler
       # - we don't extract content from them
       # - we have to track the redirect chain to handle infinite redirects correctly
       if response.redirect?
-        return Crawler::Data::CrawlResult::Redirect.new(
-          **result_args.merge(
-            location: response.redirect_location,
-            redirect_chain: crawl_task.redirect_chain
-          )
+        return handle_redirect(
+          crawl_task:,
+          response:,
+          result_args:
         )
       end
 
