@@ -25,8 +25,8 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
   let(:index_name) { 'my-index' }
 
   let(:index_name) { 'some-index-name' }
-  let(:default_pipeline_8_x) { Crawler::OutputSink::Elasticsearch::DEFAULT_PIPELINE_8_X }
-  let(:default_pipeline_9_x) { Crawler::OutputSink::Elasticsearch::DEFAULT_PIPELINE_9_X }
+  let(:default_pipeline_v1) { Crawler::OutputSink::Elasticsearch::DEFAULT_PIPELINE_V1 }
+  let(:default_pipeline_v2) { Crawler::OutputSink::Elasticsearch::DEFAULT_PIPELINE_V2 }
   let(:default_pipeline_params) { Crawler::OutputSink::Elasticsearch::DEFAULT_PIPELINE_PARAMS }
   let(:system_logger) { double }
   let(:es_client) { double }
@@ -107,7 +107,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       end
     end
 
-    context 'when connection to 8.x Elasticsearch has been verified' do
+    context 'when connection to 8.x default Elasticsearch has been verified' do
       let(:expected_log) do
         <<~LOG.squish
           Connected to ES at #{config.elasticsearch[:host]}:#{config.elasticsearch[:port]} -#{' '}
@@ -115,13 +115,46 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
         LOG
       end
 
-      it 'should not raise an ESConnectionError' do
+      it 'should assign the v1 pipeline' do
         expect { subject }.not_to raise_error
         expect(system_logger).to have_received(:info).with(expected_log)
+        expect(subject.instance_variable_get(:@default_pipeline)).to eq(default_pipeline_v1)
       end
     end
 
-    context 'when connection to 9.x Elasticsearch has been verified' do
+    context 'when connection to 8.x serverless Elasticsearch has been verified' do
+      let(:build_flavor) { 'serverless' }
+      let(:expected_log) do
+        <<~LOG.squish
+          Connected to ES at #{config.elasticsearch[:host]}:#{config.elasticsearch[:port]} -#{' '}
+          version: 8.99.0; build flavor: serverless
+        LOG
+      end
+
+      it 'should assign the v2 pipeline' do
+        expect { subject }.not_to raise_error
+        expect(system_logger).to have_received(:info).with(expected_log)
+        expect(subject.instance_variable_get(:@default_pipeline)).to eq(default_pipeline_v2)
+      end
+    end
+
+    context 'when connection to 9.x default Elasticsearch has been verified' do
+      let(:version) { '9.99.0' }
+      let(:expected_log) do
+        <<~LOG.squish
+          Connected to ES at #{config.elasticsearch[:host]}:#{config.elasticsearch[:port]} -#{' '}
+          version: 9.99.0; build flavor: default
+        LOG
+      end
+
+      it 'should assign the v2 pipeline' do
+        expect { subject }.not_to raise_error
+        expect(system_logger).to have_received(:info).with(expected_log)
+        expect(subject.instance_variable_get(:@default_pipeline)).to eq(default_pipeline_v2)
+      end
+    end
+
+    context 'when connection to 9.x serverless Elasticsearch has been verified' do
       let(:version) { '9.99.0' }
       let(:build_flavor) { 'serverless' }
       let(:expected_log) do
@@ -131,9 +164,10 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
         LOG
       end
 
-      it 'should not raise an ESConnectionError' do
+      it 'should assign the v2 pipeline' do
         expect { subject }.not_to raise_error
         expect(system_logger).to have_received(:info).with(expected_log)
+        expect(subject.instance_variable_get(:@default_pipeline)).to eq(default_pipeline_v2)
       end
     end
 
@@ -183,11 +217,11 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
         expect(subject.es_config).to eq(config.elasticsearch)
         expect(subject.index_name).to eq(index_name)
         expect(subject.pipeline_enabled?).to eq(true)
-        expect(subject.pipeline).to eq(default_pipeline_8_x)
+        expect(subject.pipeline).to eq(default_pipeline_v1)
         expect(subject.pipeline_params).to eq(default_pipeline_params)
 
         expect(system_logger).to have_received(:info).with(
-          "Elasticsearch sink initialized for index [#{index_name}] with pipeline [#{default_pipeline_8_x}]"
+          "Elasticsearch sink initialized for index [#{index_name}] with pipeline [#{default_pipeline_v1}]"
         )
       end
     end
@@ -564,7 +598,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
     end
 
     it 'sends data from bulk queue to elasticsearch' do
-      expect(es_client).to receive(:bulk).with(hash_including(body: operation, pipeline: default_pipeline_8_x))
+      expect(es_client).to receive(:bulk).with(hash_including(body: operation, pipeline: default_pipeline_v1))
       expect(system_logger).to receive(:info).with('Successfully indexed 1 docs.')
 
       subject.flush
@@ -576,7 +610,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       end
 
       it 'logs error' do
-        expect(es_client).to receive(:bulk).with(hash_including(body: operation, pipeline: default_pipeline_8_x))
+        expect(es_client).to receive(:bulk).with(hash_including(body: operation, pipeline: default_pipeline_v1))
         expect(system_logger).to receive(:warn).with('Bulk index failed: BOOM')
 
         subject.flush
