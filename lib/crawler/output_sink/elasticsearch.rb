@@ -14,8 +14,8 @@ require_dependency File.join(__dir__, '..', '..', 'errors')
 module Crawler
   module OutputSink
     class Elasticsearch < OutputSink::Base # rubocop:disable Metrics/ClassLength
-      DEFAULT_PIPELINE_8_X = 'ent-search-generic-ingestion'
-      DEFAULT_PIPELINE_9_X = 'search-default-ingestion'
+      DEFAULT_PIPELINE_V1 = 'ent-search-generic-ingestion'
+      DEFAULT_PIPELINE_V2 = 'search-default-ingestion'
       DEFAULT_PIPELINE_PARAMS = {
         _reduce_whitespace: true,
         _run_ml_inference: true,
@@ -53,9 +53,7 @@ module Crawler
         response = client.info
         build_flavor = response['version']['build_flavor']
         version = response['version']['number']
-
-        # use ES major version to determine default pipeline
-        @default_pipeline = version.split('.').first == '9' ? DEFAULT_PIPELINE_9_X : DEFAULT_PIPELINE_8_X
+        @default_pipeline = assign_default_pipeline(version, build_flavor)
 
         system_logger.info(
           "Connected to ES at #{es_host} - version: #{version}; build flavor: #{build_flavor}"
@@ -226,6 +224,15 @@ module Crawler
       end
 
       private
+
+      def assign_default_pipeline(version, build_flavor)
+        # any 9.x or serverless project should use the v2 pipeline
+        if version.split('.').first == '9' || build_flavor == 'serverless'
+          DEFAULT_PIPELINE_V2
+        else
+          DEFAULT_PIPELINE_V1
+        end
+      end
 
       def parametrized_doc(crawl_result)
         doc = to_doc(crawl_result)
