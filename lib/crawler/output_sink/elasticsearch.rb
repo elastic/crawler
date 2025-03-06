@@ -53,16 +53,7 @@ module Crawler
         response = client.info
         build_flavor = response['version']['build_flavor']
         version = response['version']['number']
-
-        # use ES major version to determine default pipeline
-        @default_pipeline =
-          begin
-            if version.split('.').first == '9' or build_flavor == 'serverless'
-              DEFAULT_PIPELINE_V2
-            else
-              DEFAULT_PIPELINE_V1
-            end
-          end
+        @default_pipeline = assign_default_pipeline(version, build_flavor)
 
         system_logger.info(
           "Connected to ES at #{es_host} - version: #{version}; build flavor: #{build_flavor}"
@@ -233,6 +224,15 @@ module Crawler
       end
 
       private
+
+      def assign_default_pipeline(version, build_flavor)
+        # any 9.x or serverless project should use the v2 pipeline
+        if version.split('.').first == '9' || build_flavor == 'serverless'
+          DEFAULT_PIPELINE_V2
+        else
+          DEFAULT_PIPELINE_V1
+        end
+      end
 
       def parametrized_doc(crawl_result)
         doc = to_doc(crawl_result)
