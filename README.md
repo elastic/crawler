@@ -107,7 +107,7 @@ If using an API key, ensure that the API key has read and write permissions to a
         "indices": [
           {
             "names": ["my-crawler-index-name"],
-            "privileges": ["all"]
+            "privileges": ["monitor"]
           }
         ]
       }
