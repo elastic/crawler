@@ -17,11 +17,13 @@ Elastic plans to promote this feature to GA in a future release.
 
 ### Quickstart
 
-The following will clone the Crawler repo, run the latest Crawler in a Docker container, and prepare a simple configuration file to use.
+The docker image can be found at https://www.docker.elastic.co/r/integrations/crawler.
+
+The following will run the latest Crawler in a Docker container using a docker-compose file.
 It mounts the `config` directory as a shared volume, so any changes made to files there are automatically accessible to Crawler.
 
 1. Run the init script, which will output the current Crawler version when complete:
-    ```
+    ```bash
     git clone git@github.com:elastic/crawler.git && \
     cd crawler && \
     docker-compose up -d && \
@@ -30,7 +32,7 @@ It mounts the `config` directory as a shared volume, so any changes made to file
     ```
 2. Update the new config file `config/my-crawler.yml` if necessary
 3. Run a crawl:
-    ```
+    ```bash
     docker exec -it crawler bin/crawler crawl config/my-crawler.yml
     ```
 
