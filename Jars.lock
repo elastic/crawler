@@ -51,7 +51,6 @@ org.ow2.asm:asm:9.3:compile:
 org.tallison:isoparser:1.9.41.7:compile:
 org.tallison:metadata-extractor:2.17.1.0:compile:
 org.tallison.xmp:xmpcore-shaded:6.1.10:compile:
-com.adobe.xmp:xmpcore:6.1.10:compile:
 de.l3s.boilerpipe:boilerpipe:1.1.0:compile:
 com.rometools:rome:1.18.0:compile:
 com.rometools:rome-utils:1.18.0:compile:
@@ -123,6 +122,8 @@ org.apache.cxf:cxf-core:3.4.10:compile:
 org.apache.ws.xmlschema:xmlschema-core:2.2.5:compile:
 com.mchange:c3p0:0.9.5.4:compile:
 com.mchange:mchange-commons-java:0.2.15:compile:
+com.drewnoakes:metadata-extractor:2.18.0:compile:
+com.adobe.xmp:xmpcore:6.1.11:compile:
 org.apache.commons:commons-compress:1.21:compile:
 com.fasterxml.jackson.core:jackson-databind:2.14.2:compile:
 com.fasterxml.woodstox:woodstox-core:6.5.1:compile:
