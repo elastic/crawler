@@ -107,6 +107,7 @@ org.apache.pdfbox:jbig2-imageio:3.0.4:compile:
 com.github.jai-imageio:jai-imageio-core:1.4.0:compile:
 jakarta.xml.bind:jakarta.xml.bind-api:2.3.3:compile:
 jakarta.activation:jakarta.activation-api:1.2.2:compile:
+org.slf4j:slf4j-nop:1.7.26:compile:
 org.apache.commons:commons-lang3:3.10:compile:
 commons-io:commons-io:2.11.0:compile:
 org.apache.cxf:cxf-rt-transports-http:3.4.10:compile:
