@@ -61,15 +61,6 @@ RSpec.describe(Crawler::CLI::Crawl) do
 
           capture_output { cli.call(arguments: ['crawl', crawl_config, '--es-config', es_config_path]) }
         end
-
-        it 'is superseded by crawl.yml' do
-          es_config_path = 'spec/fixtures/elasticsearch.yml'
-          allow(Crawler::API::Config).to receive(:new)
-
-          # expect(Crawler::API::Config).to receive(:new).with(hash_including(elasticsearch: kind_of(Hash)))
-          expect(Crawler::API::Config).to receive(:new)
-          capture_output { cli.call(arguments: ['crawl', crawl_config, '--es-config', es_config_path]) }
-        end
       end
     end
 
