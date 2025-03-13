@@ -23,26 +23,25 @@ module Crawler
         end
       end
 
-      # rubocop:disable Style/SafeNavigation
       def self.load_crawl_config(crawl_config, es_config)
-        config = load_yaml(crawl_config)
+        config = nest_configs(load_yaml(crawl_config))
         unless es_config.nil?
-          es_config = load_yaml(es_config)
-          # deep merge config into es_config to make sure fields in crawler config
-          # are prioritized
-          es_config.deep_merge!(config) unless es_config.nil?
+          es_config = nest_configs(load_yaml(es_config))
+          # deep merge config into es_config to ensure crawler cfg takes precedence
+          # then overwrite config var with result of deep merge for the Config.new() call
+          config = es_config.deep_merge!(config) unless es_config.empty?
         end
 
-        # nest any flat yaml present in the configs
-        nested_config = nest_configs(config)
-
-        Crawler::API::Config.new(**nested_config.deep_symbolize_keys)
+        Crawler::API::Config.new(**config.deep_symbolize_keys)
       end
-      # rubocop:enable Style/SafeNavigation
 
-      def self.nest_configs(es_config)
+      def self.nest_configs(config)
+        # return empty hashmap if config is nil, to catch cases where
+        # a yaml is given but no content is inside
+        return {} if config.nil?
+
         nested_config = {}
-        es_config.each do |key, value|
+        config.each do |key, value|
           all_fields = key.split('.')
           last_key = all_fields[-1]
 
