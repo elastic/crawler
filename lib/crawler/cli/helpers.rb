@@ -46,7 +46,7 @@ module Crawler
           last_key = all_fields[-1]
 
           pointer = nested_config
-          all_fields[..-2].each do |field|
+          all_fields[...-1].each do |field|
             pointer[field] = {} unless pointer.key?(field)
             pointer = pointer[field]
           end
