@@ -47,6 +47,7 @@ RSpec.describe(Crawler::CLI::Helpers) do
 
   crawl_config_fixture = 'spec/fixtures/crawl.yml'
   es_config_fixture = 'spec/fixtures/elasticsearch.yml'
+  crawl_config_flat_fixture = 'spec/fixtures/crawl-flat-format.yml'
   es_config_flat_fixture = 'spec/fixtures/elasticsearch-flat-format.yml'
 
   before do
@@ -84,8 +85,8 @@ RSpec.describe(Crawler::CLI::Helpers) do
     end
   end
 
-  context 'crawler config takes precedence over elasticsearch config' do
-    it 'we receive a config that contains settings from the crawl config' do
+  context 'when crawler and elasticsearch have conflicting fields' do
+    it 'prioritizes the crawler YAML file over elasticsearch' do
       # the es_config_flat_fixture contains different elasticsearch config values
       # therefore we check that the crawl config fixture's values were kept
       output_config = Crawler::CLI::Helpers.load_crawl_config(
@@ -99,9 +100,21 @@ RSpec.describe(Crawler::CLI::Helpers) do
   context 'when given flat YAML' do
     it 'is successfully nested' do
       output_config = Crawler::CLI::Helpers.load_crawl_config(
-        crawl_config_fixture,
+        crawl_config_flat_fixture,
         es_config_flat_fixture
       )
+
+      # ensure domains are nested
+      expect(
+        output_config.domains
+      ).to eq(crawl_configuration.domains)
+
+      # ensure entire elasticsearch configs are nested
+      expect(
+        output_config.elasticsearch
+      ).to eq(crawl_configuration.elasticsearch)
+
+      # ensure configs from es_config fixture are present and nested
       expect(
         output_config.elasticsearch[:pipeline_params]
       ).to eq(crawl_configuration.elasticsearch[:pipeline_params])
