@@ -385,9 +385,9 @@ module Crawler
       end
 
       def configure_logging!(log_level, event_logs_enabled)
-        @event_logger = Logger.new($stdout) if event_logs_enabled
+        @event_logger = Logger.new('crawler_event.log', 'weekly') if event_logs_enabled
 
-        system_logger = Logger.new($stdout)
+        system_logger = Logger.new('crawler_system.log', 'weekly')
         system_logger.level = LOG_LEVELS[log_level]
 
         # Set custom formatter to include timestamp
