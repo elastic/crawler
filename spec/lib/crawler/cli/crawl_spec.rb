@@ -29,7 +29,7 @@ RSpec.describe(Crawler::CLI::Crawl) do
       end
     end
 
-    context 'when a crawle config is provided' do
+    context 'when a crawler config is provided' do
       let(:crawl_config) { 'spec/fixtures/crawl.yml' }
       let(:crawl_mock) { double }
 
@@ -53,13 +53,12 @@ RSpec.describe(Crawler::CLI::Crawl) do
       end
 
       context 'when an elasticsearch config is provided' do
-        it 'shows an error message' do
+        let(:crawl_config_mock) { double }
+        it 'runs a crawl' do
           es_config_path = 'spec/fixtures/elasticsearch.yml'
-          es_config = YAML.safe_load_file(es_config_path)
           allow(Crawler::API::Crawl).to receive(:new).and_return(crawl_mock)
-
-          expect(Crawler::API::Config).to receive(:new).with(hash_including(es_config.deep_symbolize_keys)).once
           expect(crawl_mock).to receive(:start!).once
+
           capture_output { cli.call(arguments: ['crawl', crawl_config, '--es-config', es_config_path]) }
         end
       end

@@ -24,13 +24,35 @@ module Crawler
       end
 
       def self.load_crawl_config(crawl_config, es_config)
-        config = load_yaml(crawl_config)
+        config = nest_configs(load_yaml(crawl_config))
         unless es_config.nil?
-          es_config = load_yaml(es_config)
-          config.merge!(es_config) unless es_config.empty?
+          es_config = nest_configs(load_yaml(es_config))
+          # deep merge config into es_config to ensure crawler cfg takes precedence
+          # then overwrite config var with result of deep merge for the Config.new() call
+          config = es_config.deep_merge!(config) unless es_config.empty?
         end
 
         Crawler::API::Config.new(**config.deep_symbolize_keys)
+      end
+
+      def self.nest_configs(config)
+        # return empty hashmap if config is nil, to catch cases where
+        # a yaml is given but no content is inside
+        return {} if config.nil?
+
+        nested_config = {}
+        config.each do |key, value|
+          all_fields = key.split('.')
+          last_key = all_fields[-1]
+
+          pointer = nested_config
+          all_fields[...-1].each do |field|
+            pointer[field] = {} unless pointer.key?(field)
+            pointer = pointer[field]
+          end
+          pointer[last_key] = value
+        end
+        nested_config
       end
     end
   end
