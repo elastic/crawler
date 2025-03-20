@@ -1,0 +1,11 @@
+elasticsearch.host: http://test:9200
+elasticsearch.username: test
+elasticsearch.password: changeme-test
+elasticsearch.api_key: 1234
+elasticsearch.pipeline: ent-search-generic-ingestion
+elasticsearch.pipeline_enabled: true
+elasticsearch.pipeline_params._reduce_whitespace: true
+elasticsearch.pipeline_params._run_ml_inference: true
+elasticsearch.pipeline_params._extract_binary_content: true
+elasticsearch.bulk_api.max_items: 10
+elasticsearch.bulk_api.max_size_bytes: 1_048_576
