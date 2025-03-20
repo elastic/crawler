@@ -385,6 +385,11 @@ module Crawler
       end
 
       def configure_logging!(log_level, event_logs_enabled)
+        # --------------------------------------------------------------------------------------------------------------------------------
+        # New custom log code here
+        alt_system_logger = Crawler::CrawlLogger.new(LOG_LEVELS[log_level])
+        alt_system_logger.info("THIS IS A TEST MESSAGE")
+        # ----------------------------------------------------------------
         @event_logger = Logger.new('crawler_event.log', 'weekly') if event_logs_enabled
 
         system_logger = Logger.new('crawler_system.log', 'weekly')
