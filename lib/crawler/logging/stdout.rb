@@ -10,44 +10,44 @@ require_dependency File.join(__dir__, 'loghandlerbase')
 
 module Crawler
   module LogHandler
-    attr_reader :event_logger, :system_logger
+    attr_reader :event_logger, :logger_instance
 
     class StdoutHandler < LogHandler::Base
       def initialize(log_level)
         super
         # system logger setup
-        system_logger = Logger.new($stdout)
-        system_logger.level = log_level
+        logger_instance = Logger.new($stdout)
+        logger_instance.level = log_level
         # Set custom formatter to include timestamp
-        system_logger.formatter = proc do |_severity, datetime, _progname, msg|
+        logger_instance.formatter = proc do |_severity, datetime, _progname, msg|
           timestamp = datetime.strftime('%Y-%m-%dT%H:%M:%S.%LZ')
           "[#{timestamp}] #{msg}\n"
         end
         # convert system logger to a StaticallyTaggedLogger so we can support tagging
-        @system_logger = StaticallyTaggedLogger.new(system_logger)
+        @logger_instance = StaticallyTaggedLogger.new(logger_instance)
       end
 
       def log(message, message_log_level)
         case message_log_level
         when Logger::DEBUG
-          @system_logger.debug(message)
+          @logger_instance.debug(message)
         when Logger::INFO
-          @system_logger.info(message)
+          @logger_instance.info(message)
         when Logger::WARN
-          @system_logger.warn(message)
+          @logger_instance.warn(message)
         when Logger::ERROR
-          @system_logger.error(message)
+          @logger_instance.error(message)
         else
-          @system_logger.fatal(message)
+          @logger_instance.fatal(message)
         end
       end
 
       def add_tags(*tags)
-        @system_logger = @system_logger.tagged(tags)
+        @logger_instance = @logger_instance.tagged(tags)
       end
 
       def level(log_level)
-        @system_logger.level = log_level
+        @logger_instance.level = log_level
       end
     end
   end
