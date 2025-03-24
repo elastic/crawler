@@ -160,7 +160,7 @@ module Crawler
 
         #---------------------------------------------------------------------------------------------
         def extract_attribute_value(tag_name, attribute_name)
-          parsed_content.css(tag_name)&.attr(attribute_name)&.content
+          parsed_content.css(tag_name).first&.attr(attribute_name)
         end
 
         # Lookup for content using CSS selector
