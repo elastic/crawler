@@ -15,7 +15,7 @@ module Crawler
     class StdoutHandler < LogHandler::Base
       def initialize(log_level)
         super
-        # system logger setup
+        # logger instance setup
         logger_instance = Logger.new($stdout)
         logger_instance.level = log_level
         # Set custom formatter to include timestamp
@@ -23,7 +23,7 @@ module Crawler
           timestamp = datetime.strftime('%Y-%m-%dT%H:%M:%S.%LZ')
           "[#{timestamp}] #{msg}\n"
         end
-        # convert system logger to a StaticallyTaggedLogger so we can support tagging
+        # convert logger instance to a StaticallyTaggedLogger so we can support tagging
         @logger_instance = StaticallyTaggedLogger.new(logger_instance)
       end
 
@@ -37,8 +37,10 @@ module Crawler
           @logger_instance.warn(message)
         when Logger::ERROR
           @logger_instance.error(message)
-        else
+        when Logger::FATAL
           @logger_instance.fatal(message)
+        else
+          @logger_instance << message
         end
       end
 

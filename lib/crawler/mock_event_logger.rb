@@ -22,12 +22,5 @@ module Crawler
       original_event = JSON.parse(event)
       mock_events << original_event
     end
-
-    def info(event)
-      # CrawlerLogger does not define '<<', so we must
-      # define this info() method to match CrawlerLogger's info() method
-      original_event = JSON.parse(event)
-      mock_events << original_event
-    end
   end
 end

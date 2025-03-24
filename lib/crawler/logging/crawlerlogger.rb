@@ -55,6 +55,10 @@ module Crawler
       route_logs_to_handlers(message, custom_log_level)
     end
 
+    def <<(message)
+      route_logs_to_handlers(message, nil)
+    end
+
     # ------------------------------------------------------------
     def add_handler(new_handler)
       all_handlers.append(new_handler)

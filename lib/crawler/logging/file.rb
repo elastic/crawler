@@ -17,7 +17,7 @@ module Crawler
         super
         raise ArgumentError, 'Need a filename for FileHandler log handler!' unless filename
 
-        # system logger setup
+        # logger instance setup
         logger_instance = Logger.new(filename, rotation_period)
         logger_instance.level = log_level
         # Set custom formatter to include timestamp
@@ -25,7 +25,7 @@ module Crawler
           timestamp = datetime.strftime('%Y-%m-%dT%H:%M:%S.%LZ')
           "[#{timestamp}] #{msg}\n"
         end
-        # convert system logger to a StaticallyTaggedLogger so we can support tagging
+        # convert logger instance to a StaticallyTaggedLogger so we can support tagging
         @logger_instance = StaticallyTaggedLogger.new(logger_instance)
       end
 
@@ -40,7 +40,7 @@ module Crawler
         when Logger::ERROR
           @logger_instance.error(message)
         else
-          @logger_instance.fatal(message)
+          @logger_instance << message
         end
       end
 

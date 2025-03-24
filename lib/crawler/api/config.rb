@@ -6,6 +6,7 @@
 
 # frozen_string_literal: true
 
+require 'fileutils'
 require 'active_support/core_ext/numeric/bytes'
 
 require_dependency(File.join(__dir__, '..', 'logging', 'statically_tagged_logger'))
@@ -385,6 +386,10 @@ module Crawler
       end
 
       def configure_logging!(log_level, event_logs_enabled)
+        # set up log directory if it doesn't exist
+        # log_dir = File.dirname('logs/')
+        # FileUtils.mkdir_p(log_dir) unless File.directory?(log_dir)
+
         # set up system logger
         system_logger = Crawler::CrawlLogger.new
         # create and add stdout and file handlers
@@ -431,8 +436,7 @@ module Crawler
       # Receives a crawler event object and outputs it into relevant systems
       def output_event(event)
         # Log the event
-        # event_logger << "#{event.to_json}\n" if event_logger
-        event_logger&.info("#{event.to_json}\n")
+        event_logger << "#{event.to_json}\n" if event_logger
 
         # Count stats for the crawl
         stats.update_from_event(event)
