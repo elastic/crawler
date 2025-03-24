@@ -56,7 +56,7 @@ GEM
     i18n (1.14.4)
       concurrent-ruby (~> 1.0)
     ipaddr (1.2.6)
-    jar-dependencies (0.4.1)
+    jar-dependencies (0.5.5)
     json (2.7.2-java)
     json-schema (4.3.0)
       addressable (>= 2.8)
@@ -154,6 +154,7 @@ PLATFORMS
   universal-java-17
   universal-java-21
   universal-java-22
+  universal-java-23
 
 DEPENDENCIES
   activesupport (= 6.1.7.7)
@@ -168,7 +169,7 @@ DEPENDENCIES
   faux!
   httpclient
   ipaddr (~> 1.2.4)
-  jar-dependencies (= 0.4.1)
+  jar-dependencies (= 0.5.5)
   json (~> 2.7.2)
   json-schema (~> 4.3.0)
   nokogiri (~> 1.16.8)

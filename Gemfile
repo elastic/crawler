@@ -27,7 +27,7 @@ group :default do
   gem 'concurrent-ruby', '~> 1.1.4'
   gem 'dry-cli', '~> 0.7.0'
   gem 'elasticsearch', '~> 8.13.0'
-  gem 'jar-dependencies', '0.4.1'
+  gem 'jar-dependencies', '0.5.5'
   gem 'json-schema', '~> 4.3.0'
   gem 'rexml', '~> 3.4.0'
   gem 'rufus-scheduler', '~> 3.9.1'
