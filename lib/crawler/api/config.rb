@@ -37,6 +37,8 @@ module Crawler
         :log_level,            # Log level set in config file, defaults to `info`
         :event_logs,           # Whether event logs are output to the shell, defaults to `false`
 
+        :log_file_directory,   # Path to save log files, defaults to base dir of Crawler
+
         :crawl_id,             # Unique identifier of the crawl (used in logs, etc)
         :crawl_stage,          # Stage name for multi-stage crawls
 
@@ -131,6 +133,8 @@ module Crawler
       DEFAULTS = {
         log_level: 'info',
         event_logs: false,
+
+        log_file_directory: '.',
 
         crawl_stage: :primary,
 
@@ -387,8 +391,8 @@ module Crawler
 
       def configure_logging!(log_level, event_logs_enabled)
         # set up log directory if it doesn't exist
-        # log_dir = File.dirname('logs/')
-        # FileUtils.mkdir_p(log_dir) unless File.directory?(log_dir)
+        log_dir = "#{log_file_directory}/logs"
+        FileUtils.mkdir_p(log_dir)
 
         # set up system logger
         system_logger = Crawler::CrawlLogger.new
@@ -397,7 +401,7 @@ module Crawler
         system_logger.add_handler(
           Crawler::LogHandler::FileHandler.new(
             log_level,
-            'crawler_system.log',
+            "#{log_dir}/crawler_system.log",
             'weekly'
           )
         )
@@ -412,7 +416,7 @@ module Crawler
         event_logger.add_handler(
           Crawler::LogHandler::FileHandler.new(
             log_level,
-            'crawler_event.log',
+            "#{log_dir}/crawler_event.log",
             'weekly'
           )
         )
