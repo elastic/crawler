@@ -25,34 +25,6 @@ module Crawler
       def add_tags
         raise NotImplementedError
       end
-      #
-      # def close
-      #   raise NotImplementedError
-      # end
-      #
-      # def debug
-      #   raise NotImplementedError
-      # end
-      #
-      # def info
-      #   raise NotImplementedError
-      # end
-      #
-      # def warn
-      #   raise NotImplementedError
-      # end
-      #
-      # def error
-      #   raise NotImplementedError
-      # end
-      #
-      # def fatal
-      #   raise NotImplementedError
-      # end
-      #
-      # def event
-      #   raise NotImplementedError
-      # end
     end
   end
 end

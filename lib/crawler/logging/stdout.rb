@@ -43,7 +43,7 @@ module Crawler
       end
 
       def add_tags(*tags)
-        @system_logger.tagged(tags)
+        @system_logger = @system_logger.tagged(tags)
       end
 
       def level(log_level)

@@ -385,7 +385,7 @@ module Crawler
       end
 
       def configure_logging!(log_level, event_logs_enabled)
-        # ----- set up system logger -----
+        # set up system logger
         system_logger = Crawler::CrawlLogger.new
         # create and add stdout and file handlers
         system_logger.add_handler(Crawler::LogHandler::StdoutHandler.new(log_level))
@@ -400,7 +400,7 @@ module Crawler
         system_logger.add_tags_to_log_handlers(["crawl:#{crawl_id}", crawl_stage])
         @system_logger = system_logger
 
-        # ----- set up event logger -----
+        # set up event logger
         return unless event_logs_enabled
 
         event_logger = Crawler::CrawlLogger.new

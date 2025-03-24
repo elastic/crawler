@@ -65,12 +65,5 @@ module Crawler
         handler.add_tags(tags)
       end
     end
-
-    def level(log_level)
-      all_handlers.each do |handler|
-        handler.level = log_level
-      end
-    end
-
   end
 end
