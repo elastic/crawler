@@ -8,7 +8,7 @@
 
 require 'active_support/core_ext/numeric/bytes'
 
-require_dependency(File.join(__dir__, '..', '..', 'statically_tagged_logger'))
+require_dependency(File.join(__dir__, '..', 'logging', 'statically_tagged_logger'))
 require_dependency(File.join(__dir__, '..', 'data', 'crawl_result', 'html'))
 require_dependency(File.join(__dir__, '..', 'data', 'extraction', 'ruleset'))
 require_dependency(File.join(__dir__, '..', 'document_mapper'))
@@ -385,25 +385,33 @@ module Crawler
       end
 
       def configure_logging!(log_level, event_logs_enabled)
-        # --------------------------------------------------------------------------------------------------------------------------------
-        # New custom log code here
-        alt_system_logger = Crawler::CrawlLogger.new(LOG_LEVELS[log_level])
-        alt_system_logger.info("THIS IS A TEST MESSAGE")
-        # ----------------------------------------------------------------
-        @event_logger = Logger.new('crawler_event.log', 'weekly') if event_logs_enabled
+        # ----- set up system logger -----
+        system_logger = Crawler::CrawlLogger.new
+        # create and add stdout and file handlers
+        system_logger.add_handler(Crawler::LogHandler::StdoutHandler.new(log_level))
+        system_logger.add_handler(
+          Crawler::LogHandler::FileHandler.new(
+            log_level,
+            'crawler_system.log',
+            'weekly'
+          )
+        )
+        # add tags to all handlers
+        system_logger.add_tags_to_log_handlers(["crawl:#{crawl_id}", crawl_stage])
+        @system_logger = system_logger
 
-        system_logger = Logger.new('crawler_system.log', 'weekly')
-        system_logger.level = LOG_LEVELS[log_level]
+        # ----- set up event logger -----
+        return unless event_logs_enabled
 
-        # Set custom formatter to include timestamp
-        system_logger.formatter = proc do |_severity, datetime, _progname, msg|
-          timestamp = datetime.strftime('%Y-%m-%dT%H:%M:%S.%LZ')
-          "[#{timestamp}] #{msg}\n"
-        end
-
-        # Add crawl id and stage to all logging events produced by this crawl
-        tagged_system_logger = StaticallyTaggedLogger.new(system_logger)
-        @system_logger = tagged_system_logger.tagged("crawl:#{crawl_id}", crawl_stage)
+        event_logger = Crawler::CrawlLogger.new
+        event_logger.add_handler(
+          Crawler::LogHandler::FileHandler.new(
+            log_level,
+            'crawler_event.log',
+            'weekly'
+          )
+        )
+        @event_logger = event_logger
       end
 
       # Returns an event generator used to capture crawl life cycle events
@@ -423,7 +431,8 @@ module Crawler
       # Receives a crawler event object and outputs it into relevant systems
       def output_event(event)
         # Log the event
-        event_logger << "#{event.to_json}\n" if event_logger
+        # event_logger << "#{event.to_json}\n" if event_logger
+        event_logger&.info("#{event.to_json}\n")
 
         # Count stats for the crawl
         stats.update_from_event(event)

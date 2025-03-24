@@ -15,37 +15,40 @@ module Crawler
     class StdoutHandler < LogHandler::Base
       def initialize(log_level)
         super
-
-        @event_logger = Logger.new($stdout)
+        # system logger setup
         system_logger = Logger.new($stdout)
         system_logger.level = log_level
-
+        # Set custom formatter to include timestamp
         system_logger.formatter = proc do |_severity, datetime, _progname, msg|
           timestamp = datetime.strftime('%Y-%m-%dT%H:%M:%S.%LZ')
           "[#{timestamp}] #{msg}\n"
         end
-
-        @system_logger = system_logger
-        # Add crawl id and stage to all logging events produced by this crawl
-        # tagged_system_logger = StaticallyTaggedLogger.new(system_logger)
-        # @system_logger = tagged_system_logger.tagged("crawl:#{crawl_id}", crawl_stage)
+        # convert system logger to a StaticallyTaggedLogger so we can support tagging
+        @system_logger = StaticallyTaggedLogger.new(system_logger)
       end
 
       def log(message, message_log_level)
         case message_log_level
-        when :debug
+        when Logger::DEBUG
           @system_logger.debug(message)
-        when :info
+        when Logger::INFO
           @system_logger.info(message)
-        when :warn
+        when Logger::WARN
           @system_logger.warn(message)
-        when :error
+        when Logger::ERROR
           @system_logger.error(message)
         else
           @system_logger.fatal(message)
         end
       end
 
+      def add_tags(*tags)
+        @system_logger.tagged(tags)
+      end
+
+      def level(log_level)
+        @system_logger.level = log_level
+      end
     end
   end
 end

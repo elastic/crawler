@@ -13,10 +13,9 @@ module Crawler
   class CrawlLogger
     attr_reader :all_handlers
 
-    def initialize(log_level)
-
-      # initialize with default stdout handler
-      @all_handlers = [Crawler::LogHandler::StdoutHandler.new(log_level)]
+    def initialize
+      # initialize with no handlers by default
+      @all_handlers = []
     end
 
     def list_all_handlers
@@ -26,39 +25,52 @@ module Crawler
     end
 
     # ------------------------------------------------------------
-    def all_handlers_log(message, message_log_level)
+    def route_logs_to_handlers(message, message_log_level)
       all_handlers.each do |handler|
         handler.log(message, message_log_level)
       end
     end
 
     def debug(message)
-      all_handlers_log(message, :debug)
+      route_logs_to_handlers(message, Logger::DEBUG)
     end
 
     def info(message)
-      all_handlers_log(message, :info)
+      route_logs_to_handlers(message, Logger::INFO)
     end
 
     def warn(message)
-      all_handlers_log(message, :warn)
+      route_logs_to_handlers(message, Logger::WARN)
     end
 
     def error(message)
-      all_handlers_log(message, :error)
+      route_logs_to_handlers(message, Logger::ERROR)
     end
 
     def fatal(message)
-      all_handlers_log(message, :fatal)
+      route_logs_to_handlers(message, Logger::FATAL)
+    end
+
+    def add(custom_log_level, message)
+      route_logs_to_handlers(message, custom_log_level)
     end
 
     # ------------------------------------------------------------
-    def add_handler
-      raise NotImplementedError
+    def add_handler(new_handler)
+      all_handlers.append(new_handler)
     end
 
-    def route_logs_to_handlers
-      raise NotImplementedError
+    def add_tags_to_log_handlers(tags)
+      all_handlers.each do |handler|
+        handler.add_tags(tags)
+      end
     end
+
+    def level(log_level)
+      all_handlers.each do |handler|
+        handler.level = log_level
+      end
+    end
+
   end
 end
