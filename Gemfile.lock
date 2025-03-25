@@ -63,7 +63,7 @@ GEM
     method_source (1.1.0)
     minitest (5.22.3)
     multi_json (1.15.0)
-    nokogiri (1.16.8-java)
+    nokogiri (1.18.6-java)
       racc (~> 1.4)
     parallel (1.24.0)
     parser (3.3.1.0)
@@ -170,7 +170,7 @@ DEPENDENCIES
   ipaddr (~> 1.2.4)
   json (~> 2.7.2)
   json-schema (~> 4.3.0)
-  nokogiri (~> 1.16.8)
+  nokogiri (~> 1.18.6)
   pry (~> 0.14.2)
   pry-nav
   pry-remote
