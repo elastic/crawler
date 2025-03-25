@@ -35,9 +35,12 @@ module Crawler
 
       CONFIG_FIELDS = [
         :log_level,            # Log level set in config file, defaults to `info`
-        :event_logs,           # Whether event logs are output to the shell, defaults to `false`
 
         :log_file_directory,   # Path to save log files, defaults to base dir of Crawler
+        :log_file_rotation_policy, # How often logs are rotated. daily | weekly | monthly, default is weekly
+
+        :system_logs_to_file,  # Whether system logs are written to file. Default is true
+        :event_logs_to_file,   # Whether event logs are written to file. Default is true
 
         :crawl_id,             # Unique identifier of the crawl (used in logs, etc)
         :crawl_stage,          # Stage name for multi-stage crawls
@@ -132,9 +135,12 @@ module Crawler
       # Make sure to check those before renaming or removing any defaults.
       DEFAULTS = {
         log_level: 'info',
-        event_logs: false,
 
         log_file_directory: '.',
+        log_file_rotation_policy: 'weekly',
+
+        system_logs_to_file: true,
+        event_logs_to_file: true,
 
         crawl_stage: :primary,
 
@@ -220,7 +226,7 @@ module Crawler
         configure_crawl_id!
 
         # Setup logging for free-text and structured events
-        configure_logging!(params[:log_level], params[:event_logs])
+        configure_logging!(params[:log_level], params[:event_logs_to_file], params[:system_logs_to_file])
 
         # Normalize and validate parameters
         confugure_ssl_ca_certificates!
@@ -389,35 +395,37 @@ module Crawler
         end
       end
 
-      def configure_logging!(log_level, event_logs_enabled)
+      def configure_logging!(log_level, event_logs_to_file_enabled, system_logs_to_file_enabled)
         # set up log directory if it doesn't exist
         log_dir = "#{log_file_directory}/logs"
-        FileUtils.mkdir_p(log_dir)
+        FileUtils.mkdir_p(log_dir) unless File.directory?(log_dir)
 
         # set up system logger
         system_logger = Crawler::CrawlLogger.new
-        # create and add stdout and file handlers
+        # create and add stdout handler and optional file handler
         system_logger.add_handler(Crawler::LogHandler::StdoutHandler.new(log_level))
-        system_logger.add_handler(
-          Crawler::LogHandler::FileHandler.new(
-            log_level,
-            "#{log_dir}/crawler_system.log",
-            'weekly'
+        if system_logs_to_file_enabled
+          system_logger.add_handler(
+            Crawler::LogHandler::FileHandler.new(
+              log_level,
+              "#{log_dir}/crawler_system.log",
+              log_file_rotation_policy
+            )
           )
-        )
+        end
         # add tags to all handlers
         system_logger.add_tags_to_log_handlers(["crawl:#{crawl_id}", crawl_stage])
         @system_logger = system_logger
 
         # set up event logger
-        return unless event_logs_enabled
+        return unless event_logs_to_file_enabled
 
         event_logger = Crawler::CrawlLogger.new
         event_logger.add_handler(
           Crawler::LogHandler::FileHandler.new(
             log_level,
             "#{log_dir}/crawler_event.log",
-            'weekly'
+            log_file_rotation_policy
           )
         )
         @event_logger = event_logger

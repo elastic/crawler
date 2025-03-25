@@ -39,6 +39,8 @@ module Crawler
           @logger_instance.warn(message)
         when Logger::ERROR
           @logger_instance.error(message)
+        when Logger::FATAL
+          @logger_instance.fatal(message)
         else
           @logger_instance << message
         end
