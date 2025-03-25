@@ -444,15 +444,6 @@ module Crawler
       def document_mapper
         @document_mapper ||= ::Crawler::DocumentMapper.new(self)
       end
-
-      # Receives a crawler event object and outputs it into relevant systems
-      def output_event(event)
-        # Log the event
-        event_logger << "#{event.to_json}\n" if event_logger
-
-        # Count stats for the crawl
-        stats.update_from_event(event)
-      end
     end
   end
 end
