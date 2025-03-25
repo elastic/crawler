@@ -22,7 +22,7 @@ install-gems:
 	script/bundle install
 
 install-jars:
-	script/vendor_jars
+	script/bundle exec script/vendor_jars
 
 clean:
 	rm -rf Jars.lock vendor/jars

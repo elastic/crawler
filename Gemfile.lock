@@ -56,7 +56,6 @@ GEM
     i18n (1.14.4)
       concurrent-ruby (~> 1.0)
     ipaddr (1.2.6)
-    jar-dependencies (0.4.1)
     json (2.7.2-java)
     json-schema (4.3.0)
       addressable (>= 2.8)
@@ -161,7 +160,7 @@ DEPENDENCIES
   addressable (>= 2.8.0)
   bigdecimal (~> 3.1.7)
   bson (~> 4.15.0)
-  bundler (~> 2.3.26)
+  bundler (~> 2.6.6)
   concurrent-ruby (~> 1.1.4)
   dry-cli (~> 0.7.0)
   elasticsearch (~> 8.13.0)
@@ -169,7 +168,6 @@ DEPENDENCIES
   faux!
   httpclient
   ipaddr (~> 1.2.4)
-  jar-dependencies (= 0.4.1)
   json (~> 2.7.2)
   json-schema (~> 4.3.0)
   nokogiri (~> 1.18.6)
@@ -194,4 +192,4 @@ DEPENDENCIES
   webrick (~> 1.8.2)
 
 BUNDLED WITH
-   2.3.26
+   2.6.6
