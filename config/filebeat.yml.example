@@ -1,0 +1,48 @@
+filebeat.inputs:
+- type: filestream
+  id: crawler-events-filestream
+  enabled: true
+  paths:
+    - "/Users/mattnowzari/repos/search_and_transform/crawler/logs/crawler_event.log"
+  fields:
+    type: "event"
+  processors:
+    - decode_json_fields:
+        fields: ["message"]
+        target: ""
+        overwrite_keys: true
+        expand_keys: true
+
+- type: filestream
+  id: crawler-system-log-filestream
+  enabled: true
+  paths:
+    - "/Users/mattnowzari/repos/search_and_transform/crawler/logs/crawler_system.log"
+  fields:
+    type: "system"
+  processors:
+    - dissect:
+        tokenizer: "[%{@timestamp}] [crawl:%{crawl_id}] [%{crawl_stage}] %{message}"
+        target_prefix: ""
+        overwrite_keys: true
+        trim_values: all
+
+#setup.ilm.enabled: true
+#setup.ilm.policy_name: "filebeat"
+
+setup.template.enabled: true
+setup.template.name: "filebeat-8.17.3"
+setup.template.pattern: "filebeat-8.17.3"
+#setup.template.name: "crawler-event-log-template"
+#setup.template.pattern: "crawler-event-log-template"
+
+setup.template.settings:
+  index.number_of_shards: 1
+  index.number_of_replicas: 1
+
+logging.level: debug
+
+output.elasticsearch:
+  hosts: ["https://ddc74a4e6dfb4f278f7208b1b907d151.us-west2.gcp.elastic-cloud.com:443"]
+  api_key: "cIH5yZUBqCOEfbmA_mHn:doidy7xGR1EdBj2BVL6_sw"
+  index: "logs-crawler-%{[fields.type]}" # see https://www.elastic.co/guide/en/fleet/8.17/data-streams.html#data-streams-naming-scheme
