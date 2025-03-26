@@ -39,8 +39,8 @@ module Crawler
         :log_file_directory,   # Path to save log files, defaults to base dir of Crawler
         :log_file_rotation_policy, # How often logs are rotated. daily | weekly | monthly, default is weekly
 
-        :system_logs_to_file,  # Whether system logs are written to file. Default is true
-        :event_logs_to_file,   # Whether event logs are written to file. Default is true
+        :system_logs_to_file,  # Whether system logs are written to file. Default is false
+        :event_logs_to_file,   # Whether event logs are written to file. Default is false
 
         :crawl_id,             # Unique identifier of the crawl (used in logs, etc)
         :crawl_stage,          # Stage name for multi-stage crawls
@@ -139,8 +139,8 @@ module Crawler
         log_file_directory: '.',
         log_file_rotation_policy: 'weekly',
 
-        system_logs_to_file: true,
-        event_logs_to_file: true,
+        system_logs_to_file: false,
+        event_logs_to_file: false,
 
         crawl_stage: :primary,
 
@@ -395,10 +395,12 @@ module Crawler
         end
       end
 
-      def configure_logging!(log_level, event_logs_to_file_enabled, system_logs_to_file_enabled)
+      def configure_logging!(log_level, event_logs_to_file_enabled, system_logs_to_file_enabled) # rubocop:disable Metrics/MethodLength
         # set up log directory if it doesn't exist
-        log_dir = "#{log_file_directory}/logs"
-        FileUtils.mkdir_p(log_dir) unless File.directory?(log_dir)
+        if event_logs_to_file_enabled || system_logs_to_file_enabled
+          log_dir = "#{log_file_directory}/logs"
+          FileUtils.mkdir_p(log_dir) unless File.directory?(log_dir)
+        end
 
         # set up system logger
         system_logger = Crawler::CrawlLogger.new
@@ -418,16 +420,16 @@ module Crawler
         @system_logger = system_logger
 
         # set up event logger
-        return unless event_logs_to_file_enabled
-
         event_logger = Crawler::CrawlLogger.new
-        event_logger.add_handler(
-          Crawler::LogHandler::FileHandler.new(
-            log_level,
-            "#{log_dir}/crawler_event.log",
-            log_file_rotation_policy
+        if event_logs_to_file_enabled
+          event_logger.add_handler(
+            Crawler::LogHandler::FileHandler.new(
+              log_level,
+              "#{log_dir}/crawler_event.log",
+              log_file_rotation_policy
+            )
           )
-        )
+        end
         @event_logger = event_logger
       end
 
