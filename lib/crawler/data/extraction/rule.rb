@@ -86,10 +86,24 @@ module Crawler
           raise ArgumentError, "Extraction rule selector can't be blank" if @selector.blank?
 
           if @source == SOURCES_HTML
+            css_error = nil
+            xpath_error = nil
+            sample = Nokogiri::HTML::DocumentFragment.parse('<a></a>')
             begin
-              Nokogiri::HTML::DocumentFragment.parse('<a></a>').search(@selector)
+              sample.css(@selector)
             rescue Nokogiri::CSS::SyntaxError, Nokogiri::XML::XPath::SyntaxError => e
-              raise ArgumentError, "Extraction rule selector `#{@selector}` is not a valid HTML selector: #{e.message}"
+              # raise ArgumentError, "Extraction rule selector `#{@selector}` is not a valid HTML selector: #{e.message}"
+              css_error = e.message
+            end
+
+            begin
+              sample.xpath(@selector)
+            rescue Nokogiri::XML::XPath::SyntaxError, Nokogiri::CSS::SyntaxError => e
+              xpath_error = e.message
+            end
+
+            if xpath_error && css_error
+              puts 'huh'
             end
           else
             begin
