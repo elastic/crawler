@@ -27,14 +27,9 @@ filebeat.inputs:
         overwrite_keys: true
         trim_values: all
 
-#setup.ilm.enabled: true
-#setup.ilm.policy_name: "filebeat"
-
 setup.template.enabled: true
 setup.template.name: "filebeat-8.17.3"
 setup.template.pattern: "filebeat-8.17.3"
-#setup.template.name: "crawler-event-log-template"
-#setup.template.pattern: "crawler-event-log-template"
 
 setup.template.settings:
   index.number_of_shards: 1
