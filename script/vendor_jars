@@ -4,7 +4,7 @@
 require 'jar-dependencies'
 
 Jars.lock_down(
-  ENV['JARS_DEBUG'] == 'true',
-  ENV['JARS_VERBOSE'] == 'true',
+  debug: ENV['JARS_DEBUG'] == 'true',
+  verbose: ENV['JARS_VERBOSE'] == 'true',
   vendor_dir: 'vendor/jars'
 )

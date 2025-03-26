@@ -27,7 +27,6 @@ group :default do
   gem 'concurrent-ruby', '~> 1.1.4'
   gem 'dry-cli', '~> 0.7.0'
   gem 'elasticsearch', '~> 8.13.0'
-  gem 'jar-dependencies', '0.4.1'
   gem 'json-schema', '~> 4.3.0'
   gem 'rexml', '~> 3.4.0'
   gem 'rufus-scheduler', '~> 3.9.1'
@@ -36,7 +35,7 @@ group :default do
   gem 'bson', '~> 4.15.0', platform: :jruby
   gem 'bigdecimal', '~> 3.1.7', platform: :jruby
   gem 'json', '~> 2.7.2', platform: :jruby
-  gem 'nokogiri', '~> 1.16.8', platform: :jruby
+  gem 'nokogiri', '~> 1.18.6', platform: :jruby
   gem 'racc', '~> 1.7.3', platform: :jruby
   gem 'strscan', '~> 3.1.0', platform: :jruby
   gem 'thread_safe', '~> 0.3.6', platform: :jruby
@@ -75,7 +74,7 @@ group :test do
 end
 
 group :development, :test do
-  gem 'rack', '~> 2.2.8.1'
+  gem 'rack', '~> 2.2.13'
   gem 'httpclient'
   gem 'pry', '~> 0.14.2', platform: :jruby
   gem 'factory_bot', '~> 6.2.0', require: false
