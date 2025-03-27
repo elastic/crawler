@@ -18,12 +18,6 @@ module Crawler
       @all_handlers = []
     end
 
-    def list_all_handlers
-      all_handlers.each do |handler|
-        puts handler
-      end
-    end
-
     # ------------------------------------------------------------
     def route_logs_to_handlers(message, message_log_level)
       all_handlers.each do |handler|
