@@ -54,6 +54,7 @@ RSpec.describe(Crawler::CrawlLogger) do
       crawl_logger.error('Some error log message')
       crawl_logger.fatal('Some fatal log message')
       crawl_logger.add(Logger::INFO, 'Some info log message')
+      crawl_logger << 'Some non-leveled message'
 
       expect(crawl_logger).to have_received(:route_logs_to_handlers).with(
         'Some debug log message', Logger::DEBUG
@@ -70,8 +71,11 @@ RSpec.describe(Crawler::CrawlLogger) do
       expect(crawl_logger).to have_received(:route_logs_to_handlers).with(
         'Some fatal log message', Logger::FATAL
       )
+      expect(crawl_logger).to have_received(:route_logs_to_handlers).with(
+        'Some non-leveled message', nil
+      )
 
-      expect(stdout_log_handler).to have_received(:log).exactly(6).times
+      expect(stdout_log_handler).to have_received(:log).exactly(7).times
     end
 
     it 'should call the add_tags() method of the log handlers' do
