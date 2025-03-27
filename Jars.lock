@@ -80,7 +80,6 @@ org.itadaki:bzip2:0.9.1:compile:
 net.jcip:jcip-annotations:1.0:compile:
 com.beust:jcommander:1.82:compile:
 net.java.dev.jna:jna:5.12.1:compile:
-com.google.protobuf:protobuf-java:3.21.5:compile:
 edu.ucar:cdm:4.5.5:compile:
 edu.ucar:udunits:4.5.5:compile:
 joda-time:joda-time:2.2:compile:
@@ -136,3 +135,4 @@ com.google.code.findbugs:jsr305:3.0.2:compile:
 org.checkerframework:checker-qual:3.37.0:compile:
 com.google.errorprone:error_prone_annotations:2.21.1:compile:
 com.google.j2objc:j2objc-annotations:2.8:compile:
+com.google.protobuf:protobuf-java:3.25.5:compile:
