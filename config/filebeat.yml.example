@@ -38,6 +38,6 @@ setup.template.settings:
 logging.level: debug
 
 output.elasticsearch:
-  hosts: ["https://ddc74a4e6dfb4f278f7208b1b907d151.us-west2.gcp.elastic-cloud.com:443"]
-  api_key: "cIH5yZUBqCOEfbmA_mHn:doidy7xGR1EdBj2BVL6_sw"
+  hosts: [""]
+  api_key: "id:api_key"
   index: "logs-crawler-%{[fields.type]}" # see https://www.elastic.co/guide/en/fleet/8.17/data-streams.html#data-streams-naming-scheme
