@@ -397,7 +397,7 @@ module Crawler
       def configure_logging!(log_level, event_logs_to_file_enabled, system_logs_to_file_enabled)
         # set up log directory if it doesn't exist
         if event_logs_to_file_enabled || system_logs_to_file_enabled
-          log_dir = "#{log_file_directory}/logs"
+          log_dir = log_file_directory.to_s
           FileUtils.mkdir_p(log_dir) unless File.directory?(log_dir)
         end
 
