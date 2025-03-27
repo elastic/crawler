@@ -6,18 +6,18 @@
 
 # frozen_string_literal: true
 
-RSpec.describe(Crawler::CrawlLogger) do
-  let(:stdout_log_handler) { Crawler::LogHandler::StdoutHandler.new('debug') }
+RSpec.describe(Crawler::Logging::CrawlLogger) do
+  let(:stdout_log_handler) { Crawler::Logging::Handler::StdoutHandler.new('debug') }
 
   context 'when a fresh CrawlLogger is created' do
     it 'should initialize with no log handlers' do
       expect(
-        Crawler::CrawlLogger.new.instance_variable_get(:@all_handlers)
+        Crawler::Logging::CrawlLogger.new.instance_variable_get(:@all_handlers)
       ).to be_empty
     end
 
     it 'should add log handlers to the all_handlers array' do
-      crawl_logger = Crawler::CrawlLogger.new
+      crawl_logger = Crawler::Logging::CrawlLogger.new
       crawl_logger.add_handler(stdout_log_handler)
 
       expect(
@@ -27,12 +27,12 @@ RSpec.describe(Crawler::CrawlLogger) do
   end
 
   context 'when CrawlLogger is set up with at least one handler' do
-    let(:crawl_logger) { Crawler::CrawlLogger.new }
+    let(:crawl_logger) { Crawler::Logging::CrawlLogger.new }
     let(:tags) { ['crawl: 0451', 'primary'] }
     before do
       crawl_logger.add_handler(stdout_log_handler)
 
-      allow(Crawler::CrawlLogger).to receive(:new).and_return(crawl_logger)
+      allow(Crawler::Logging::CrawlLogger).to receive(:new).and_return(crawl_logger)
       allow(crawl_logger).to receive(:debug).and_call_original
       allow(crawl_logger).to receive(:info).and_call_original
       allow(crawl_logger).to receive(:warn).and_call_original

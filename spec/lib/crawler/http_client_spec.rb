@@ -13,7 +13,7 @@ RSpec.describe(Crawler::HttpClient) do
     {
       loopback_allowed: false,
       private_networks_allowed: false,
-      logger: Crawler::CrawlLogger.new
+      logger: Crawler::Logging::CrawlLogger.new
     }
   end
   let(:client) { Crawler::HttpClient.new(client_config) }

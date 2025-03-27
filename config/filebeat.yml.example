@@ -3,7 +3,7 @@ filebeat.inputs:
   id: crawler-events-filestream
   enabled: true
   paths:
-    - "/Users/mattnowzari/repos/search_and_transform/crawler/logs/crawler_event.log"
+    - "/path/to/opencrawler/crawler_event.log"
   fields:
     type: "event"
   processors:
@@ -17,7 +17,7 @@ filebeat.inputs:
   id: crawler-system-log-filestream
   enabled: true
   paths:
-    - "/Users/mattnowzari/repos/search_and_transform/crawler/logs/crawler_system.log"
+    - "/path/to/opencrawler/crawler_system.log"
   fields:
     type: "system"
   processors:

@@ -120,7 +120,7 @@
 # The directory under which Crawler will save log files.
 #     By default, it will create a folder called 'logs/'
 #     at the top level of Crawler's working directory.
-#log_file_directory: "."
+#log_file_directory: "./logs"
 #
 # The rotation policy for log files. Defaults to 'weekly'.
 #     Choices are 'daily' | 'weekly' | 'monthly'
