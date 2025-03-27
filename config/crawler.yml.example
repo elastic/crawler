@@ -107,11 +107,24 @@
 ## The log level for system logs. Defaults to `info`
 #log_level: info
 #
-# Whether or not event logging is enabled for output to the shell running Crawler.
+# Whether or not event logging is enabled for output to file.
 #     Event logs are incredibly noisy but have a lot of granularity, these can
 #     be useful for debugging failing Crawlers.
 #     Defaults to `false`
-#event_logs: false
+#event_logs_to_file: true
+#
+# Whether or not system logs are enabled for output to file.
+#     Defaults to 'false'
+#system_logs_to_file: true
+#
+# The directory under which Crawler will save log files.
+#     By default, it will create a folder called 'logs/'
+#     at the top level of Crawler's working directory.
+#log_file_directory: "."
+#
+# The rotation policy for log files. Defaults to 'weekly'.
+#     Choices are 'daily' | 'weekly' | 'monthly'
+#log_file_rotation_policy: 'weekly'
 #
 ## ------------------------------- Elasticsearch -------------------------------
 #
