@@ -28,8 +28,8 @@ filebeat.inputs:
         trim_values: all
 
 setup.template.enabled: true
-setup.template.name: "filebeat-8.17.3"
-setup.template.pattern: "filebeat-8.17.3"
+setup.template.name: "filebeat"
+setup.template.pattern: "filebeat"
 
 setup.template.settings:
   index.number_of_shards: 1
