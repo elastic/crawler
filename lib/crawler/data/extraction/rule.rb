@@ -89,6 +89,7 @@ module Crawler
             css_error = nil
             xpath_error = nil
             sample = Nokogiri::HTML::DocumentFragment.parse('<a></a>')
+
             begin
               sample.css(@selector)
             rescue Nokogiri::CSS::SyntaxError, Nokogiri::XML::XPath::SyntaxError => e
@@ -103,7 +104,8 @@ module Crawler
             end
 
             if xpath_error && css_error
-              puts 'huh'
+              css_error = "CSS Selector is not valid: #{css_error}"
+              xpath_error = "XPath Selector is not valid: #{xpath_error}"
             end
           else
             begin
