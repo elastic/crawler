@@ -192,6 +192,40 @@ The Elasticsearch configuration file is optional.
 It exists to allow users with multiple crawlers to only need a single Elasticsearch configuration.
 See [CONFIG.md](docs/CONFIG.md) for more details on these files.
 
+### Configuring logging
+
+By default, Crawler will output system logs to `stdout`. You have the option to write these logs to file, in addition to stdout, by setting the following in your Crawler YAML config:
+
+```
+    system_logs_to_file: true
+```
+
+Crawler also is capable of generating 'event' logs that contain details regarding each crawl being performed. These are meant for debugging and are quite verbose, and as such are only available to be written to file. You can enable these via the following:
+
+```
+    event_logs_to_file: true
+```
+By default, the above log files will be written to a 'logs/' folder located at the top level of your Crawler directory, however this is can be changed in your configuration file.
+Please see the [example configuration file](config/crawler.yml.example) to view a complete list of logging configuration fields and their default values.
+
+Crawler provides a basic [Filebeat configuration](config/filebeat.yml.example) to help kickstart ingesting Crawler's logs into Elasticsearch.
+Please remember to fill out the following fields before using it:
+
+```
+...
+paths:
+    - "/path/to/opencrawler/crawler_event.log"
+...
+
+paths:
+    - "/path/to/opencrawler/crawler_system.log"
+...
+
+output.elasticsearch:
+  hosts: [""]
+  api_key: "id:api_key"
+```
+
 ### Running a Crawl Job
 
 Once everything is configured, you can run a crawl job using the CLI:
