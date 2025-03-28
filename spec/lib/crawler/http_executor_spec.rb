@@ -114,7 +114,9 @@ RSpec.describe(Crawler::HttpExecutor) do
     allow(get_response).to receive(:getCode).and_return(200)
     allow(get_response).to receive(:getReasonPhrase)
 
-    allow(system_logger).to receive(:tagged).with(:http).and_return(logger)
+    # allow(system_logger).to receive(:tagged).with(:http).and_return(logger)
+    allow(system_logger).to receive(:info)
+    allow(system_logger).to receive(:warn)
 
     allow(Crawler::HttpClient).to receive(:new).and_return(http_client)
     allow(http_client).to receive(:head).and_return(crawler_head_response)
@@ -195,7 +197,7 @@ RSpec.describe(Crawler::HttpExecutor) do
       http_executor.run(crawl_task)
 
       # expect one log message
-      expect(logger).to have_received(:warn).with(
+      expect(system_logger).to have_received(:warn).with(
         match(/^Redirect from #{crawl_task.url} dropped due to lack of redirect location. .*/)
       ).once
 

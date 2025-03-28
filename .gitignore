@@ -63,6 +63,9 @@ output
 # Config files
 config/*.yml
 
+# log files
+/logs
+
 # Code coverage
 coverage
 

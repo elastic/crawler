@@ -15,7 +15,7 @@ module Crawler
   class EventGenerator # rubocop:disable Metrics/ClassLength
     attr_reader :config
 
-    delegate :system_logger, to: :config
+    delegate :system_logger, :event_logger, to: :config
 
     def initialize(config)
       @config = config
@@ -352,7 +352,13 @@ module Crawler
         final_event['event.duration'] = duration_to_nanoseconds(final_event['event.duration'])
       end
 
-      config.output_event(final_event)
+      output_event(final_event)
+    end
+
+    def output_event(event)
+      event_logger << "#{event.to_json}\n"
+      # Count stats for the crawl
+      config.stats.update_from_event(event)
     end
 
     #-----------------------------------------------------------------------------------------------
