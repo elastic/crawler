@@ -23,7 +23,7 @@ module Crawler
 
     def initialize(config) # rubocop:disable Lint/MissingSuper
       @config = config
-      @logger = config.system_logger.tagged(:http)
+      @logger = config.system_logger
     end
 
     # Returns a hash with a set of crawl-specific HTTP client metrics
