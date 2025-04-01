@@ -1,4 +1,4 @@
-.phony: test lint autocorrect install install-ci install-gems install-jars clean notice build-docker-ci list-gems list-jars list-dependencies
+.phony: test lint autocorrect install install-ci install-gems install-jars clean notice build-docker-ci list-gems list-jars
 
 test:
 	script/rspec $(file)
