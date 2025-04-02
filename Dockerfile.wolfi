@@ -46,9 +46,10 @@ RUN mkdir -p "$GEM_HOME" && chmod 777 "$GEM_HOME"
 # the container image, since we are adding lots of stuff here that we do not need
 # and may not want (do we need vendor/ after the make install below, for instance?),
 # contributing to increased image size; for now at least we can remove `.git` (below)
-COPY . /app
 
-WORKDIR /app
+# java is the base image's default us
+COPY --chown=java:java --chmod=775 . /home/app
+WORKDIR /home/app
 
 # skip jenv/rbenv setup
 ENV IS_DOCKER=1
@@ -63,7 +64,7 @@ RUN rm -r /root/.m2
 
 RUN apk del curl make git \
     && apk --purge del apk-tools \
-    && rm -rf /app/.git
+    && rm -rf /home/app/.git
 
 # switch back to the base image's default user when running the application
 USER java
