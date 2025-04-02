@@ -4,6 +4,7 @@ services:
     container_name: crawler
     volumes:
       - ./config:/app/config
+      - ./logs:/app/logs
     networks:
       - elastic
     stdin_open: true   # Equivalent to -i
