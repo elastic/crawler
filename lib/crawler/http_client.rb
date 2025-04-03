@@ -141,7 +141,7 @@ module Crawler
       )
     rescue Java::JavaNet::SocketTimeoutException => e
       raise Crawler::HttpUtils::SocketTimeout, e
-    rescue Java::OrgApacheHttpConn::ConnectTimeoutException => e
+    rescue Java::OrgApacheHcClient5Http::ConnectTimeoutException => e
       raise Crawler::HttpUtils::ConnectTimeout, e
     rescue Java::JavaxNetSsl::SSLException => e
       raise Crawler::HttpUtils::SslException.for_java_error(e)
