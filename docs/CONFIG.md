@@ -37,7 +37,7 @@ If you are running Crawler in docker, you will need to copy any configuration fi
 This will need to be done every time a change is made to these files, unless you are editing the file directly inside the Docker container.
 
 ```bash
-$ docker cp /path/to/my-crawler.yml crawler:app/config/my-crawler.yml
+docker cp /path/to/my-crawler.yml crawler:/home/app/config/my-crawler.yml
 ```
 
 ## Example usage

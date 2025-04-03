@@ -1,0 +1,18 @@
+services:
+  crawler:
+    image: docker.elastic.co/integrations/crawler:${CRAWLER_VERSION:-latest}
+    container_name: crawler
+    volumes:
+      - ./config:/home/app/config
+#      - ./logs:/home/app/logs # Enable this to access log files outside the Docker container
+    networks:
+      - elastic
+    stdin_open: true   # Equivalent to -i
+    tty: true          # Required for interactive mode
+    # Uncomment enviroment variable if running on MacOS M4 and experiencing Java Runtime errors
+    # environment:
+    #   - "_JAVA_OPTIONS=-XX:UseSVE=0"
+
+networks:
+  elastic:
+    driver: bridge

@@ -18,9 +18,6 @@ If you are running a dockerized version of Crawler, you can run CLI commands in 
     ```bash
     # exec into container
     $ docker exec -it crawler bash
-   
-    # move to crawler directory
-    $ cd crawler
     
     # execute commands
     $ bin/crawler version
