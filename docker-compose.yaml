@@ -3,7 +3,8 @@ services:
     image: docker.elastic.co/integrations/crawler:${CRAWLER_VERSION:-latest}
     container_name: crawler
     volumes:
-      - ./config:/app/config
+      - ./config:/home/app/config
+#      - ./logs:/home/app/logs # Enable this to access log files outside the Docker container
     networks:
       - elastic
     stdin_open: true   # Equivalent to -i

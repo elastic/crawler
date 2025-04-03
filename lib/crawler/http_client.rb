@@ -141,10 +141,10 @@ module Crawler
       )
     rescue Java::JavaNet::SocketTimeoutException => e
       raise Crawler::HttpUtils::SocketTimeout, e
-    rescue Java::OrgApacheHttpConn::ConnectTimeoutException => e
-      raise Crawler::HttpUtils::ConnectTimeout, e
     rescue Java::JavaxNetSsl::SSLException => e
       raise Crawler::HttpUtils::SslException.for_java_error(e)
+    rescue Java::OrgApacheHcClient5Http::ConnectTimeoutException => e
+      raise Crawler::HttpUtils::ConnectTimeout, e
     rescue Java::OrgApacheHcCore5Http::NoHttpResponseException => e
       raise Crawler::HttpUtils::NoHttpResponseError.for_proxy_host(
         error: e,

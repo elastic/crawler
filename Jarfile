@@ -5,29 +5,19 @@
 #    make clean install
 #
 # When adding a new dependency, please explain what it is and why we're adding it in a comment.
-#---------------------------------------------------------------------------------------------------
-# Crawler-Commons is a set of reusable Java components that implement functionality common to any web crawler.
-# For now we're only interested in using the robots.txt parsing functionality.
+
+# Functionality common to any web crawler
 jar 'com.github.crawler-commons:crawler-commons', '1.2'
 
-# Apache HTTP client used by the crawler
+# Pinned dependency of crawler-commons to resolve vulnerability
+jar 'commons-io:commons-io', '2.11.0'
+
+# Apache HTTP client used for requests to websites
 jar 'org.apache.httpcomponents.client5:httpclient5', '5.1'
 
-#---------------------------------------------------------------------------------------------------
-# Text extraction and other utilities
-jar 'org.apache.tika:tika-parsers', '1.28.5'
-jar 'org.slf4j:slf4j-nop', '1.7.26'
-jar 'org.apache.commons:commons-lang3', '3.10'
+# For managing Brotli input streams
+jar 'org.apache.commons:commons-compress', '1.27.1'
+jar 'org.brotli:dec', '0.1.2'
 
-#---------------------------------------------------------------------------------------------------
-# Indirect dependencies that we needed to upgrade
-jar 'commons-io:commons-io', '2.11.0'
-jar 'org.apache.cxf:cxf-rt-transports-http', '3.4.10'
-jar 'org.apache.cxf:cxf-core', '3.4.10'
-jar 'com.mchange:c3p0', '0.9.5.4'
-jar 'com.drewnoakes:metadata-extractor', '2.18.0'
-jar 'org.apache.commons:commons-compress', '1.21'
-jar 'com.fasterxml.jackson.core:jackson-databind', '2.14.2'
-jar 'com.fasterxml.woodstox:woodstox-core', '6.5.1'
-jar 'com.google.guava:guava', '32.1.3-jre'
-jar 'com.google.protobuf:protobuf-java', '3.25.5'
+# Cleaner Java logs handling
+jar 'org.slf4j:slf4j-nop', '1.7.26'
