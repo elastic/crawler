@@ -153,7 +153,7 @@ RSpec.describe(Crawler::Data::Extraction::Rule) do
           described_class.new(rule_input)
         end.to raise_error(
           ArgumentError,
-          /^Extraction rule selector `\.#class-or-id` is not a valid HTML selector: */
+          /^Extraction rule selector '.#class-or-id' is an invalid HTML selector:.*/
         )
       end
     end

@@ -82,30 +82,36 @@ module Crawler
                 "Extraction rule source `#{@source}` is invalid; value must be one of #{SOURCES.join(', ')}"
         end
 
+        def validate_css(sample)
+          css_error = nil
+          begin
+            sample.css(@selector)
+          rescue Nokogiri::CSS::SyntaxError, Nokogiri::XML::XPath::SyntaxError => e
+            css_error = "CSS Selector is not valid: #{e.message}"
+          end
+          css_error
+        end
+
+        def validate_xpath(sample)
+          xpath_error = nil
+          begin
+            sample.xpath(@selector)
+          rescue Nokogiri::XML::XPath::SyntaxError, Nokogiri::CSS::SyntaxError => e
+            xpath_error = "XPath Selector is not valid: #{e.message}"
+          end
+          xpath_error
+        end
+
         def validate_selector
           raise ArgumentError, "Extraction rule selector can't be blank" if @selector.blank?
 
           if @source == SOURCES_HTML
-            css_error = nil
-            xpath_error = nil
             sample = Nokogiri::HTML::DocumentFragment.parse('<a></a>')
-
-            begin
-              sample.css(@selector)
-            rescue Nokogiri::CSS::SyntaxError, Nokogiri::XML::XPath::SyntaxError => e
-              # raise ArgumentError, "Extraction rule selector `#{@selector}` is not a valid HTML selector: #{e.message}"
-              css_error = e.message
-            end
-
-            begin
-              sample.xpath(@selector)
-            rescue Nokogiri::XML::XPath::SyntaxError, Nokogiri::CSS::SyntaxError => e
-              xpath_error = e.message
-            end
-
-            if xpath_error && css_error
-              css_error = "CSS Selector is not valid: #{css_error}"
-              xpath_error = "XPath Selector is not valid: #{xpath_error}"
+            css_error = validate_css(sample)
+            xpath_error = validate_xpath(sample)
+            if css_error && xpath_error
+              raise ArgumentError,
+                    "Extraction rule selector '#{@selector}' is an invalid HTML selector: #{css_error} & #{xpath_error}"
             end
           else
             begin
