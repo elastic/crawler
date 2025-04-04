@@ -1,6 +1,6 @@
 # Logging
 
-## Configure logging system and/or event logs to file
+## Configure your Crawler YAML to write system and/or event logs to file
 By default, Crawler will output system logs to `stdout`. You have the option to write these logs to file, in addition to stdout, by setting the following in your Crawler YAML config:
 
 ```
@@ -34,7 +34,7 @@ Finally, you can set up a log rotation policy that affects both the system and e
 
 The options are 'daily', 'weekly', or 'monthly', with a default value of 'weekly'.
 
-## Setting up Filebeat
+## Setting up Filebeat with the included Filebeat YAML
 Crawler provides a basic [Filebeat configuration](config/filebeat.yml.example) to help you kickstart ingesting Crawler's logs into Elasticsearch.
 Before using it, don't forget to edit the following configuration values inside the Filebeat YAML file.
 
