@@ -107,7 +107,7 @@ RSpec.describe(ES::Client) do
         config[:elasticsearch].delete(:compression) # Ensure it's not set
         result = subject.connection_config(config[:elasticsearch], '0.0.0-test')
         expect(result[:compression]).to be true
-        expect(system_logger).to have_received(:info).with('ES connection compression is enabled')
+        expect(system_logger).to have_received(:info).with('ES connection compression is enabled').twice
       end
     end
 
@@ -116,7 +116,7 @@ RSpec.describe(ES::Client) do
         config[:elasticsearch][:compression] = true
         result = subject.connection_config(config[:elasticsearch], '0.0.0-test')
         expect(result[:compression]).to be true
-        expect(system_logger).to have_received(:info).with('ES connection compression is enabled')
+        expect(system_logger).to have_received(:info).with('ES connection compression is enabled').twice
       end
     end
 
@@ -125,6 +125,7 @@ RSpec.describe(ES::Client) do
         config[:elasticsearch][:compression] = false
         result = subject.connection_config(config[:elasticsearch], '0.0.0-test')
         expect(result[:compression]).to be false
+        expect(system_logger).to have_received(:info).with('ES connection compression is enabled')
         expect(system_logger).to have_received(:info).with('ES connection compression is disabled')
       end
     end

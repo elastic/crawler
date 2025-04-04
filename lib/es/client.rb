@@ -33,7 +33,7 @@ module ES
 
     def connection_config(es_config, crawler_version)
       config = {
-        transport_options: {
+       transport_options: {
           headers: {
             'user-agent': "#{USER_AGENT}#{crawler_version}",
             'X-elastic-product-origin': 'crawler'
