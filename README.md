@@ -192,6 +192,9 @@ The Elasticsearch configuration file is optional.
 It exists to allow users with multiple crawlers to only need a single Elasticsearch configuration.
 See [CONFIG.md](docs/CONFIG.md) for more details on these files.
 
+### Logging
+You can learn more about setting up Crawler's logging [here](docs/features/LOGGING.md).
+
 ### Running a Crawl Job
 
 Once everything is configured, you can run a crawl job using the CLI:
