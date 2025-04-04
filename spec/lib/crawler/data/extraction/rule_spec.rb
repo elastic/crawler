@@ -158,6 +158,21 @@ RSpec.describe(Crawler::Data::Extraction::Rule) do
       end
     end
 
+    context 'when XPath selector is valid' do
+      let(:selector) { '/html/body/a/@title' }
+
+      it 'passes validation' do
+        expect(described_class.new(rule_input)).to be_truthy
+      end
+    end
+
+    context 'when CSS selector is valid' do
+      let(:selector) { 'a:nth-child(pattern)' }
+      it 'passes validation' do
+        expect(described_class.new(rule_input)).to be_truthy
+      end
+    end
+
     context 'when source is `url` and regex is valid' do
       let(:source) { 'url' }
       let(:selector) { '[0-9]' }
