@@ -5,28 +5,31 @@ This is the only user interface for interacting with Crawler.
 
 ## Installation and Configuration
 
-Ensure you complete the [setup](../README.md#setup) before using the CLI.
+Ensure you are able to run Crawler in docker or have completed the steps to run Crawler [from source](../README.md#running-open-crawler-from-source) before using the CLI.
 
 For instructions on configuring a Crawler, see [CONFIG.md](./CONFIG.md).
 
 ### CLI in Docker
 
-If you are running a dockerized version of Crawler, you can run CLI commands in two ways;
+To run individual CLI commands in Docker, you can use the following format
 
-1. Exec into the docker container and execute commands directly using `docker exec -it <container name> bash`
-    - This requires no changes to CLI commands
-    ```bash
-    # exec into container
-    $ docker exec -it crawler bash
-    
-    # execute commands
-    $ bin/crawler version
-    ```
-2. Execute commands externally using `docker exec -it <container name> <command>`
-    ```bash
-    # execute command directly without entering docker container
-    $ docker exec -it crawler bin/crawler version
-    ```
+```bash
+docker run -it docker.elastic.co/integrations/crawler:latest ruby \
+    bin/crawler <command> <args>
+```
+
+For an interactive shell with Crawler, simply change the entrypoint to `/bin/bash`:
+
+```bash
+docker run -it --entrypoint /bin/bash docker.elastic.co/integrations/crawler:latest
+```
+
+If you need to mount a file into the container, for example `crawl.yml`, you can use the `-v` option to mount it into the container:
+
+```bash
+docker run -it -v ./crawl.yml:/crawl.yml docker.elastic.co/integrations/crawler:latest ruby \
+    bin/crawler crawl /crawl.yml
+```
 
 ## Available commands
 ### Getting help
