@@ -44,6 +44,7 @@ module ES
         }
       }
 
+      config.merge!(configure_scheme_host_port(es_config))
       config.merge!(configure_auth(es_config))
       config.deep_merge!(configure_ssl(es_config))
 
@@ -122,43 +123,66 @@ module ES
 
     private
 
-    def configure_auth(es_config)
+    private def configure_scheme_host_port(es_config)
+      {
+        scheme: es_config[:scheme],
+        host: es_config[:host],
+        port: es_config[:port]
+      }.compact
+    end
+
+    private def configure_auth(es_config)
       if es_config[:api_key]
         @system_logger.info('ES connections will be authorized with configured API key')
-        {
-          host: "#{es_config[:host]}:#{es_config[:port]}",
-          api_key: es_config[:api_key]
-        }
+        { api_key: es_config[:api_key] }
+      elsif es_config[:username] || es_config[:password]
+        @system_logger.info('ES connections will use configured username/password')
+        { user: es_config[:username], password: es_config[:password] }
       else
-        @system_logger.info('ES connections will be authorized with configured username and password')
-        scheme, host = es_config[:host].split('://')
-        {
-          hosts: [
-            {
-              host:,
-              port: es_config[:port],
-              user: es_config[:username],
-              password: es_config[:password],
-              scheme:
-            }
-          ]
-        }
-      end
+        @system_logger.info('ES connections will use no authentication')
+        {}
+      end       
     end
 
     def configure_ssl(es_config)
-      if es_config[:ca_fingerprint]
-        @system_logger.info('ES connections will use SSL with ca_fingerprint')
-        return {
-          ca_fingerprint: es_config[:ca_fingerprint],
-          transport_options: {
-            ssl: { verify: false }
-          }
+      # See: https://www.rubydoc.info/gems/faraday/Faraday/SSLOptions
+
+      ssl_config = {
+        transport_options: {
+          ssl: {}
         }
+      }
+
+      if es_config[:ca_fingerprint]
+        @system_logger.info('ES connections will only proceed if the remote server presents a certificate that matches ca_fingerprint')
+        ssl_config[:ca_fingerprint] = es_config[:ca_fingerprint]
       end
 
-      @system_logger.info('ES connections will use SSL without ca_fingerprint')
-      {}
+      if es_config[:ssl_verify] == false
+
+        if es_config[:ca_path] || es_config[:verify_hostname]
+          @system_logger.warn("SSL verification is disabled, but some SSL verification options are configured. These options will be ignored.")
+        end
+
+        @system_logger.info('ES connections will use SSL without verification')
+        ssl_config[:transport_options][:ssl] = { verify: false }
+        
+        return ssl_config
+      end
+
+      # If SSL Verification is not disabled, it is enabled, and we need to process other SSL options
+
+      if es_config[:ssl_verify_hostname] == false
+        @system_logger.info('ES connections that use SSL will verify connections without performing hostname verification')
+        ssl_config[:transport_options][:ssl][:verify_hostname] = false
+      end
+
+      if es_config[:ca_path]
+        @system_logger.info('ES connections that use SSL will accept certificate authorities provided in the ca_path')
+        ssl_config[:transport_options][:ssl][:ca_path] = es_config[:ca_path]
+      end
+
+      return ssl_config
     end
 
     def raise_if_necessary(response) # rubocop:disable Metrics/MethodLength, Metrics/PerceivedComplexity
