@@ -36,13 +36,9 @@ These are provided in the CLI as a named argument for the option `--es-config`, 
 If your Elasticsearch instance uses SSL/TLS with certificates signed by a private Certificate Authority (CA) or uses self-signed certificates, you will need to configure the crawler to trust these certificates.
 
 1.  **Obtain the CA Certificate:** Get the CA certificate file (usually a `.pem` or `.crt` file) that was used to sign your Elasticsearch node certificates. If using self-signed certificates directly on the nodes, you might need the certificate file for each node or a combined CA file.
-2.  **Configure `ca_path`:** Place the CA certificate file(s) in a directory accessible to the crawler. In your `elasticsearch.yml` or crawler configuration file, set the `elasticsearch.ca_path` parameter to the path of this directory.
+2.  **Configure `ca_file`:** Place the CA certificate file(s) in a directory accessible to the crawler. In your `elasticsearch.yml` or crawler configuration file, set the `elasticsearch.ca_file` parameter to the certificate.
     ```yaml
-    elasticsearch.ca_path: /path/to/your/ca/certs
-    ```
-3.  **Consider Hostname Verification:** If the hostname in the certificate does not exactly match the hostname the crawler is using to connect (e.g., connecting via IP address or a different DNS name), which will be the case if following an Elasticsearch quickstart, you will likely also need to disable hostname verification. **Use this option with caution**, as it reduces security.
-    ```yaml
-    elasticsearch.ssl_verify_hostname: false
+    elasticsearch.ca_file: /path/to/your/ca.crt
     ```
 
 **Note:** For detailed explanations of all Elasticsearch connection parameters, including authentication and other SSL options, refer to the comments within the [config/elasticsearch.yml.example](../config/elasticsearch.yml.example) file.

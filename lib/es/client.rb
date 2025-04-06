@@ -172,9 +172,9 @@ module ES
 
       # If SSL Verification is not disabled, it is enabled, and we need to process other SSL options
 
-      if es_config[:ssl_verify_hostname] == false
-        @system_logger.info('ES connections that use SSL will verify connections without performing hostname verification')
-        ssl_config[:transport_options][:ssl][:verify_hostname] = false
+      if es_config[:ca_file]
+        @system_logger.info('ES connections that use SSL will accept certificate authorities from ca_file')
+        ssl_config[:transport_options][:ssl][:ca_file] = es_config[:ca_file]
       end
 
       if es_config[:ca_path]

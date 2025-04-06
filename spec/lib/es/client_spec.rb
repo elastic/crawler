@@ -97,16 +97,19 @@ RSpec.describe(ES::Client) do
 
         expect(result[:transport_options][:ssl][:ca_path]).to be_nil
         expect(result[:transport_options][:ssl][:ca_fingerprint]).to be_nil
-
       end
+    end
 
-      it 'configures Elasticsearch client with hostname verification disabled' do
-        config[:elasticsearch][:ssl_verify_hostname] = false
+    context 'when ca_file is configured' do
+      let(:ca_file) { '/my/local/certificate.crt' }
+
+      it 'configures Elasticsearch client with ca_file' do
+        config[:elasticsearch][:ca_file] = ca_file
 
         result = subject.connection_config(config[:elasticsearch], '0.0.0-foo')
 
-        expect(result[:transport_options][:ssl][:verify_hostname]).to eq(false)
-      end
+        expect(result[:transport_options][:ssl][:ca_file]).to eq(ca_file)
+      end 
     end
 
     context 'when ca_path is configured' do

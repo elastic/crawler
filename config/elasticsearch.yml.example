@@ -45,9 +45,10 @@
 #elasticsearch.ssl_verify: true
 #
 #
-## Controls whether the hostname in the SSL certificate must match the server hostname.
-## Defaults to true. Only relevant if ssl_verify is not false.
-#elasticsearch.ssl_verify_hostname: true
+## Path to a trusted CA certificate for SSL verification.
+## Use this when connecting to an Elasticsearch instance with a self-signed certificate
+## or a certificate signed by a private CA.
+#elasticsearch.ca_file: /path/to/your/ca.crt
 #
 #
 ## Path to a directory containing trusted CA certificates for SSL verification.
