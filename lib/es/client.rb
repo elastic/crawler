@@ -12,8 +12,8 @@ require 'elasticsearch'
 module ES
   class Client < ::Elasticsearch::Client
     USER_AGENT = 'elastic-web-crawler-'
-    MAX_RETRIES = 3
-    REQUEST_TIMEOUT = 10 # seconds
+    DEFAULT_MAX_RETRIES = 3
+    DEFAULT_REQUEST_TIMEOUT = 10 # seconds
     FAILED_BULKS_DIR = 'output/failed_payloads' # directory that failed bulk payloads are output to
 
     class IndexingFailedError < StandardError
@@ -28,18 +28,32 @@ module ES
     def initialize(es_config, system_logger, crawler_version, crawl_id, &)
       @system_logger = system_logger
       @crawl_id = crawl_id
+
+      # Resolve and store max_retries based on configuration
+      retry_count = es_config.fetch(:retry_on_failure, DEFAULT_MAX_RETRIES) # Default to 3 if not present
+      @max_retries = case retry_count
+                     when true then 3 # Explicitly handle true as 3 retries
+                     when ->(n) { n.is_a?(Integer) && n.positive? } then retry_count # Use positive integer
+                     else 0 # Default to 0 retries for false or invalid values
+                     end
+
+      @system_logger.debug("Elasticsearch client configured with max_retries: #{@max_retries}")
+
       super(connection_config(es_config, crawler_version), &)
     end
 
     def connection_config(es_config, crawler_version)
       config = {
+        request_timeout: es_config.fetch(:request_timeout, DEFAULT_REQUEST_TIMEOUT),
+        reload_on_failure: es_config.fetch(:reload_on_failure, false),
         transport_options: {
           headers: {
             'user-agent': "#{USER_AGENT}#{crawler_version}",
             'X-elastic-product-origin': 'crawler'
           },
           request: {
-            timeout: REQUEST_TIMEOUT
+            # Ensure timeout is consistent with the top-level setting
+            timeout: es_config.fetch(:request_timeout, DEFAULT_REQUEST_TIMEOUT)
           }
         }
       }
@@ -56,16 +70,19 @@ module ES
         raise_if_necessary(super)
       rescue StandardError => e
         retries += 1
-        if retries <= MAX_RETRIES
+        if @max_retries.positive? && retries <= @max_retries
           wait_time = 2**retries
           @system_logger.info(<<~LOG.squish)
-            Bulk index attempt #{retries} failed: '#{e.message}'. Retrying in #{wait_time} seconds...
+            Bulk index attempt #{retries} failed: '#{e.message}'. Retrying in #{wait_time}s (try #{retries} / #{@max_retries})
           LOG
           sleep(wait_time.seconds) && retry
         else
-          @system_logger.warn(<<~LOG.squish)
-            Bulk index failed after #{retries} attempts: '#{e.message}'. Writing payload to file...
-          LOG
+          log_message = if @max_retries.positive?
+                          "Bulk index failed after #{retries} attempts: '#{e.message}'. Writing payload to file..."
+                        else
+                          "Bulk index failed: '#{e.message}'. Retries disabled. Writing payload to file..."
+                        end
+          @system_logger.warn(log_message)
           store_failed_payload(payload)
           raise e
         end
@@ -91,11 +108,17 @@ module ES
           query['search_after'] = hits.last['sort']
         rescue StandardError => e
           retries += 1
-          if retries <= MAX_RETRIES
-            @system_logger.debug("Search attempt #{retries} failed. Retrying...")
-            sleep((2**retries).seconds) && retry
+          if @max_retries.positive? && retries <= @max_retries # Use instance variable and check.positive? > 0
+            wait_time = 2**retries
+            @system_logger.debug("Search attempt #{retries} failed: '#{e.message}'. Retrying in #{wait_time}s (try #{retries} / #{@max_retries})")
+            sleep(wait_time.seconds) && retry
           else
-            @system_logger.warn("Search failed after #{retries} attempts. #{e.message}")
+            log_message = if @max_retries.positive?
+                            "Search failed after #{retries} attempts: '#{e.message}'."
+                          else
+                            "Search failed: '#{e.message}'. Retries disabled."
+                          end
+            @system_logger.warn(log_message)
             raise e
           end
         end
@@ -109,11 +132,17 @@ module ES
           return super(index:, body:, refresh:)
         rescue StandardError => e
           retries += 1
-          if retries <= MAX_RETRIES
-            @system_logger.debug("Delete by query attempt #{retries} failed. Retrying...")
-            sleep((2**retries).seconds) && retry
+          if @max_retries.positive? && retries <= @max_retries # Use instance variable and check > 0
+            wait_time = 2**retries
+            @system_logger.debug("Delete by query attempt #{retries} failed: '#{e.message}'. Retrying in #{wait_time}s (try #{retries} / #{@max_retries})")
+            sleep(wait_time.seconds) && retry
           else
-            @system_logger.warn("Delete by query failed after #{retries} attempts. #{e.message}")
+            log_message = if @max_retries.positive?
+                            "Delete by query failed after #{retries} attempts: '#{e.message}'."
+                          else
+                            "Delete by query failed: '#{e.message}'. Retries disabled."
+                          end
+            @system_logger.warn(log_message)
             raise e
           end
         end
