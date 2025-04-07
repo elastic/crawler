@@ -168,7 +168,12 @@ module Crawler
         # @param [String] CSS selector or XPath expression
         # @return [Array<String>]
         def extract_by_selector(selector, ignore_tags)
-          parsed_content.search(selector).map do |node|
+          begin
+            selected = parsed_content.search(selector)
+          rescue Nokogiri::CSS::SyntaxError
+            selected = parsed_content.xpath(selector)
+          end
+          selected.map do |node|
             Crawler::ContentEngine::Utils.node_descendant_text(node, ignore_tags)
           end
         end
