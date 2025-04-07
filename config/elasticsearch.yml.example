@@ -15,6 +15,10 @@
 #elasticsearch.host: https://localhost:9200
 #
 #
+## The scheme (http or https) of the Elasticsearch deployment host. Only needed if you do not provide the scheme in the host url.
+#elasticsearch.scheme: https
+#
+#
 ## The port of the Elasticsearch deployment host. Only needed if you do not provide the port in the host url.
 #elasticsearch.port: 9200
 #
