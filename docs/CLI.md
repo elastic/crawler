@@ -14,7 +14,7 @@ For instructions on configuring a Crawler, see [CONFIG.md](./CONFIG.md).
 To run individual CLI commands in Docker, you can use the following format
 
 ```bash
-docker run -it docker.elastic.co/integrations/crawler:latest ruby \
+docker run -it docker.elastic.co/integrations/crawler:latest jruby \
     bin/crawler <command> <args>
 ```
 
@@ -24,12 +24,11 @@ For an interactive shell with Crawler, simply change the entrypoint to `/bin/bas
 docker run -it --entrypoint /bin/bash docker.elastic.co/integrations/crawler:latest
 ```
 
-If you need to mount a file into the container, for example `crawl.yml`, you can use the `-v` option to mount it into the container:
+If you need to mount a file into the container, for example `crawl-config.yml`, you can use the `-v` option to mount it into the container:
 
 ```bash
-docker run -it -v ./crawl.yml:/crawl.yml docker.elastic.co/integrations/crawler:latest ruby \
-    bin/crawler crawl /crawl.yml
-```
+docker run -it -v ./crawl-config.yml:/crawl-config.yml docker.elastic.co/integrations/crawler:latest ruby \
+    bin/crawler crawl /crawl-config.yml
 
 ## Available commands
 ### Getting help
