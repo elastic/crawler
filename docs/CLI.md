@@ -27,7 +27,7 @@ docker run -it --entrypoint /bin/bash docker.elastic.co/integrations/crawler:lat
 If you need to mount a file into the container, for example `crawl-config.yml`, you can use the `-v` option to mount it into the container:
 
 ```bash
-docker run -it -v ./crawl-config.yml:/crawl-config.yml docker.elastic.co/integrations/crawler:latest ruby \
+docker run -it -v ./crawl-config.yml:/crawl-config.yml docker.elastic.co/integrations/crawler:latest jruby \
     bin/crawler crawl /crawl-config.yml
 
 ## Available commands
