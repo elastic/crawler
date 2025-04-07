@@ -46,18 +46,18 @@
 ## ------------------------------- Client Behavior --------------------------------
 #
 #
-## (Optional) Request timeout in seconds for individual Elasticsearch requests.
+## Request timeout in seconds for individual Elasticsearch requests.
 ##    Default: 10
 #elasticsearch.request_timeout: 10
 #
 #
-## (Optional) Number of retries on failure (e.g., 3), or false/0 to disable retries.
+## Number of retries on failure (e.g., 3), or false/0 to disable retries.
 ##    If set to `true`, it defaults to 3 retries.
 ##    Default: 3
 #elasticsearch.retry_on_failure: 3
 #
 #
-## (Optional) Whether to reload connections (refresh node list) after a connection failure.
+## Whether to reload connections (refresh node list) after a connection failure.
 ##    Default: false
 #elasticsearch.reload_on_failure: false
 #

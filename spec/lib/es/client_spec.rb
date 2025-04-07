@@ -54,6 +54,14 @@ RSpec.describe(ES::Client) do
         expect(subject.instance_variable_get(:@max_retries)).to eq(3)
       end
 
+      it 'sets max_retries to 3 when retry_on_failure is invalid' do
+        config[:elasticsearch][:retry_on_failure] = 'Popovers'
+
+        subject.connection_config(config[:elasticsearch], '0.0.0-foo')
+
+        expect(subject.instance_variable_get(:@max_retries)).to eq(3)
+      end
+
       it 'sets max_retries to the specified integer when retry_on_failure is a positive integer' do
         config[:elasticsearch][:retry_on_failure] = 5
 
@@ -203,8 +211,8 @@ RSpec.describe(ES::Client) do
         result = subject.bulk(payload)
         expect(result.status).to eq(200)
         # Default max_retries is 3
-        expect(system_logger).to have_received(:info).with(
-          "Bulk index attempt 1 failed: 'Intermittent failure'. Retrying in 2 seconds... (try 1 / 3)"
+        expect(system_logger).to have_received(:warn).with(
+          "Bulk index attempt failed: 'Intermittent failure'. Retrying in 2s (try 1 / 3)"
         )
       end
     end
