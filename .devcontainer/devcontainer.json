@@ -1,0 +1,14 @@
+{
+	"name": "Crawler Dev Container",
+	"image": "jruby:9.4.12.0-jdk21", // Same image as Dockerfile
+	"postCreateCommand": "IS_DOCKER=true make install",
+	"features": {
+		"ghcr.io/devcontainers/features/git:1": {
+			"version": "latest"
+		},
+		"ghcr.io/devcontainers/features/docker-in-docker:2.12.2": {
+			"version": "latest",
+			"dockerSocketBindMount": true
+		}
+	}
+}

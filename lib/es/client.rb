@@ -49,6 +49,7 @@ module ES
       config.merge!(configure_retries(es_config))
       config.merge!(configure_auth(es_config))
       config.deep_merge!(configure_ssl(es_config))
+      config.merge!(configure_compression(es_config))
 
       config
     end
@@ -151,6 +152,12 @@ module ES
 
       @system_logger.info('ES connections will use SSL without ca_fingerprint')
       {}
+    end
+
+    def configure_compression(es_config)
+      compress = es_config[:compression] != false
+      @system_logger.debug("ES connection compression is #{compress ? 'enabled' : 'disabled'}")
+      { compression: compress }
     end
 
     def raise_if_necessary(response) # rubocop:disable Metrics/MethodLength, Metrics/PerceivedComplexity

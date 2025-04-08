@@ -172,6 +172,30 @@ RSpec.describe(ES::Client) do
         expect(result[:reload_on_failure]).to be(true)
       end
     end
+
+    context 'when compression setting is not present' do
+      it 'defaults compression to true' do
+        config[:elasticsearch].delete(:compression) # Ensure it's not set
+        result = subject.connection_config(config[:elasticsearch], '0.0.0-test')
+        expect(result[:compression]).to be true
+      end
+    end
+
+    context 'when compression setting is true' do
+      it 'sets compression to true' do
+        config[:elasticsearch][:compression] = true
+        result = subject.connection_config(config[:elasticsearch], '0.0.0-test')
+        expect(result[:compression]).to be true
+      end
+    end
+
+    context 'when compression setting is false' do
+      it 'sets compression to false' do
+        config[:elasticsearch][:compression] = false
+        result = subject.connection_config(config[:elasticsearch], '0.0.0-test')
+        expect(result[:compression]).to be false
+      end
+    end
   end
 
   describe '#bulk' do
