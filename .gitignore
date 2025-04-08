@@ -66,6 +66,9 @@ config/*.yml
 # log files
 /logs
 
+# default File sink folder
+/crawled_docs
+
 # Code coverage
 coverage
 

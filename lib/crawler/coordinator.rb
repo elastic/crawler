@@ -27,7 +27,7 @@ module Crawler
 
     ELASTICSEARCH_OUTPUT_SINK = 'elasticsearch'
 
-    attr_reader :crawl, :crawl_results, :crawl_stage, :seen_urls, :started_at, :task_executors
+    attr_reader :crawl, :crawl_results, :crawl_stage, :seen_urls, :started_at, :task_executors, :url_test_results
 
     delegate :events, :system_logger, :config, :executor, :sink, :rule_engine,
              :interruptible_sleep, :shutdown_started?, :allow_resume?,
@@ -52,6 +52,8 @@ module Crawler
         CRAWL_STAGE_PRIMARY => { outcome: nil, message: nil },
         CRAWL_STAGE_PURGE => { outcome: nil, message: nil }
       }
+      @url_test = false
+      @url_test_results = []
       @started_at = Time.now
     end
 
@@ -115,6 +117,7 @@ module Crawler
     end
 
     def run_urltest_crawl!(endpoint)
+      @url_test = true
       url_obj = Crawler::Data::URL.parse(endpoint)
       add_url_to_backlog(
         url: url_obj,
@@ -363,6 +366,8 @@ module Crawler
       crawl_task_progress(crawl_task, 'HTTP execution')
       executor.run(crawl_task, follow_redirects:).tap do |crawl_result|
         events.url_fetch(url: crawl_task.url, crawl_result:, auth_type: crawl_task.auth_type)
+        # get result of specific crawl if we are doing a url test command run
+        @url_test_results.push(crawl_result) if @url_test
       end
     end
 
@@ -374,9 +379,9 @@ module Crawler
     def process_crawl_result(crawl_task, crawl_result)
       crawl_task_progress(crawl_task, 'processing result')
 
-      # Extract and enqueue all links from the crawl result
+      # Extract and enqueue all links from the crawl result unless we are running a url test command
       start_time = Time.now
-      duration = Benchmark.measure { extract_and_enqueue_links(crawl_task, crawl_result) }
+      duration = Benchmark.measure { extract_and_enqueue_links(crawl_task, crawl_result) } unless @url_test
       end_time = Time.now
 
       # Check page against rule engine before sending to an output sink

@@ -112,13 +112,21 @@ module Crawler
         end
       end
 
-      # Starts a crawl of a single URL. Specifically for the Urltest CLI command
-      def start_urltest_crawl!(endpoint)
-        # Ignore sink settings in config and force to Console
-        @sink = Crawler::OutputSink::Console.new(config)
-
+      # Starts a crawl of a single URL, specifically for the UrlTest CLI command
+      def start_url_test!(endpoint)
+        # Use the File sink regardless of what is set in the config
+        @sink = Crawler::OutputSink::File.new(config)
         coordinator.run_urltest_crawl!(endpoint)
-        record_overall_outcome(coordinator.crawl_results)
+        print_url_test_results(coordinator.url_test_results)
+      rescue StandardError => e
+        log_exception(e, 'Unexpected error while running the crawl')
+        record_outcome(
+          outcome: :failure,
+          message: 'Unexpected error while running the crawl, check system logs for details'
+        )
+      ensure
+        crawl_queue.delete
+        seen_urls.clear
       end
 
       #---------------------------------------------------------------------------------------------
@@ -171,6 +179,22 @@ module Crawler
 
       def log_exception(exception, message, **_kwargs)
         events.log_error(exception, message)
+      end
+
+      def print_url_test_results(url_test_results)
+        puts "\n---- URL Test Results ----"
+        url_test_results.each do |result|
+          puts "- Attempted to crawl #{result.url}"
+          puts "- Status code: #{result.status_code}"
+          puts "- Content type: #{result.content_type}"
+          puts "- Crawl duration (seconds): #{result.duration}"
+          next unless result.is_a?(Crawler::Data::CrawlResult::Error) ||
+                      result.is_a?(Crawler::Data::CrawlResult::RedirectError) ||
+                      result.is_a?(Crawler::Data::CrawlResult::UnsupportedContentType)
+
+          puts "  \nA helpful suggestion: #{result.suggestion_message}"
+        end
+        puts "\nYou can find the downloaded document under #{config.output_dir}"
       end
     end
   end

@@ -10,7 +10,7 @@ require 'yaml'
 
 module Crawler
   module CLI
-    class Urltest < Dry::CLI::Command
+    class UrlTest < Dry::CLI::Command
       desc 'Test a URL against a configuration'
 
       argument :crawl_config, required: true, desc: 'Path to crawl config file'
@@ -23,7 +23,7 @@ module Crawler
         crawl_config = Crawler::CLI::Helpers.load_crawl_config(crawl_config, es_config)
         crawl = Crawler::API::Crawl.new(crawl_config)
 
-        crawl.start_urltest_crawl!(endpoint)
+        crawl.start_url_test!(endpoint)
       end
     end
   end

@@ -17,6 +17,6 @@ module Crawler
     register 'crawl', Crawler::CLI::Crawl, aliases: %w[r run]
     register 'schedule', Crawler::CLI::Schedule
     register 'validate', Crawler::CLI::Validate
-    register 'urltest', Crawler::CLI::Urltest
+    register 'urltest', Crawler::CLI::UrlTest
   end
 end
