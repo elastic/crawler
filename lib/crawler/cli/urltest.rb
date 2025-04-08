@@ -17,14 +17,11 @@ module Crawler
 
       argument :endpoint, required: true, desc: 'Endpoint to test'
 
-      def call(crawl_config:, endpoint:, **)
-        # crawl_single_url_simple(crawl_config, endpoint)
-        crawl_single_url(crawl_config, endpoint)
-      end
+      option :es_config, desc: 'Path to elasticsearch config file'
 
-      def crawl_single_url(crawl_config, endpoint)
-        config = Crawler::CLI::Helpers.load_crawl_config(crawl_config, nil)
-        crawl = Crawler::API::Crawl.new(config)
+      def call(crawl_config:, endpoint:, es_config: nil, **)
+        crawl_config = Crawler::CLI::Helpers.load_crawl_config(crawl_config, es_config)
+        crawl = Crawler::API::Crawl.new(crawl_config)
 
         crawl.start_urltest_crawl!(endpoint)
       end
