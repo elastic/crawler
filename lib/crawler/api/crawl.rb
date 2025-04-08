@@ -191,10 +191,7 @@ module Crawler
 
           print_extracted_links(result)
 
-          next unless result.is_a?(Crawler::Data::CrawlResult::Error) ||
-                      result.is_a?(Crawler::Data::CrawlResult::RedirectError) ||
-                      result.is_a?(Crawler::Data::CrawlResult::UnsupportedContentType) ||
-                      result.is_a?(Crawler::Data::CrawlResult::HttpAuthDisallowedError)
+          next unless result.is_a?(Crawler::Data::CrawlResult::Error)
 
           puts "  \nA helpful suggestion: #{result.suggestion_message}"
         end
