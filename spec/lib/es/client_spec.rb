@@ -269,10 +269,12 @@ RSpec.describe(ES::Client) do
           stub_request(:post, bulk_url).to_return(error_response)
         end
 
-        it 'raises an error after exhausting retries and logs attempts' do
+        it 'raises an error, logs attempts, and saves payload' do
+          file_double = double('File', puts: nil, close: nil)
+          expect(File).to receive(:open).with(%r{output/failed_payloads/crawl-id/\d{14}}, 'w').and_yield(file_double)
+
           expect(subject).to receive(:sleep).with(1**1).once
           expect(subject).to receive(:sleep).with(1**2).once
-
           expect do
             subject.bulk(payload)
           end.to raise_error(Elastic::Transport::Transport::ServerError, /\[500\] {"error":"boom"}/)
@@ -288,20 +290,23 @@ RSpec.describe(ES::Client) do
             /Bulk index failed after 3 attempts: '\[500\] {"error":"boom"}'/
           )
 
-          # Ensure file writing logic is NOT called
-          expect(File).not_to receive(:open)
+          expect(file_double).to have_received(:puts).with(payload[:body].first)
+          expect(file_double).to have_received(:puts).with(payload[:body].second)
         end
 
         context 'with retries disabled' do
           let(:config) do
             {
               elasticsearch: {
-                host:, port:, retry_on_failure: false
+                host:, port:, retry_on_failure: false # Disable retries
               }
             }.deep_symbolize_keys
           end
 
-          it 'fails immediately without retrying or logging retries' do
+          it 'fails immediately, logs final failure, and saves payload' do
+            file_double = double('File', puts: nil, close: nil)
+            expect(File).to receive(:open).with(%r{output/failed_payloads/crawl-id/\d{14}}, 'w').and_yield(file_double)
+
             expect(subject).not_to receive(:sleep)
 
             expect do
@@ -313,6 +318,9 @@ RSpec.describe(ES::Client) do
             expect(system_logger).to have_received(:error).with(
               /Bulk index failed: '\[500\] {"error":"boom"}'. Retries disabled./
             )
+
+            expect(file_double).to have_received(:puts).with(payload[:body].first)
+            expect(file_double).to have_received(:puts).with(payload[:body].second)
           end
         end
       end

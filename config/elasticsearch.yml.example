@@ -57,11 +57,6 @@
 #elasticsearch.retry_on_failure: 3
 #
 #
-## HTTP Status codes to retry when a failure occurs.
-##    Default: 429, 502, 503, 504
-#elasticsearch.retry_on_status: 429
-#
-#
 ## The amount of time to wait between requests after a failure occurs.
 ##    Default: 2000
 #elasticsearch.delay_on_retry: 10000
