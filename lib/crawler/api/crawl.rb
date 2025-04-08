@@ -188,13 +188,26 @@ module Crawler
           puts "- Status code: #{result.status_code}"
           puts "- Content type: #{result.content_type}"
           puts "- Crawl duration (seconds): #{result.duration}"
+
+          print_extracted_links(result)
+
           next unless result.is_a?(Crawler::Data::CrawlResult::Error) ||
                       result.is_a?(Crawler::Data::CrawlResult::RedirectError) ||
-                      result.is_a?(Crawler::Data::CrawlResult::UnsupportedContentType)
+                      result.is_a?(Crawler::Data::CrawlResult::UnsupportedContentType) ||
+                      result.is_a?(Crawler::Data::CrawlResult::HttpAuthDisallowedError)
 
           puts "  \nA helpful suggestion: #{result.suggestion_message}"
         end
         puts "\nYou can find the downloaded document under #{config.output_dir}"
+      end
+
+      def print_extracted_links(result)
+        return unless result.is_a?(Crawler::Data::CrawlResult::HTML)
+
+        puts '- Extracted links:'
+        result.links.each do |link|
+          puts "  - #{link}"
+        end
       end
     end
   end
