@@ -66,6 +66,11 @@
 #elasticsearch.ca_fingerprint: null
 #
 #
+#
+##  Enable gzip compression for requests sent to Elasticsearch.
+##    Defaults to `true` if not specified. Set to `false` to disable.
+#elasticsearch.compression: true
+#
 ## ------------------------------- Bulk API -----------------------------------
 #
 ##  The max size of the bulk queue

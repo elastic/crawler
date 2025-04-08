@@ -47,6 +47,7 @@ module ES
       config.merge!(configure_scheme_host_port(es_config))
       config.merge!(configure_auth(es_config))
       config.deep_merge!(configure_ssl(es_config))
+      config.merge!(configure_compression(es_config))
 
       config
     end
@@ -183,6 +184,12 @@ module ES
       end
 
       return ssl_config
+    end
+
+    def configure_compression(es_config)
+      compress = es_config[:compression] != false
+      @system_logger.debug("ES connection compression is #{compress ? 'enabled' : 'disabled'}")
+      { compression: compress }
     end
 
     def raise_if_necessary(response) # rubocop:disable Metrics/MethodLength, Metrics/PerceivedComplexity
