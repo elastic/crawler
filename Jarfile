@@ -9,8 +9,8 @@
 # Functionality common to any web crawler
 jar 'com.github.crawler-commons:crawler-commons', '1.2'
 
-# Pinned dependency of crawler-commons to resolve vulnerability
-jar 'commons-io:commons-io', '2.11.0'
+# Pinned dependency of crawler-commons to resolve vulnerability (updated to 2.16.1 for commons-compress compatibility)
+jar 'commons-io:commons-io', '2.16.1'
 
 # Apache HTTP client used for requests to websites
 jar 'org.apache.httpcomponents.client5:httpclient5', '5.1'

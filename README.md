@@ -138,6 +138,9 @@ The Elasticsearch configuration exists to allow users with multiple crawlers to 
 
 See [CONFIG.md](docs/CONFIG.md) for more details on these files.
 
+### Logging
+You can learn more about setting up Crawler's logging [here](docs/features/LOGGING.md).
+
 ### Running a Crawl Job
 
 As covered in the quickstart, running a crawl job is simple.
