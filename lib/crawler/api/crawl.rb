@@ -112,6 +112,15 @@ module Crawler
         end
       end
 
+      # Starts a crawl of a single URL. Specifically for the Urltest CLI command
+      def start_urltest_crawl!(endpoint)
+        # Ignore sink settings in config and force to Console
+        @sink = Crawler::OutputSink::Console.new(config)
+
+        coordinator.run_urltest_crawl!(endpoint)
+        record_overall_outcome(coordinator.crawl_results)
+      end
+
       #---------------------------------------------------------------------------------------------
       # Returns a hash with crawl-specific status information
       # Note: This is used by the `EventGenerator` class for crawl-status events and by the Crawler Status API.

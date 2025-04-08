@@ -114,6 +114,19 @@ module Crawler
       sink.purge(started_at)
     end
 
+    def run_urltest_crawl!(endpoint)
+      url_obj = Crawler::Data::URL.parse(endpoint)
+      add_url_to_backlog(
+        url: url_obj,
+        type: :content,
+        source_type: SEED_LIST,
+        crawl_depth: 1,
+        source_url: nil,
+        redirect_chain: []
+      )
+      run_crawl_loop
+    end
+
     private
 
     def purge_crawls_allowed?
