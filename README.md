@@ -31,6 +31,7 @@ EOF
 docker run \
   -v ./crawl-config.yml:/crawl-config.yml \
   -it docker.elastic.co/integrations/crawler:latest jruby bin/crawler crawl /crawl-config.yml
+```
 
 If everything is set up correctly, you should see Crawler start up and begin crawling `example.com`.
 It will print the following output to the screen and then return control to the terminal:
