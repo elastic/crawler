@@ -8,6 +8,7 @@
 
 require 'elasticsearch'
 
+require 'elastic/transport/transport/errors'
 RSpec.describe(ES::Client) do
   let(:system_logger) { double }
   let(:host) { 'http://notreallyaserver' }
@@ -37,47 +38,75 @@ RSpec.describe(ES::Client) do
     allow(system_logger).to receive(:info)
     allow(system_logger).to receive(:debug)
     allow(system_logger).to receive(:warn)
+    allow(system_logger).to receive(:error)
   end
 
-  describe '#initialize' do
-    context 'when configuring retries' do
-      it 'defaults retry configuration when retry_on_failure is not set' do
-        expected_config = { retry_on_failure: 3, retry_on_status: ES::Client::DEFAULT_RERTY_ON_STATUS,
-                            delay_on_retry: ES::Client::DEFAULT_DELAY_ON_RETRY, reload_on_failure: false }
+  describe 'retry configuration' do
+    context 'with default settings' do
+      let(:config) { { elasticsearch: { host:, port: } } }
+
+      it 'sets default retry values' do
+        expect(subject.instance_variable_get(:@max_retries)).to eq(3)
+        expect(subject.instance_variable_get(:@retry_delay)).to eq(2)
         expect(system_logger).to have_received(:debug).with(
-          "Elasticsearch client retry configuration: #{expected_config}"
+          'Elasticsearch client retry configuration: 3 retries with 2s delay'
         )
       end
+    end
 
-      it 'sets retry_on_failure to 3 in config when retry_on_failure is true' do
-        config[:elasticsearch][:retry_on_failure] = true
+    context 'with custom retry settings' do
+      let(:config) { { elasticsearch: { host:, port:, retry_on_failure: 5, delay_on_retry: 1 } } }
 
-        result = subject.connection_config(config[:elasticsearch], '0.0.0-foo')
-        expect(result[:retry_on_failure]).to eq(3)
+      it 'sets custom retry values' do
+        expect(subject.instance_variable_get(:@max_retries)).to eq(5)
+        expect(subject.instance_variable_get(:@retry_delay)).to eq(1)
+        expect(system_logger).to have_received(:debug).with(
+          'Elasticsearch client retry configuration: 5 retries with 1s delay'
+        )
       end
+    end
 
-      it 'sets retry_on_failure to 3 in config when retry_on_failure is invalid' do
-        config[:elasticsearch][:retry_on_failure] = 'Popovers'
-        result = subject.connection_config(config[:elasticsearch], '0.0.0-foo')
-        expect(result[:retry_on_failure]).to eq(3)
+    context 'with retry_on_failure: true' do
+      let(:config) { { elasticsearch: { host:, port:, retry_on_failure: true } } }
+
+      it 'sets default retry count' do
+        expect(subject.instance_variable_get(:@max_retries)).to eq(3)
+        expect(system_logger).to have_received(:debug).with(
+          'Elasticsearch client retry configuration: 3 retries with 2s delay'
+        )
       end
+    end
 
-      it 'sets retry_on_failure to the specified integer in config when retry_on_failure is a positive integer' do
-        config[:elasticsearch][:retry_on_failure] = 5
-        result = subject.connection_config(config[:elasticsearch], '0.0.0-foo')
-        expect(result[:retry_on_failure]).to eq(5)
+    context 'with retry_on_failure: false' do
+      let(:config) { { elasticsearch: { host:, port:, retry_on_failure: false } } }
+
+      it 'sets zero retries' do
+        expect(subject.instance_variable_get(:@max_retries)).to eq(0)
+        expect(system_logger).to have_received(:debug).with(
+          'Elasticsearch client retry configuration: 0 retries with 2s delay'
+        )
       end
+    end
 
-      it 'sets retry_on_failure to 0 in config when retry_on_failure is false' do
-        config[:elasticsearch][:retry_on_failure] = false
-        result = subject.connection_config(config[:elasticsearch], '0.0.0-foo')
-        expect(result[:retry_on_failure]).to eq(0)
+    context 'with invalid retry_on_failure' do
+      let(:config) { { elasticsearch: { host:, port:, retry_on_failure: 'invalid' } } }
+
+      it 'sets default retry count' do
+        expect(subject.instance_variable_get(:@max_retries)).to eq(3)
+        expect(system_logger).to have_received(:debug).with(
+          'Elasticsearch client retry configuration: 3 retries with 2s delay'
+        )
       end
+    end
 
-      it 'sets retry_on_failure to 0 in config when retry_on_failure is 0' do
-        config[:elasticsearch][:retry_on_failure] = 0
-        result = subject.connection_config(config[:elasticsearch], '0.0.0-foo')
-        expect(result[:retry_on_failure]).to eq(0)
+    context 'with invalid delay_on_retry' do
+      let(:config) { { elasticsearch: { host:, port:, delay_on_retry: 'invalid' } } }
+
+      it 'sets default retry delay' do
+        expect(subject.instance_variable_get(:@retry_delay)).to eq(2)
+        expect(system_logger).to have_received(:debug).with(
+          'Elasticsearch client retry configuration: 3 retries with 2s delay'
+        )
       end
     end
   end
@@ -96,6 +125,7 @@ RSpec.describe(ES::Client) do
     context 'when API key is not present' do
       it 'initialises with username and password' do
         config[:elasticsearch][:api_key] = nil
+
         result = subject.connection_config(config[:elasticsearch], '0.0.0-foo')
 
         expect(result[:hosts]).to eq([{ host: 'notreallyaserver', user: 'user', password: 'pw', port: '9200',
@@ -127,7 +157,9 @@ RSpec.describe(ES::Client) do
 
       it 'configures Elasticsearch client with headers' do
         config[:elasticsearch]['headers'] = headers
+
         result = subject.connection_config(config[:elasticsearch], '0.0.0-test')
+
         expect(result['headers']).to eq(headers)
       end
     end
@@ -135,41 +167,10 @@ RSpec.describe(ES::Client) do
     context 'when headers are not present' do
       it 'configures Elasticsearch client with no headers' do
         config[:elasticsearch][:headers] = nil
+
         result = subject.connection_config(config[:elasticsearch], '0.0.0-test')
+
         expect(result).to_not have_key(:headers)
-      end
-    end
-
-    context 'with request_timeout configuration' do
-      it 'uses the default timeout if not specified' do
-        result = subject.connection_config(config[:elasticsearch], '0.0.0-test')
-
-        expect(result[:request_timeout]).to eq(ES::Client::DEFAULT_REQUEST_TIMEOUT)
-        expect(result.dig(:transport_options, :request, :timeout)).to eq(ES::Client::DEFAULT_REQUEST_TIMEOUT)
-      end
-
-      it 'uses the specified timeout from config' do
-        config[:elasticsearch][:request_timeout] = 30
-
-        result = subject.connection_config(config[:elasticsearch], '0.0.0-test')
-
-        expect(result[:request_timeout]).to eq(30)
-        expect(result.dig(:transport_options, :request, :timeout)).to eq(30)
-      end
-    end
-
-    context 'with reload_on_failure configuration' do
-      it 'uses the default reload_on_failure if not specified' do
-        result = subject.connection_config(config[:elasticsearch], '0.0.0-test')
-        expect(result[:reload_on_failure]).to be(false)
-      end
-
-      it 'uses the specified reload_on_failure from config' do
-        config[:elasticsearch][:reload_on_failure] = true
-
-        result = subject.connection_config(config[:elasticsearch], '0.0.0-test')
-
-        expect(result[:reload_on_failure]).to be(true)
       end
     end
 
@@ -209,138 +210,111 @@ RSpec.describe(ES::Client) do
     end
 
     context 'when successful' do
-      before do
-        # Simulate a successful response with no 'errors' key
-        stub_request(:post, "#{host}:#{port}/_bulk")
-          .to_return(status: 200, body: { errors: false, items: [] }.to_json, headers: elastic_product_headers)
+      before :each do
+        stub_request(:post, "#{host}:#{port}/_bulk").to_return(status: 200, headers: elastic_product_headers)
       end
 
       it 'sends bulk request without error' do
-        response = subject.bulk(payload)
-        expect(response['errors']).to eq(false)
+        result = subject.bulk(payload)
+        expect(result.status).to eq(200)
       end
     end
 
-    context 'when first try has a transport error and second try succeeds' do
-      let(:success_body) { { errors: false, items: [] }.to_json }
+    context 'when retrying bulk requests' do
+      let(:bulk_url) { "#{host}:#{port}/_bulk" }
 
-      before do
-        stub_request(:post, "#{host}:#{port}/_bulk")
-          .to_return({ status: 503, body: 'Service Unavailable' }, # Status configured in DEFAULT_RERTY_ON_STATUS
-                     { status: 200, body: success_body, headers: elastic_product_headers })
+      let(:error_response) do
+        { status: 500, body: '{"error":"boom"}', headers: { 'Content-Type' => 'application/json' } }
+      end
+      let(:success_response) do
+        { status: 200, headers: elastic_product_headers }
+      end
+      context 'when there is an error in the first attempt' do
+        let(:config) do
+          {
+            elasticsearch: {
+              host:, port:, retry_on_failure: 2, delay_on_retry: 3
+            }
+          }.deep_symbolize_keys
+        end
+
+        before :each do
+          stub_request(:post, bulk_url)
+            .to_return(error_response) # Attempt 1 fails
+            .then.to_return(success_response) # Attempt 2 succeeds
+        end
+
+        it 'succeeds on the retry and logs the attempt' do
+          expect(subject).to receive(:sleep).with(3**1).once
+          result = subject.bulk(payload)
+          expect(result.status).to eq(200)
+          expect(system_logger).to have_received(:warn).with(
+            %r{Bulk index attempt 1/2 failed: '\[500\] {"error":"boom"}'. Retrying in 3\.0s..}
+          )
+          expect(system_logger).not_to have_received(:warn).with(%r{Bulk index attempt 2/2 failed})
+          expect(system_logger).not_to have_received(:warn).with(/Bulk index failed after/)
+        end
       end
 
-      it 'succeeds on the retry and logs transport warning' do
-        response = subject.bulk(payload)
-        expect(response['errors']).to eq(false)
+      context 'when there is an error in every attempt' do
+        let(:config) do
+          {
+            elasticsearch: {
+              host:, port:, retry_on_failure: 2, delay_on_retry: 1
+            }
+          }.deep_symbolize_keys
+        end
 
-        expect(a_request(:post, "#{host}:#{port}/_bulk")).to have_been_made.times(2)
+        before :each do
+          stub_request(:post, bulk_url).to_return(error_response)
+        end
 
-        # Check for the transport layer's retry warning log
-        expect(system_logger).to have_received(:warn).with(
-          /Attempt \d+ failed with Elasticsearch::Transport::Transport::Errors::ServiceUnavailable.+Retrying/
-        )
-      end
-    end
+        it 'raises an error after exhausting retries and logs attempts' do
+          expect(subject).to receive(:sleep).with(1**1).once
+          expect(subject).to receive(:sleep).with(1**2).once
 
-    context 'when the bulk response contains errors' do
-      let(:error_response_body) do
-        {
-          errors: true,
-          items: [
-            { index: { _index: index_name, _id: '123', status: 400,
-                       error: { type: 'mapper_parsing_exception', reason: 'failed to parse' } } }
-          ]
-        }.to_json
-      end
-      let(:first_error_item) { JSON.parse(error_response_body)['items'].first }
+          expect do
+            subject.bulk(payload)
+          end.to raise_error(Elastic::Transport::Transport::ServerError, /\[500\] {"error":"boom"}/)
 
-      before do
-        stub_request(:post, "#{host}:#{port}/_bulk")
-          .to_return(status: 200, body: error_response_body, headers: elastic_product_headers)
-      end
+          expect(system_logger).to have_received(:warn).with(
+            %r{Bulk index attempt 1/2 failed: '\[500\] {"error":"boom"}'. Retrying in 1\.0s..}
+          )
+          expect(system_logger).to have_received(:warn).with(
+            %r{Bulk index attempt 2/2 failed: '\[500\] {"error":"boom"}'. Retrying in 1\.0s..}
+          )
 
-      it 'raises IndexingFailedError and logs response warning' do
-        expect { subject.bulk(payload) }
-          .to raise_error(ES::Client::IndexingFailedError,
-                          /Failed to index documents into Elasticsearch with an error '#{first_error_item.to_json}'/)
+          expect(system_logger).to have_received(:error).with(
+            /Bulk index failed after 3 attempts: '\[500\] {"error":"boom"}'/
+          )
 
-        # Item-level errors are not retried automatically
-        expect(a_request(:post, "#{host}:#{port}/_bulk")).to have_been_made.times(1)
+          # Ensure file writing logic is NOT called
+          expect(File).not_to receive(:open)
+        end
 
-        expect(system_logger).to have_received(:warn).with(/Errors found in bulk response. Full response: .+/)
+        context 'with retries disabled' do
+          let(:config) do
+            {
+              elasticsearch: {
+                host:, port:, retry_on_failure: false
+              }
+            }.deep_symbolize_keys
+          end
 
-        # Ensure payload is NOT stored in this case
-        expect(File).not_to have_received(:open)
-      end
-    end
+          it 'fails immediately without retrying or logging retries' do
+            expect(subject).not_to receive(:sleep)
 
-    context 'when a transport error occurs on every attempt' do
-      let(:fixed_time) { Time.new(2024, 1, 1, 0, 0, 0) }
-      let(:file_double) { instance_double('File', puts: nil, close: nil) }
-      let(:expected_failure_path) { "#{ES::Client::FAILED_BULKS_DIR}/crawl-id/#{fixed_time.strftime('%Y%m%d%H%M%S')}" }
+            expect do
+              subject.bulk(payload)
+            end.to raise_error(Elastic::Transport::Transport::ServerError, /\[500\] {"error":"boom"}/)
+            expect(system_logger).not_to have_received(:warn).with(/Bulk index attempt/)
+            expect(system_logger).not_to have_received(:warn).with(/Retrying in/)
 
-      before do
-        config[:elasticsearch][:retry_on_failure] = 1
-
-        subject
-
-        allow(File).to receive(:open).with(expected_failure_path, 'w').and_yield(file_double)
-        allow(FileUtils).to receive(:mkdir_p)
-        allow(Time).to receive(:now).and_return(fixed_time)
-
-        stub_request(:post, "#{host}:#{port}/_bulk").to_return(status: 503, body: 'Consistent failure')
-      end
-
-      it 'raises the transport error, logs details, and stores the payload' do
-        expect { subject.bulk(payload) }.to raise_error(Elasticsearch::Transport::Transport::Errors::ServiceUnavailable)
-
-        expect(a_request(:post, "#{host}:#{port}/_bulk")).to have_been_made.times(2)
-
-        expect(system_logger).to have_received(:error).with(
-          "Bulk index failed: '503 Service Unavailable'. Storing payload."
-        )
-
-        expect(system_logger).to have_received(:warn).with("Saved failed bulk payload to #{expected_failure_path}")
-
-        # Verify directory creation and file writing
-        expect(FileUtils).to have_received(:mkdir_p).with("#{ES::Client::FAILED_BULKS_DIR}/crawl-id")
-        expect(File).to have_received(:open).with(expected_failure_path, 'w')
-        expect(file_double).to have_received(:puts).with(payload[:body].first).ordered
-        expect(file_double).to have_received(:puts).with(payload[:body].second).ordered
-      end
-    end
-
-    context 'when retries are disabled' do
-      let(:file_double) { instance_double('File', puts: nil, close: nil) }
-      let(:fixed_time) { Time.new(2024, 1, 1, 0, 0, 0) }
-      let(:expected_failure_path) { "#{ES::Client::FAILED_BULKS_DIR}/crawl-id/#{fixed_time.strftime('%Y%m%d%H%M%S')}" }
-
-      before do
-        config[:elasticsearch][:retry_on_failure] = false
-
-        subject
-
-        allow(File).to receive(:open).with(expected_failure_path, 'w').and_yield(file_double)
-        allow(FileUtils).to receive(:mkdir_p)
-        allow(Time).to receive(:now).and_return(fixed_time)
-        stub_request(:post, "#{host}:#{port}/_bulk").to_return(status: 500, body: 'Server Error')
-      end
-
-      it 'fails immediately, logs details, and stores the payload' do
-        expect do
-          subject.bulk(payload)
-        end.to raise_error(Elasticsearch::Transport::Transport::Errors::InternalServerError)
-
-        expect(a_request(:post, "#{host}:#{port}/_bulk")).to have_been_made.times(1)
-
-        expect(system_logger).to have_received(:error).with(
-          "Bulk index failed: '500 Internal Server Error'. Storing payload."
-        )
-        expect(system_logger).to have_received(:warn).with("Saved failed bulk payload to #{expected_failure_path}")
-
-        expect(FileUtils).to have_received(:mkdir_p).with("#{ES::Client::FAILED_BULKS_DIR}/crawl-id")
-        expect(File).to have_received(:open).with(expected_failure_path, 'w')
+            expect(system_logger).to have_received(:error).with(
+              /Bulk index failed: '\[500\] {"error":"boom"}'. Retries disabled./
+            )
+          end
+        end
       end
     end
   end
@@ -436,161 +410,150 @@ RSpec.describe(ES::Client) do
       end
     end
 
-    context 'when the search call raises an error (rescue block behavior)' do
-      before do
-        call_count = 0
-        allow(subject).to receive(:search) do |_args|
-          call_count += 1
-          # Pass through to original search implementation if needed, or mock responses
-          case call_count
-          when 1 then raise StandardError, 'search oops' # First call fails
-          when 2 then full_response # Second call succeeds
-          else
-            empty_response # Subsequent calls are empty
-          end
+    context 'when retrying paginated search requests' do
+      let(:search_url) { %r{#{host}:#{port}/#{index_name}/_search} }
+
+      let(:error_response) do
+        { status: 503, body: '{"error":"unavailable"}', headers: { 'Content-Type' => 'application/json' } }
+      end
+      # Add elastic_product_headers to successful responses
+      let(:success_response_page1) do
+        { status: 200, body: full_response.to_json,
+          headers: elastic_product_headers.merge('Content-Type' => 'application/json') }
+      end
+      let(:success_response_page2) do
+        { status: 200, body: empty_response.to_json,
+          headers: elastic_product_headers.merge('Content-Type' => 'application/json') }
+      end
+
+      context 'when the first search request fails once' do
+        let(:config) do
+          {
+            elasticsearch: {
+              host:, port:, retry_on_failure: 3, delay_on_retry: 2
+            }
+          }.deep_symbolize_keys
         end
-      end
 
-      it 'logs the error and continues pagination' do
-        expect(subject).to receive(:search).exactly(3).times # Original call, successful retry, empty call
+        before do
+          stub_request(:post, search_url)
+            .to_return(error_response) # Attempt 1 fails
+            .then.to_return(success_response_page1) # Attempt 2 succeeds (gets page 1)
+            .then.to_return(success_response_page2) # Next call gets page 2 (empty)
+        end
 
-        results = subject.paginated_search(index_name, query)
+        it 'retries, logs the attempt, and returns results' do
+          expect(subject).to receive(:sleep).with(2**1).once
 
-        # Verify the error was logged
-        expect(system_logger).to have_received(:error).with("Search failed: 'search oops'.")
-        # Verify the final results are correct despite the initial error
-        expect(results).to match_array([hit1, hit2])
-      end
-    end
+          results = subject.paginated_search(index_name, query)
 
-    context 'when the search transport layer fails temporarily (transport retries)' do
-      let(:search_url) { "#{host}:#{port}/#{index_name}/_search" }
-      let(:success_body) { full_response.to_json }
-      let(:empty_body) { empty_response.to_json }
+          expect(results).to match_array([hit1, hit2])
 
-      before do
-        # Fail first time (status triggers retry), succeed second and third time
-        stub_request(:post, search_url)
-          .to_return(
-            { status: 503, body: 'Service Unavailable' }, # Retryable error
-            { status: 200, body: success_body, headers: elastic_product_headers },
-            { status: 200, body: empty_body, headers: elastic_product_headers }
+          expect(system_logger).to have_received(:warn).with(
+            %r{Search attempt 1/3 failed: '\[503\] {"error":"unavailable"}'. Retrying in 2\.0s..}
           )
-        describe '#delete_by_query' do
-          let(:delete_query_body) { { query: { match_all: {} } } }
-          let(:delete_url) { "#{host}:#{port}/#{index_name}/_delete_by_query?refresh=true" } # Default refresh is true
-
-          context 'when successful' do
-            let(:success_response) { { 'took' => 10, 'deleted' => 5, 'failures' => [] } }
-
-            before do
-              # Stub the underlying client's method directly
-              allow(subject).to receive(:delete_by_query).and_call_original # Ensure we call our wrapper
-              allow(subject.transport).to receive(:perform_request)
-                .with('POST', "#{index_name}/_delete_by_query", { refresh: true }, delete_query_body, {})
-                .and_return(instance_double(Elasticsearch::Transport::Transport::Response, body: success_response))
-            end
-
-            it 'calls the underlying client and returns the response' do
-              result = subject.delete_by_query(index: index_name, body: delete_query_body)
-              expect(result.body).to eq(success_response) # Check the response body from the stub
-              expect(system_logger).not_to have_received(:error)
-            end
-          end
-
-          context 'when the underlying client raises an error (rescue block behavior)' do
-            before do
-              allow(subject).to receive(:delete_by_query).and_call_original
-              allow(subject.transport).to receive(:perform_request)
-                .and_raise(StandardError, 'delete oops')
-            end
-
-            it 'logs the error and re-raises the exception' do
-              expect { subject.delete_by_query(index: index_name, body: delete_query_body) }
-                .to raise_error(StandardError, 'delete oops')
-              expect(system_logger).to have_received(:error).with("Delete by query failed: 'delete oops'.")
-            end
-          end
-
-          context 'when the transport layer fails temporarily (transport retries)' do
-            let(:success_response) { { 'took' => 10, 'deleted' => 5, 'failures' => [] } }
-
-            before do
-              stub_request(:post, delete_url).with(body: delete_query_body.to_json)
-                                             .to_return(
-                                               { status: 503, body: 'Service Unavailable' }, # Retryable error
-                                               { status: 200, body: success_response.to_json,
-                                                 headers: elastic_product_headers }
-                                             )
-            end
-
-            it 'retries the request and returns success' do
-              result = subject.delete_by_query(index: index_name, body: delete_query_body)
-              expect(result.body).to eq(success_response) # Check the response body from the stub
-              expect(a_request(:post, delete_url)).to have_been_made.times(2) # Original + 1 retry
-              expect(system_logger).to have_received(:warn).with(
-                /Attempt \d+ failed with Elasticsearch::Transport::Transport::Errors::ServiceUnavailable.+Retrying/
-              )
-              expect(system_logger).not_to have_received(:error)
-            end
-          end
-
-          context 'when the transport layer fails definitively (transport retries exhausted)' do
-            before do
-              config[:elasticsearch][:retry_on_failure] = 1 # Configure 1 retry (2 attempts)
-              subject # Re-initialize subject with new config
-              stub_request(:post, delete_url).with(body: delete_query_body.to_json)
-                                             .to_return(status: 503, body: 'Consistent failure')
-            end
-
-            it 'logs the error and raises the transport error' do
-              expect { subject.delete_by_query(index: index_name, body: delete_query_body) }
-                .to raise_error(Elasticsearch::Transport::Transport::Errors::ServiceUnavailable)
-
-              expect(a_request(:post, delete_url)).to have_been_made.times(2) # Original + 1 retry
-              # Verify the rescue block logged the final error before re-raising
-              expect(system_logger).to have_received(:error).with("Delete by query failed: '503 Service Unavailable'.")
-            end
-          end
+          expect(system_logger).not_to have_received(:warn).with(%r{Search attempt 2/3 failed})
+          expect(system_logger).not_to have_received(:warn).with(/Search failed after/)
         end
       end
 
-      it 'retries the request and returns results' do
-        results = subject.paginated_search(index_name, query)
+      context 'when all search requests fail' do
+        let(:config) do
+          {
+            elasticsearch: {
+              host:, port:, retry_on_failure: 1, delay_on_retry: 1
+            }
+          }.deep_symbolize_keys
+        end
 
-        # Verify the request was made three times (original + 1 retry for first page, 1 for second page)
-        expect(a_request(:post, search_url)).to have_been_made.times(3)
-        # Check transport layer logged a warning (adjust regex if needed for library version)
-        expect(system_logger).to have_received(:warn).with(
-          /Attempt \d+ failed with Elasticsearch::Transport::Transport::Errors::ServiceUnavailable.+Retrying/
-        )
-        # Verify final results
-        expect(results).to match_array([hit1, hit2])
+        before do
+          stub_request(:post, search_url).to_return(error_response)
+        end
+
+        it 'raises an error after exhausting retries and logs attempts' do
+          expect(subject).to receive(:sleep).with(1**1).once
+
+          expect do
+            subject.paginated_search(index_name, query)
+          end.to raise_error(StandardError, /\[503\] {"error":"unavailable"}/)
+          expect(system_logger).to have_received(:warn).with(
+            %r{Search attempt 1/1 failed: '\[503\] {"error":"unavailable"}'. Retrying in 1\.0s..}
+          )
+
+          expect(system_logger).to have_received(:error).with(
+            /Search failed after 2 attempts: '\[503\] {"error":"unavailable"}'/
+          )
+        end
       end
     end
+  end
 
-    context 'when the search transport layer fails definitively (transport retries exhausted)' do
-      let(:search_url) { "#{host}:#{port}/#{index_name}/_search" }
+  describe '#delete_by_query' do
+    let(:delete_url) { %r{#{host}:#{port}/#{index_name}/_delete_by_query} }
+    let(:query) { { query: { match_all: {} } } }
 
-      before do
-        # Configure client for only 1 retry (2 attempts total)
-        config[:elasticsearch][:retry_on_failure] = 1
-        # Re-initialize subject with updated config
-        subject
-        # Stub request to consistently fail
-        stub_request(:post, search_url).to_return(status: 503, body: 'Consistent failure')
+    let(:error_response) do
+      { status: 500, body: '{"error":"delete_failed"}', headers: { 'Content-Type' => 'application/json' } }
+    end
+
+    let(:success_response) do
+      { status: 200, body: '{"deleted": 10}',
+        headers: elastic_product_headers.merge('Content-Type' => 'application/json') }
+    end
+
+    context 'when retrying delete_by_query requests' do
+      let(:config) do
+        {
+          elasticsearch: {
+            host:, port:, retry_on_failure: 2, delay_on_retry: 1
+          }
+        }.deep_symbolize_keys
       end
 
-      it 'logs the error and raises the transport error' do
-        # Expect the final transport error after retries
-        expect { subject.paginated_search(index_name, query) }
-          .to raise_error(Elasticsearch::Transport::Transport::Errors::ServiceUnavailable)
+      context 'when the first attempt fails' do
+        before do
+          stub_request(:post, delete_url)
+            .to_return(error_response) # Attempt 1 fails
+            .then.to_return(success_response) # Attempt 2 succeeds
+        end
 
-        # Verify the request was made twice (original + 1 retry)
-        expect(a_request(:post, search_url)).to have_been_made.times(2)
+        it 'succeeds on the retry and logs the attempt' do
+          expect(subject).to receive(:sleep).with(1**1).once
 
-        # Verify the rescue block logged the final error before re-raising
-        expect(system_logger).to have_received(:error).with("Search failed: '503 Service Unavailable'.")
+          expect { subject.delete_by_query(index: index_name, body: query) }.not_to raise_error
+
+          expect(system_logger).to have_received(:warn).with(
+            %r{Delete by query attempt 1/2 failed: '\[500\] {"error":"delete_failed"}'. Retrying in 1\.0s..}
+          )
+          expect(system_logger).not_to have_received(:debug).with(%r{Delete by query attempt 2/2 failed})
+          expect(system_logger).not_to have_received(:debug).with(/Delete by query failed after/)
+        end
+      end
+
+      context 'when all attempts fail' do
+        before do
+          stub_request(:post, delete_url).to_return(error_response) # Always fail
+        end
+
+        it 'raises an error after exhausting retries and logs attempts' do
+          expect(subject).to receive(:sleep).with(1**1).once
+          expect(subject).to receive(:sleep).with(1**2).once
+
+          expect do
+            subject.delete_by_query(index: index_name, body: query)
+          end.to raise_error(Elastic::Transport::Transport::ServerError, /\[500\] {"error":"delete_failed"}/)
+
+          expect(system_logger).to have_received(:warn).with(
+            %r{Delete by query attempt 1/2 failed: '\[500\] {"error":"delete_failed"}'. Retrying in 1\.0s..}
+          )
+          expect(system_logger).to have_received(:warn).with(
+            %r{Delete by query attempt 2/2 failed: '\[500\] {"error":"delete_failed"}'. Retrying in 1\.0s..}
+          )
+
+          expect(system_logger).to have_received(:error).with(
+            /Delete by query failed after 3 attempts: '\[500\] {"error":"delete_failed"}'/
+          )
+        end
       end
     end
   end

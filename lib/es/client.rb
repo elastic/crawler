@@ -8,15 +8,15 @@
 
 require 'fileutils'
 require 'elasticsearch'
-
+require 'active_support/core_ext/integer/time'
 module ES
   class Client < ::Elasticsearch::Client
     USER_AGENT = 'elastic-web-crawler-'
 
     DEFAULT_RETRY_ON_FAILURE = 3 # retry count
-    DEFAULT_DELAY_ON_RETRY = 2000 # in milliseconds
+    DEFAULT_DELAY_ON_RETRY = 2 # in seconds
+
     DEFAULT_REQUEST_TIMEOUT = 10 # in seconds
-    DEFAULT_RERTY_ON_STATUS = [429, 502, 503, 504].freeze # HTTP Status Codes
 
     FAILED_BULKS_DIR = 'output/failed_payloads'
 
@@ -39,6 +39,7 @@ module ES
     def connection_config(es_config, crawler_version)
       config = {
         request_timeout: es_config.fetch(:request_timeout, DEFAULT_REQUEST_TIMEOUT),
+        reload_on_failure: es_config.fetch(:reload_on_failure, false),
         transport_options: {
           headers: {
             'user-agent': "#{USER_AGENT}#{crawler_version}",
@@ -46,7 +47,8 @@ module ES
           }
         }
       }
-      config.merge!(configure_retries(es_config))
+      @max_retries, @retry_delay = get_retry_configuration(es_config)
+
       config.merge!(configure_auth(es_config))
       config.deep_merge!(configure_ssl(es_config))
       config.merge!(configure_compression(es_config))
@@ -55,9 +57,10 @@ module ES
     end
 
     def bulk(payload = {})
-      raise_if_necessary(super)
+      execute_with_retry(description: 'Bulk index') do
+        raise_if_necessary(super(payload))
+      end
     rescue StandardError => e
-      @system_logger.error("Bulk index failed: '#{e.message}'. Writing payload to file...")
       store_failed_payload(payload)
       raise e
     end
@@ -69,32 +72,26 @@ module ES
       results = []
 
       loop do
-        response = search(index: [index_name], body: query)
+        response = execute_with_retry(description: 'Search') do
+          search(index: [index_name], body: query)
+        end
         hits = response['hits']['hits']
-        # If hits is empty, no need to format results or continue pagination
         return results if hits.empty?
 
         results.push(*hits)
-        # Set `search_after` param for next paginated search call using the last hit's `sort` value
         query['search_after'] = hits.last['sort']
-      rescue StandardError => e
-        @system_logger.error("Search failed: '#{e.message}'.")
-        raise e
       end
     end
 
     def delete_by_query(index:, body:, refresh: true)
-      loop do
-        return super(index:, body:, refresh:)
-      rescue StandardError => e
-        @system_logger.error("Delete by query failed: '#{e.message}'.")
-        raise e
+      execute_with_retry(description: 'Delete by query') do
+        super(index:, body:, refresh:)
       end
     end
 
     private
 
-    def configure_retries(es_config)
+    def get_retry_configuration(es_config)
       retry_count = es_config.fetch(:retry_on_failure, DEFAULT_RETRY_ON_FAILURE)
 
       # Handle alternative retry count values
@@ -104,15 +101,15 @@ module ES
         retry_count = DEFAULT_RETRY_ON_FAILURE
       end
 
-      retry_configuration = {
-        retry_on_failure: retry_count,
-        retry_on_status: es_config.fetch(:retry_on_status, DEFAULT_RERTY_ON_STATUS),
-        delay_on_retry: es_config.fetch(:delay_on_retry, DEFAULT_DELAY_ON_RETRY),
-        reload_on_failure: es_config.fetch(:reload_on_failure, false)
-      }
-      @system_logger.debug("Elasticsearch client retry configuration: #{retry_configuration}")
+      delay_on_retry = es_config.fetch(:delay_on_retry, DEFAULT_DELAY_ON_RETRY)
 
-      retry_configuration
+      delay_on_retry = DEFAULT_DELAY_ON_RETRY unless delay_on_retry.is_a?(Integer) && delay_on_retry.positive?
+
+      @system_logger.debug(
+        "Elasticsearch client retry configuration: #{retry_count} retries with #{delay_on_retry}s delay"
+      )
+
+      [retry_count, delay_on_retry]
     end
 
     def configure_auth(es_config)
@@ -203,6 +200,34 @@ module ES
         end
       end
       @system_logger.warn("Saved failed bulk payload to #{full_path}")
+    end
+
+    def execute_with_retry(description:)
+      retries = 0
+      begin
+        yield
+      rescue StandardError => e
+        retries += 1
+        if retries <= @max_retries
+          wait_time = @retry_delay**retries
+          @system_logger.warn(
+            "#{description} attempt #{retries}/#{@max_retries} failed: '#{e.message}'. Retrying in #{wait_time.to_f}s.."
+          )
+          sleep(wait_time)
+          retry
+        else
+          log_final_failure(description:, retries:, error: e)
+          raise e
+        end
+      end
+    end
+
+    def log_final_failure(description:, retries:, error:)
+      if @max_retries.nonzero?
+        @system_logger.error("#{description} failed after #{retries} attempts: '#{error.message}'.")
+      else
+        @system_logger.error("#{description} failed: '#{error.message}'. Retries disabled.")
+      end
     end
   end
 end
