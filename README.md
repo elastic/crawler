@@ -1,6 +1,6 @@
 # Elastic Open Web Crawler
 
-Open Crawler enables users to easily ingest web content into Elasticsearch.
+Elastic Open Crawler is a lightweight, open code web crawler designed for discovering, extracting, and indexing web content directly into Elasticsearch. This CLI-driven tool streamlines web content ingestion into Elasticsearch, enabling easy searchability through on-demand or scheduled crawls defined by configuration files. 
 
 This repository contains code for the Elastic Open Web Crawler.
 Docker images are available for the crawler at [the Elastic Docker registry](https://www.docker.elastic.co/r/integrations/crawler).
