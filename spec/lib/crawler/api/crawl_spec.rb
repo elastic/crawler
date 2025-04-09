@@ -193,6 +193,5 @@ RSpec.describe(Crawler::API::Crawl) do
         hash_including('event.action' => 'crawl-end')
       )
     end
-
   end
 end
