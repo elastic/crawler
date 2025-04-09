@@ -39,7 +39,7 @@ RSpec.describe(Crawler::API::Config) do
       expect(config.domain_allowlist.map(&:to_s)).to match_array(expected_allowlist)
       expect(config.seed_urls.map(&:to_s).to_a).to match_array(expected_seed_urls)
       expect(config.output_sink).to eq(:console)
-      expect(config.output_dir).to be_nil
+      expect(config.output_dir).to eq('./crawled_docs')
     end
 
     it 'can define a crawl with file output' do
@@ -63,7 +63,7 @@ RSpec.describe(Crawler::API::Config) do
       expect(config.domain_allowlist.map(&:to_s)).to match_array(expected_allowlist)
       expect(config.seed_urls.map(&:to_s).to_a).to match_array(expected_seed_urls)
       expect(config.output_sink).to eq(:elasticsearch)
-      expect(config.output_dir).to be_nil
+      expect(config.output_dir).to eq('./crawled_docs')
     end
 
     context 'when a domain is missing a main URL' do

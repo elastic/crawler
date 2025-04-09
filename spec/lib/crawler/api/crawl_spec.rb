@@ -53,7 +53,6 @@ RSpec.describe(Crawler::API::Crawl) do
     allow(es_client).to receive(:info).and_return(build_info)
   end
 
-  #-------------------------------------------------------------------------------------------------
   it 'has a config' do
     expect(subject.config.seed_urls.map(&:to_s).to_a).to eq(["#{url}/"])
     expect(subject.config.output_sink).to eq(:elasticsearch)
@@ -71,7 +70,6 @@ RSpec.describe(Crawler::API::Crawl) do
     )
   end
 
-  #-------------------------------------------------------------------------------------------------
   context 'after a successful crawl' do
     it 'should release URL queue resources' do
       expect(subject.crawl_queue).to receive(:delete)
@@ -95,7 +93,6 @@ RSpec.describe(Crawler::API::Crawl) do
     end
   end
 
-  #-------------------------------------------------------------------------------------------------
   context 'if the crawl is shut down prematurely' do
     let(:allow_resume) { false }
     before do
@@ -144,7 +141,6 @@ RSpec.describe(Crawler::API::Crawl) do
     end
   end
 
-  #-------------------------------------------------------------------------------------------------
   context 'when resuming a crawl' do
     let(:url) { Crawler::Data::URL.parse('http://example.com') }
     let(:crawl_task) do
@@ -164,7 +160,6 @@ RSpec.describe(Crawler::API::Crawl) do
     end
   end
 
-  #-------------------------------------------------------------------------------------------------
   describe '#status' do
     it 'should return status info for the crawl' do
       expect(subject.status).to include(
@@ -180,5 +175,24 @@ RSpec.describe(Crawler::API::Crawl) do
         :status_codes
       )
     end
+  end
+
+  context 'when starting a url test crawl' do
+    let(:endpoint) { 'http://example.com/website' }
+    let(:crawl_task) do
+      Crawler::Data::CrawlTask.new(url:, depth: 1, type: :content)
+    end
+
+    it 'starts without error with a File output sink' do
+      expect { subject.start_url_test!(endpoint) }.to_not raise_error
+
+      expect(subject.sink).to be_a(Crawler::OutputSink::File)
+
+      expect(subject.config.event_logger.mock_events).to include(
+        hash_including('event.action' => 'crawl-start'),
+        hash_including('event.action' => 'crawl-end')
+      )
+    end
+
   end
 end

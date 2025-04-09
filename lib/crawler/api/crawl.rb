@@ -113,10 +113,15 @@ module Crawler
       end
 
       # Starts a crawl of a single URL, specifically for the UrlTest CLI command
-      def start_url_test!(endpoint)
+      def start_url_test!(endpoint) # rubocop:disable Metrics/AbcSize
+        events.crawl_start(
+          url_queue_items: crawl_queue.length,
+          seen_urls: seen_urls.count
+        )
         # Use the File sink regardless of what is set in the config
         @sink = Crawler::OutputSink::File.new(config)
         coordinator.run_urltest_crawl!(endpoint)
+        record_overall_outcome(coordinator.crawl_results)
         print_url_test_results(coordinator.url_test_results)
       rescue StandardError => e
         log_exception(e, 'Unexpected error while running the crawl')
