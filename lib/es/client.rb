@@ -124,7 +124,7 @@ module ES
 
     private
 
-    private def configure_scheme_host_port(es_config)
+    def configure_scheme_host_port(es_config)
       {
         scheme: es_config[:scheme],
         host: es_config[:host],
@@ -132,7 +132,7 @@ module ES
       }.compact
     end
 
-    private def configure_auth(es_config)
+    def configure_auth(es_config)
       if es_config[:api_key]
         @system_logger.info('ES connections will be authorized with configured API key')
         { api_key: es_config[:api_key] }
@@ -142,48 +142,36 @@ module ES
       else
         @system_logger.info('ES connections will use no authentication')
         {}
-      end       
+      end
     end
 
     def configure_ssl(es_config)
       # See: https://www.rubydoc.info/gems/faraday/Faraday/SSLOptions
-
       ssl_config = {
-        transport_options: {
-          ssl: {}
-        }
-      }
-
-      if es_config[:ca_fingerprint]
-        @system_logger.info('ES connections will only proceed if the remote server presents a certificate that matches ca_fingerprint')
-        ssl_config[:ca_fingerprint] = es_config[:ca_fingerprint]
-      end
+        ca_fingerprint: es_config[:ca_fingerprint],
+        transport_options: {}
+      }.compact
 
       if es_config[:ssl_verify] == false
-
-        if es_config[:ca_path] || es_config[:verify_hostname]
-          @system_logger.warn("SSL verification is disabled, but some SSL verification options are configured. These options will be ignored.")
+        if es_config[:ca_path] || es_config[:ca_file] || es_config[:verify_hostname]
+          @system_logger.warn(
+            'SSL verification is disabled, but SSL verification options are configured. These options will be ignored.'
+          )
         end
 
-        @system_logger.info('ES connections will use SSL without verification')
         ssl_config[:transport_options][:ssl] = { verify: false }
-        
-        return ssl_config
+      else
+        # SSL Verification is enabled (or default)
+        ssl_config[:transport_options][:ssl] = {
+          ca_file: es_config[:ca_file],
+          ca_path: es_config[:ca_path],
+          verify: es_config[:ssl_verify]
+        }.compact
       end
 
-      # If SSL Verification is not disabled, it is enabled, and we need to process other SSL options
+      @system_logger.debug("ES connection SSL config: #{ssl_config}")
 
-      if es_config[:ca_file]
-        @system_logger.info('ES connections that use SSL will accept certificate authorities from ca_file')
-        ssl_config[:transport_options][:ssl][:ca_file] = es_config[:ca_file]
-      end
-
-      if es_config[:ca_path]
-        @system_logger.info('ES connections that use SSL will accept certificate authorities provided in the ca_path')
-        ssl_config[:transport_options][:ssl][:ca_path] = es_config[:ca_path]
-      end
-
-      return ssl_config
+      ssl_config
     end
 
     def configure_compression(es_config)

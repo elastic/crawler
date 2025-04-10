@@ -40,7 +40,7 @@ RSpec.describe(ES::Client) do
   end
 
   describe '#connection_config' do
-    context "when various combinations of scheme, host and port are configured" do
+    context 'when various combinations of scheme, host and port are configured' do
       it 'configures Elasticsearch client with scheme, host and port' do
         new_config = {
           scheme: 'https',
@@ -63,7 +63,6 @@ RSpec.describe(ES::Client) do
 
         expect(result[:scheme]).to eq('https')
         expect(result[:host]).to eq('localhost')
-
       end
 
       it 'configures Elasticsearch client with host and port' do
@@ -87,7 +86,6 @@ RSpec.describe(ES::Client) do
     end
 
     context 'when ssl verification is not fully enabled' do
-
       it 'configures Elasticsearch client with ssl verification disabled' do
         config[:elasticsearch][:ssl_verify] = false
 
@@ -109,7 +107,7 @@ RSpec.describe(ES::Client) do
         result = subject.connection_config(config[:elasticsearch], '0.0.0-foo')
 
         expect(result[:transport_options][:ssl][:ca_file]).to eq(ca_file)
-      end 
+      end
     end
 
     context 'when ca_path is configured' do
@@ -121,9 +119,9 @@ RSpec.describe(ES::Client) do
         result = subject.connection_config(config[:elasticsearch], '0.0.0-foo')
 
         expect(result[:transport_options][:ssl][:ca_path]).to eq(ca_path)
-      end 
+      end
     end
-    
+
     context 'when ca_fingerprint is configured' do
       let(:ca_fingerprint) { '64F2593F...' }
 
@@ -136,7 +134,7 @@ RSpec.describe(ES::Client) do
 
         # Also ensure that SSL Verification has not been implicitly disabled
         expect(result[:transport_options][:ssl][:verify]).to be_nil
-      end 
+      end
     end
 
     context 'when API key is not present' do
@@ -160,7 +158,7 @@ RSpec.describe(ES::Client) do
 
         expect(result[:host]).to eq(host)
         expect(result[:api_key]).to eq('key')
-        
+
         expect(result[:username]).to be_nil
         expect(result[:password]).to be_nil
 
