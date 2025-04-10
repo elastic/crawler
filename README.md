@@ -8,12 +8,12 @@ Open Crawler enables users to easily ingest web content into Elasticsearch.
 Beta features are subject to change and are not covered by the support SLA of generally available (GA) features.
 Elastic plans to promote this feature to GA in a future release.
 
-### ES Version Compatibility
+### Compatibility Matrix
 
-| Elasticsearch | Open Crawler       |
-|---------------|--------------------|
-| `8.x`         | `v0.2.x`           |
-| `9.x`         | `v0.2.1` and above |
+| Elasticsearch | Open Crawler       | Operating System |
+|---------------|--------------------|------------------|
+| `8.x`         | `v0.2.x`           | Linux, OSX       |
+| `9.x`         | `v0.2.1` and above | Linux, OSX       |
 
 ### Quickstart
 
