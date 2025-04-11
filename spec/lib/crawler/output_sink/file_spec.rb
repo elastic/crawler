@@ -14,13 +14,14 @@ RSpec.describe(Crawler::OutputSink::File) do
       Crawler::OutputSink::File.new(config)
     end
 
-    it 'should require an output directory' do
+    it 'has a default output directory of ./crawled_docs' do
       config = Crawler::API::Config.new(
         domains:,
-        output_sink: 'file'
+        output_sink: './crawled_docs'
       )
 
-      expect { new_sink(config) }.to raise_error(/Missing or invalid output directory/)
+      expect { new_sink(config) }.to_not raise_error
+      expect(config.output_dir).to eq('./crawled_docs')
     end
 
     it 'should create the output directory' do
