@@ -181,6 +181,7 @@ module Crawler
         binary_content_extraction_mime_types: [],
 
         output_sink: :elasticsearch,
+        output_dir: './crawled_docs',
         url_queue: :memory_only,
         threads_per_crawl: 10,
 
