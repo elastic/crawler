@@ -92,7 +92,6 @@ module ES
 
     private
 
-    
     def configure_scheme_host_port(es_config)
       {
         scheme: es_config[:scheme],
@@ -100,7 +99,7 @@ module ES
         port: es_config[:port]
       }.compact
     end
-      
+
     def get_retry_configuration(es_config)
       retry_count = es_config.fetch(:retry_on_failure, DEFAULT_RETRY_ON_FAILURE)
 
