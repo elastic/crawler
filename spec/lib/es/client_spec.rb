@@ -8,6 +8,7 @@
 
 require 'elasticsearch'
 
+require 'elastic/transport/transport/errors'
 RSpec.describe(ES::Client) do
   let(:system_logger) { double }
   let(:host) { 'http://notreallyaserver' }
@@ -37,6 +38,77 @@ RSpec.describe(ES::Client) do
     allow(system_logger).to receive(:info)
     allow(system_logger).to receive(:debug)
     allow(system_logger).to receive(:warn)
+    allow(system_logger).to receive(:error)
+  end
+
+  describe 'retry configuration' do
+    context 'with default settings' do
+      let(:config) { { elasticsearch: { host:, port: } } }
+
+      it 'sets default retry values' do
+        expect(subject.instance_variable_get(:@max_retries)).to eq(3)
+        expect(subject.instance_variable_get(:@retry_delay)).to eq(2)
+        expect(system_logger).to have_received(:debug).with(
+          'Elasticsearch client retry configuration: 3 retries with 2s delay'
+        )
+      end
+    end
+
+    context 'with custom retry settings' do
+      let(:config) { { elasticsearch: { host:, port:, retry_on_failure: 5, delay_on_retry: 1 } } }
+
+      it 'sets custom retry values' do
+        expect(subject.instance_variable_get(:@max_retries)).to eq(5)
+        expect(subject.instance_variable_get(:@retry_delay)).to eq(1)
+        expect(system_logger).to have_received(:debug).with(
+          'Elasticsearch client retry configuration: 5 retries with 1s delay'
+        )
+      end
+    end
+
+    context 'with retry_on_failure: true' do
+      let(:config) { { elasticsearch: { host:, port:, retry_on_failure: true } } }
+
+      it 'sets default retry count' do
+        expect(subject.instance_variable_get(:@max_retries)).to eq(3)
+        expect(system_logger).to have_received(:debug).with(
+          'Elasticsearch client retry configuration: 3 retries with 2s delay'
+        )
+      end
+    end
+
+    context 'with retry_on_failure: false' do
+      let(:config) { { elasticsearch: { host:, port:, retry_on_failure: false } } }
+
+      it 'sets zero retries' do
+        expect(subject.instance_variable_get(:@max_retries)).to eq(0)
+        expect(system_logger).to have_received(:debug).with(
+          'Elasticsearch client retry configuration: 0 retries with 2s delay'
+        )
+      end
+    end
+
+    context 'with invalid retry_on_failure' do
+      let(:config) { { elasticsearch: { host:, port:, retry_on_failure: 'invalid' } } }
+
+      it 'sets default retry count' do
+        expect(subject.instance_variable_get(:@max_retries)).to eq(3)
+        expect(system_logger).to have_received(:debug).with(
+          'Elasticsearch client retry configuration: 3 retries with 2s delay'
+        )
+      end
+    end
+
+    context 'with invalid delay_on_retry' do
+      let(:config) { { elasticsearch: { host:, port:, delay_on_retry: 'invalid' } } }
+
+      it 'sets default retry delay' do
+        expect(subject.instance_variable_get(:@retry_delay)).to eq(2)
+        expect(system_logger).to have_received(:debug).with(
+          'Elasticsearch client retry configuration: 3 retries with 2s delay'
+        )
+      end
+    end
   end
 
   describe '#connection_config' do
@@ -218,7 +290,121 @@ RSpec.describe(ES::Client) do
     end
   end
 
+  describe '#execute_with_retry' do
+    let(:description) { 'Test Operation' }
+    let(:block_result) { { success: true } }
+    let(:block_spy) { spy('block') }
+    let(:error_class) { Class.new(StandardError) }
+
+    before do
+      allow(block_spy).to receive(:call).and_return(block_result)
+    end
+
+    def execute_retry(&block)
+      subject.send(:execute_with_retry, description:, &block)
+    end
+
+    context 'with default settings (3 retries, 2s delay)' do
+      let(:config) { { elasticsearch: { host:, port: } } } # Use default retry config
+
+      it 'succeeds on the first try without sleeping or logging warnings' do
+        expect(subject).not_to receive(:sleep)
+        expect(system_logger).not_to receive(:warn)
+        expect(system_logger).not_to receive(:error)
+
+        result = execute_retry { block_spy.call }
+
+        expect(result).to eq(block_result)
+        expect(block_spy).to have_received(:call).once
+      end
+    end
+
+    context 'when success requires retries' do
+      let(:config) { { elasticsearch: { host:, port:, retry_on_failure: 2, delay_on_retry: 1 } } }
+      let(:attempts) { instance_double(Proc) }
+      let(:attempt_counter) { double(count: 0) }
+
+      before do
+        allow(attempt_counter).to receive(:count).and_return(0, 1, 2) # Simulate 3 calls total
+        allow(block_spy).to receive(:call) do
+          count = attempt_counter.count
+          raise error_class, "Failed attempt #{count + 1}" if count < 2
+
+          block_result # Success on the 3rd attempt (index 2)
+        end
+      end
+
+      it 'succeeds after retrying, sleeps with exponential backoff, and logs warnings' do
+        expect(system_logger).to receive(:warn).with(
+          %r{#{description} attempt 1/3 failed: 'Failed attempt 1'. Retrying in 1.0s..}
+        ).ordered
+        expect(subject).to receive(:sleep).with(1.0**1).ordered
+        expect(system_logger).to receive(:warn).with(
+          %r{#{description} attempt 2/3 failed: 'Failed attempt 2'. Retrying in 1.0s..}
+        ).ordered
+        expect(subject).to receive(:sleep).with(1.0**2).ordered
+        expect(system_logger).not_to receive(:error)
+
+        result = execute_retry { block_spy.call }
+
+        expect(result).to eq(block_result)
+        expect(block_spy).to have_received(:call).exactly(3).times
+      end
+    end
+
+    context 'when all retries fail' do
+      let(:config) { { elasticsearch: { host:, port:, retry_on_failure: 2, delay_on_retry: 1 } } }
+
+      before do
+        allow(block_spy).to receive(:call).and_raise(error_class, 'Persistent failure')
+      end
+
+      it 'raises the original error after exhausting retries, sleeps, logs warnings and final error' do
+        expect(system_logger).to receive(:warn).with(
+          %r{#{description} attempt 1/3 failed: 'Persistent failure'. Retrying in 1.0s..}
+        ).ordered
+        expect(subject).to receive(:sleep).with(1.0**1).ordered
+        expect(system_logger).to receive(:warn).with(
+          %r{#{description} attempt 2/3 failed: 'Persistent failure'. Retrying in 1.0s..}
+        ).ordered
+        expect(subject).to receive(:sleep).with(1.0**2).ordered
+        expect(system_logger).to receive(:error).with(
+          /#{description} failed after 3 attempts: 'Persistent failure'/
+        ).ordered
+
+        expect do
+          execute_retry { block_spy.call }
+        end.to raise_error(error_class, 'Persistent failure')
+
+        expect(block_spy).to have_received(:call).exactly(3).times
+      end
+    end
+
+    context 'when retries are disabled' do
+      let(:config) { { elasticsearch: { host:, port:, retry_on_failure: false } } }
+
+      before do
+        allow(block_spy).to receive(:call).and_raise(error_class, 'Immediate failure')
+      end
+
+      it 'fails immediately, logs specific error, and does not sleep or log warnings' do
+        expect(subject).not_to receive(:sleep)
+        expect(system_logger).not_to receive(:warn)
+        expect(system_logger).to receive(:error).with(
+          /#{description} failed: 'Immediate failure'. Retries disabled./
+        )
+
+        expect do
+          execute_retry { block_spy.call }
+        end.to raise_error(error_class, 'Immediate failure')
+
+        expect(block_spy).to have_received(:call).once
+      end
+    end
+  end
+
   describe '#bulk' do
+    let(:config) { { elasticsearch: { host:, port:, retry_on_failure: 1, delay_on_retry: 1 } } }
     let(:payload) do
       {
         body: [
@@ -233,51 +419,30 @@ RSpec.describe(ES::Client) do
         stub_request(:post, "#{host}:#{port}/_bulk").to_return(status: 200, headers: elastic_product_headers)
       end
 
-      it 'sends bulk request without error' do
+      it 'sends bulk request' do
         result = subject.bulk(payload)
         expect(result.status).to eq(200)
       end
     end
 
-    context 'when there is an error in the first attempt' do
-      before :each do
-        stub_request(:post, "#{host}:#{port}/_bulk").to_return({ status: 404, exception: 'Intermittent failure' },
-                                                               { status: 200, headers: elastic_product_headers })
-      end
-
-      it 'succeeds on the retry' do
-        result = subject.bulk(payload)
-        expect(result.status).to eq(200)
-        expect(system_logger).to have_received(:info).with(
-          "Bulk index attempt 1 failed: 'Intermittent failure'. Retrying in 2 seconds..."
-        )
-      end
-    end
-
-    context 'when there is an error in every attempt' do
-      let(:fixed_time) { Time.new(2024, 1, 1, 0, 0, 0) }
+    context 'when the underlying client call fails' do
+      let(:error) { Elastic::Transport::Transport::ServerError.new('[500] {"error":"boom"}') }
       let(:file_double) { double('File', puts: nil, close: nil) }
 
-      before :each do
-        stub_const('ES::Client::MAX_RETRIES', 1)
-        allow(File).to receive(:open).and_yield(file_double)
-        allow(Time).to receive(:now).and_return(fixed_time)
-        stub_request(:post, "#{host}:#{port}/_bulk").to_return({ status: 404, exception: 'Consistent failure' })
+      before do
+        allow(subject.transport).to receive(:perform_request).and_return(
+          double(status: 200, body: '{"version":{"number":"8.13.0"}}', headers: elastic_product_headers)
+        )
+
+        allow(subject.transport).to receive(:perform_request).with('POST', '_bulk', any_args).and_raise(error)
+
+        allow(File).to receive(:open).with(%r{output/failed_payloads/crawl-id/\d{14}}, 'w').and_yield(file_double)
       end
 
-      it 'raises an error after exhausting retries' do
-        expect { subject.bulk(payload) }.to raise_error(StandardError)
+      it 'saves the payload after persistent errors' do
+        expect(subject).to receive(:execute_with_retry).with(description: 'Bulk index').and_call_original
 
-        expect(system_logger).to have_received(:info).with(
-          "Bulk index attempt 1 failed: 'Consistent failure'. Retrying in 2 seconds..."
-        )
-        expect(system_logger).to have_received(:warn).with(
-          "Bulk index failed after 2 attempts: 'Consistent failure'. Writing payload to file..."
-        )
-
-        expect(File).to have_received(:open).with(
-          "#{ES::Client::FAILED_BULKS_DIR}/crawl-id/#{fixed_time.strftime('%Y%m%d%H%M%S')}", 'w'
-        )
+        expect { subject.bulk(payload) }.to raise_error(error)
 
         expect(file_double).to have_received(:puts).with(payload[:body].first)
         expect(file_double).to have_received(:puts).with(payload[:body].second)
@@ -287,6 +452,7 @@ RSpec.describe(ES::Client) do
 
   describe '#paginated_search' do
     let(:size) { Crawler::OutputSink::Elasticsearch::SEARCH_PAGINATION_SIZE }
+    let(:config) { { elasticsearch: { host:, port:, retry_on_failure: 1, delay_on_retry: 1 } } }
     let(:query) do
       {
         _source: ['url'],
@@ -324,11 +490,7 @@ RSpec.describe(ES::Client) do
       }.deep_stringify_keys
     end
     let(:full_response) do
-      {
-        hits: {
-          hits: [hit1, hit2]
-        }
-      }.deep_stringify_keys
+      { hits: { hits: [hit1, hit2] } }.deep_stringify_keys
     end
 
     context 'when successful' do
@@ -376,39 +538,59 @@ RSpec.describe(ES::Client) do
       end
     end
 
-    context 'when one request fails' do
-      before do
-        call_count = 0
-        allow(subject).to receive(:search) do
-          call_count += 1
+    context 'when the underlying search call fails' do
+      let(:error) { Elastic::Transport::Transport::ServerError.new('[503] {"error":"unavailable"}') }
 
-          case call_count
-          when 1 then raise StandardError('oops')
-          when 2 then full_response
-          else
-            empty_response
-          end
-        end
+      before do
+        allow(subject).to receive(:search).and_raise(error)
       end
 
-      it 'sends search requests without error' do
-        expect(subject).to receive(:search).exactly(3).times
+      it 'calls execute_with_retry and raises the error' do
+        expect(subject).to receive(:execute_with_retry).with(description: 'Search').and_call_original
 
-        results = subject.paginated_search(index_name, query)
-        expect(results).to match_array([hit1, hit2])
+        expect { subject.paginated_search(index_name, query) }.to raise_error(error)
+      end
+    end
+  end
+
+  describe '#delete_by_query' do
+    let(:config) { { elasticsearch: { host:, port:, retry_on_failure: 1, delay_on_retry: 1 } } }
+    let(:delete_url) { %r{#{host}:#{port}/#{index_name}/_delete_by_query} }
+    let(:query) { { query: { match_all: {} } } }
+
+    let(:error_response) do
+      { status: 500, body: '{"error":"delete_failed"}', headers: { 'Content-Type' => 'application/json' } }
+    end
+
+    let(:success_response) do
+      { status: 200, body: '{"deleted": 10}',
+        headers: elastic_product_headers.merge('Content-Type' => 'application/json') }
+    end
+
+    context 'when successful' do
+      before do
+        stub_request(:post, delete_url).to_return(success_response)
+      end
+
+      it 'calls execute_with_retry and performs the delete' do
+        expect(subject).to receive(:execute_with_retry).with(description: 'Delete by query').and_call_original
+        expect { subject.delete_by_query(index: index_name, body: query) }.not_to raise_error
       end
     end
 
-    context 'when all requests fails' do
+    context 'when the underlying delete call fails' do
+      let(:error) { Elastic::Transport::Transport::ServerError.new('[500] {"error":"delete_failed"}') }
+
       before do
-        stub_const('ES::Client::MAX_RETRIES', 1)
-        allow(subject).to receive(:search).and_raise(StandardError.new('big oops'))
+        allow(subject.transport).to receive(:perform_request).with(
+          'POST', "#{index_name}/_delete_by_query", { refresh: true }, query, anything
+        ).and_raise(error)
       end
 
-      it 'raises an error after retrying' do
-        expect(subject).to receive(:search).exactly(2).times
+      it 'calls execute_with_retry and raises the error' do
+        expect(subject).to receive(:execute_with_retry).with(description: 'Delete by query').and_call_original
 
-        expect { subject.paginated_search(index_name, query) }.to raise_error(StandardError, 'big oops')
+        expect { subject.delete_by_query(index: index_name, body: query) }.to raise_error(error)
       end
     end
   end
