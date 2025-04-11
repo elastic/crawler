@@ -21,8 +21,8 @@ RSpec.describe(ES::Client) do
         username: 'user',
         password: 'pw',
         api_key: 'key',
-        host:,
-        port:
+        host: 'http://notreallyaserver',
+        port: '9200'
       }
     }.deep_symbolize_keys
   end
@@ -112,13 +112,100 @@ RSpec.describe(ES::Client) do
   end
 
   describe '#connection_config' do
+    context 'when various combinations of scheme, host and port are configured' do
+      it 'configures Elasticsearch client with scheme, host and port' do
+        new_config = {
+          scheme: 'https',
+          host: 'localhost',
+          port: '9201'
+        }
+
+        result = subject.connection_config(new_config, '0.0.0-foo')
+        expect(result[:scheme]).to eq('https')
+        expect(result[:host]).to eq('localhost')
+        expect(result[:port]).to eq('9201')
+      end
+
+      it 'configures Elasticsearch client with scheme and host' do
+        new_config = {
+          scheme: 'https',
+          host: 'localhost'
+        }
+        result = subject.connection_config(new_config, '0.0.0-foo')
+
+        expect(result[:scheme]).to eq('https')
+        expect(result[:host]).to eq('localhost')
+      end
+
+      it 'configures Elasticsearch client with host and port' do
+        new_config = {
+          host: 'https://localhost',
+          port: '9201'
+        }
+
+        result = subject.connection_config(new_config, '0.0.0-foo')
+        expect(result[:host]).to eq('https://localhost')
+        expect(result[:port]).to eq('9201')
+      end
+
+      it 'configures Elasticsearch client with host only' do
+        new_config = {
+          host: 'https://localhost:9220'
+        }
+        result = subject.connection_config(new_config, '0.0.0-foo')
+        expect(result[:host]).to eq('https://localhost:9220')
+      end
+    end
+
+    context 'when ssl verification is not fully enabled' do
+      it 'configures Elasticsearch client with ssl verification disabled' do
+        config[:elasticsearch][:ssl_verify] = false
+
+        result = subject.connection_config(config[:elasticsearch], '0.0.0-foo')
+
+        expect(result[:transport_options][:ssl][:verify]).to eq(false)
+
+        expect(result[:transport_options][:ssl][:ca_path]).to be_nil
+        expect(result[:transport_options][:ssl][:ca_fingerprint]).to be_nil
+      end
+    end
+
+    context 'when ca_file is configured' do
+      let(:ca_file) { '/my/local/certificate.crt' }
+
+      it 'configures Elasticsearch client with ca_file' do
+        config[:elasticsearch][:ca_file] = ca_file
+
+        result = subject.connection_config(config[:elasticsearch], '0.0.0-foo')
+
+        expect(result[:transport_options][:ssl][:ca_file]).to eq(ca_file)
+      end
+    end
+
+    context 'when ca_path is configured' do
+      let(:ca_path) { '/my/local/certificates' }
+
+      it 'configures Elasticsearch client with ca_path' do
+        config[:elasticsearch][:ca_path] = ca_path
+
+        result = subject.connection_config(config[:elasticsearch], '0.0.0-foo')
+
+        expect(result[:transport_options][:ssl][:ca_path]).to eq(ca_path)
+      end
+    end
+
     context 'when ca_fingerprint is configured' do
       let(:ca_fingerprint) { '64F2593F...' }
 
       it 'configures Elasticsearch client with ca_fingerprint' do
         config[:elasticsearch][:ca_fingerprint] = ca_fingerprint
-        # there is no other way to get ca_fingerprint variable
-        expect(subject.instance_variable_get(:@transport).instance_variable_get(:@ca_fingerprint)).to eq(ca_fingerprint)
+
+        result = subject.connection_config(config[:elasticsearch], '0.0.0-foo')
+
+        expect(result[:ca_fingerprint]).to eq(ca_fingerprint)
+
+        # Also ensure that SSL Verification has not been implicitly disabled
+        expect(result[:transport_options][:ssl][:verify]).to be_nil
       end
     end
 
@@ -128,10 +215,11 @@ RSpec.describe(ES::Client) do
 
         result = subject.connection_config(config[:elasticsearch], '0.0.0-foo')
 
-        expect(result[:hosts]).to eq([{ host: 'notreallyaserver', user: 'user', password: 'pw', port: '9200',
-                                        scheme: 'http' }])
-        expect(result[:host]).to be_nil
         expect(result[:api_key]).to be_nil
+
+        expect(result[:user]).to eq('user')
+        expect(result[:password]).to eq('pw')
+
         expect(result[:transport_options][:headers][:'user-agent']).to eq('elastic-web-crawler-0.0.0-foo')
       end
     end
@@ -140,9 +228,12 @@ RSpec.describe(ES::Client) do
       it 'overrides username and password' do
         result = subject.connection_config(config[:elasticsearch], '0.0.0-bar')
 
-        expect(result[:hosts]).to be_nil
-        expect(result[:host]).to eq("#{host}:#{port}")
+        expect(result[:host]).to eq(host)
         expect(result[:api_key]).to eq('key')
+
+        expect(result[:username]).to be_nil
+        expect(result[:password]).to be_nil
+
         expect(result[:transport_options][:headers][:'user-agent']).to eq('elastic-web-crawler-0.0.0-bar')
       end
     end

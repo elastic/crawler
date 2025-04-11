@@ -49,6 +49,7 @@ module ES
       }
       @max_retries, @retry_delay = get_retry_configuration(es_config)
 
+      config.merge!(configure_scheme_host_port(es_config))
       config.merge!(configure_auth(es_config))
       config.deep_merge!(configure_ssl(es_config))
       config.merge!(configure_compression(es_config))
@@ -91,6 +92,14 @@ module ES
 
     private
 
+    def configure_scheme_host_port(es_config)
+      {
+        scheme: es_config[:scheme],
+        host: es_config[:host],
+        port: es_config[:port]
+      }.compact
+    end
+
     def get_retry_configuration(es_config)
       retry_count = es_config.fetch(:retry_on_failure, DEFAULT_RETRY_ON_FAILURE)
 
@@ -115,40 +124,43 @@ module ES
     def configure_auth(es_config)
       if es_config[:api_key]
         @system_logger.info('ES connections will be authorized with configured API key')
-        {
-          host: "#{es_config[:host]}:#{es_config[:port]}",
-          api_key: es_config[:api_key]
-        }
+        { api_key: es_config[:api_key] }
+      elsif es_config[:username] || es_config[:password]
+        @system_logger.info('ES connections will use configured username/password')
+        { user: es_config[:username], password: es_config[:password] }
       else
-        @system_logger.info('ES connections will be authorized with configured username and password')
-        scheme, host = es_config[:host].split('://')
-        {
-          hosts: [
-            {
-              host:,
-              port: es_config[:port],
-              user: es_config[:username],
-              password: es_config[:password],
-              scheme:
-            }
-          ]
-        }
+        @system_logger.info('ES connections will use no authentication')
+        {}
       end
     end
 
     def configure_ssl(es_config)
-      if es_config[:ca_fingerprint]
-        @system_logger.info('ES connections will use SSL with ca_fingerprint')
-        return {
-          ca_fingerprint: es_config[:ca_fingerprint],
-          transport_options: {
-            ssl: { verify: false }
-          }
-        }
+      # See: https://www.rubydoc.info/gems/faraday/Faraday/SSLOptions
+      ssl_config = {
+        ca_fingerprint: es_config[:ca_fingerprint],
+        transport_options: {}
+      }.compact
+
+      if es_config[:ssl_verify] == false
+        if es_config[:ca_path] || es_config[:ca_file] || es_config[:verify_hostname]
+          @system_logger.warn(
+            'SSL verification is disabled, but SSL verification options are configured. These options will be ignored.'
+          )
+        end
+
+        ssl_config[:transport_options][:ssl] = { verify: false }
+      else
+        # SSL Verification is enabled (or default)
+        ssl_config[:transport_options][:ssl] = {
+          ca_file: es_config[:ca_file],
+          ca_path: es_config[:ca_path],
+          verify: es_config[:ssl_verify]
+        }.compact
       end
 
-      @system_logger.info('ES connections will use SSL without ca_fingerprint')
-      {}
+      @system_logger.debug("ES connection SSL config: #{ssl_config}")
+
+      ssl_config
     end
 
     def configure_compression(es_config)
