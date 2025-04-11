@@ -99,7 +99,7 @@ field in your crawler config.
 > bin/crawler urltest config/my-crawler.yml https://www.speedhunters.com/2025/01/project-964-hitting-the-touge-for-the-first-time-in-rwb-form/
 
 [2025-04-10T09:26:10.806Z] [crawl:67f7c6f2714375360db0a1b8] [primary] Initialized an in-memory URL queue for up to 10000 URLs
-[2025-04-10T09:26:10.810Z] [crawl:67f7c6f2714375360db0a1b8] [primary] ... # logs truncated for brevity
+[2025-04-10T09:26:10.810Z] [crawl:67f7c6f2714375360db0a1b8] [primary] ... // logs truncated for brevity
 [2025-04-10T09:26:15.100Z] [crawl:67f7c6f2714375360db0a1b8] [primary] Finished a crawl. Result: failure; Successfully finished the primary crawl with an empty crawl queue |
 
 ---- URL Test Results ----
