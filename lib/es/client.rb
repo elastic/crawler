@@ -202,29 +202,30 @@ module ES
       @system_logger.warn("Saved failed bulk payload to #{full_path}")
     end
 
-    def execute_with_retry(description:)
-      retries = 0
+    def execute_with_retry(description:) # rubocop:disable Metrics/MethodLength
+      try = 0
+      max_tries = 1 + @max_retries
       begin
         yield
       rescue StandardError => e
-        retries += 1
-        if retries <= @max_retries
-          wait_time = @retry_delay**retries
+        try += 1
+        if try < max_tries
+          wait_time = @retry_delay**try
           @system_logger.warn(
-            "#{description} attempt #{retries}/#{@max_retries} failed: '#{e.message}'. Retrying in #{wait_time.to_f}s.."
+            "#{description} attempt #{try}/#{max_tries} failed: '#{e.message}'. Retrying in #{wait_time.to_f}s.."
           )
           sleep(wait_time)
           retry
         else
-          log_final_failure(description:, retries:, error: e)
+          log_final_failure(description:, tries: try, error: e)
           raise e
         end
       end
     end
 
-    def log_final_failure(description:, retries:, error:)
+    def log_final_failure(description:, tries:, error:)
       if @max_retries.nonzero?
-        @system_logger.error("#{description} failed after #{retries} attempts: '#{error.message}'.")
+        @system_logger.error("#{description} failed after #{tries} attempts: '#{error.message}'.")
       else
         @system_logger.error("#{description} failed: '#{error.message}'. Retries disabled.")
       end

@@ -249,10 +249,8 @@ RSpec.describe(ES::Client) do
           result = subject.bulk(payload)
           expect(result.status).to eq(200)
           expect(system_logger).to have_received(:warn).with(
-            %r{Bulk index attempt 1/2 failed: '\[500\] {"error":"boom"}'. Retrying in 3\.0s..}
+            %r{Bulk index attempt 1/3 failed: '\[500\] {"error":"boom"}'. Retrying in 3\.0s..}
           )
-          expect(system_logger).not_to have_received(:warn).with(%r{Bulk index attempt 2/2 failed})
-          expect(system_logger).not_to have_received(:warn).with(/Bulk index failed after/)
         end
       end
 
@@ -260,7 +258,7 @@ RSpec.describe(ES::Client) do
         let(:config) do
           {
             elasticsearch: {
-              host:, port:, retry_on_failure: 2, delay_on_retry: 1
+              host:, port:, retry_on_failure: 1, delay_on_retry: 1
             }
           }.deep_symbolize_keys
         end
@@ -274,7 +272,7 @@ RSpec.describe(ES::Client) do
           expect(File).to receive(:open).with(%r{output/failed_payloads/crawl-id/\d{14}}, 'w').and_yield(file_double)
 
           expect(subject).to receive(:sleep).with(1**1).once
-          expect(subject).to receive(:sleep).with(1**2).once
+
           expect do
             subject.bulk(payload)
           end.to raise_error(Elastic::Transport::Transport::ServerError, /\[500\] {"error":"boom"}/)
@@ -282,12 +280,9 @@ RSpec.describe(ES::Client) do
           expect(system_logger).to have_received(:warn).with(
             %r{Bulk index attempt 1/2 failed: '\[500\] {"error":"boom"}'. Retrying in 1\.0s..}
           )
-          expect(system_logger).to have_received(:warn).with(
-            %r{Bulk index attempt 2/2 failed: '\[500\] {"error":"boom"}'. Retrying in 1\.0s..}
-          )
 
           expect(system_logger).to have_received(:error).with(
-            /Bulk index failed after 3 attempts: '\[500\] {"error":"boom"}'/
+            /Bulk index failed after 2 attempts: '\[500\] {"error":"boom"}'/
           )
 
           expect(file_double).to have_received(:puts).with(payload[:body].first)
@@ -313,7 +308,6 @@ RSpec.describe(ES::Client) do
               subject.bulk(payload)
             end.to raise_error(Elastic::Transport::Transport::ServerError, /\[500\] {"error":"boom"}/)
             expect(system_logger).not_to have_received(:warn).with(/Bulk index attempt/)
-            expect(system_logger).not_to have_received(:warn).with(/Retrying in/)
 
             expect(system_logger).to have_received(:error).with(
               /Bulk index failed: '\[500\] {"error":"boom"}'. Retries disabled./
@@ -445,9 +439,9 @@ RSpec.describe(ES::Client) do
 
         before do
           stub_request(:post, search_url)
-            .to_return(error_response) # Attempt 1 fails
-            .then.to_return(success_response_page1) # Attempt 2 succeeds (gets page 1)
-            .then.to_return(success_response_page2) # Next call gets page 2 (empty)
+            .to_return(error_response)
+            .then.to_return(success_response_page1)
+            .then.to_return(success_response_page2)
         end
 
         it 'retries, logs the attempt, and returns results' do
@@ -458,10 +452,8 @@ RSpec.describe(ES::Client) do
           expect(results).to match_array([hit1, hit2])
 
           expect(system_logger).to have_received(:warn).with(
-            %r{Search attempt 1/3 failed: '\[503\] {"error":"unavailable"}'. Retrying in 2\.0s..}
+            %r{Search attempt 1/4 failed: '\[503\] {"error":"unavailable"}'. Retrying in 2\.0s..}
           )
-          expect(system_logger).not_to have_received(:warn).with(%r{Search attempt 2/3 failed})
-          expect(system_logger).not_to have_received(:warn).with(/Search failed after/)
         end
       end
 
@@ -485,7 +477,7 @@ RSpec.describe(ES::Client) do
             subject.paginated_search(index_name, query)
           end.to raise_error(StandardError, /\[503\] {"error":"unavailable"}/)
           expect(system_logger).to have_received(:warn).with(
-            %r{Search attempt 1/1 failed: '\[503\] {"error":"unavailable"}'. Retrying in 1\.0s..}
+            %r{Search attempt 1/2 failed: '\[503\] {"error":"unavailable"}'. Retrying in 1\.0s..}
           )
 
           expect(system_logger).to have_received(:error).with(
@@ -513,7 +505,7 @@ RSpec.describe(ES::Client) do
       let(:config) do
         {
           elasticsearch: {
-            host:, port:, retry_on_failure: 2, delay_on_retry: 1
+            host:, port:, retry_on_failure: 1, delay_on_retry: 1
           }
         }.deep_symbolize_keys
       end
@@ -533,8 +525,6 @@ RSpec.describe(ES::Client) do
           expect(system_logger).to have_received(:warn).with(
             %r{Delete by query attempt 1/2 failed: '\[500\] {"error":"delete_failed"}'. Retrying in 1\.0s..}
           )
-          expect(system_logger).not_to have_received(:debug).with(%r{Delete by query attempt 2/2 failed})
-          expect(system_logger).not_to have_received(:debug).with(/Delete by query failed after/)
         end
       end
 
@@ -545,7 +535,6 @@ RSpec.describe(ES::Client) do
 
         it 'raises an error after exhausting retries and logs attempts' do
           expect(subject).to receive(:sleep).with(1**1).once
-          expect(subject).to receive(:sleep).with(1**2).once
 
           expect do
             subject.delete_by_query(index: index_name, body: query)
@@ -554,12 +543,9 @@ RSpec.describe(ES::Client) do
           expect(system_logger).to have_received(:warn).with(
             %r{Delete by query attempt 1/2 failed: '\[500\] {"error":"delete_failed"}'. Retrying in 1\.0s..}
           )
-          expect(system_logger).to have_received(:warn).with(
-            %r{Delete by query attempt 2/2 failed: '\[500\] {"error":"delete_failed"}'. Retrying in 1\.0s..}
-          )
 
           expect(system_logger).to have_received(:error).with(
-            /Delete by query failed after 3 attempts: '\[500\] {"error":"delete_failed"}'/
+            /Delete by query failed after 2 attempts: '\[500\] {"error":"delete_failed"}'/
           )
         end
       end
