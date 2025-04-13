@@ -43,10 +43,34 @@
 #elasticsearch.ca_fingerprint: null
 #
 #
+## ------------------------------- Client Behavior --------------------------------
 #
-##  Enable gzip compression for requests sent to Elasticsearch.
+#
+## Request timeout in seconds for individual Elasticsearch requests.
+##    Default: 10
+#elasticsearch.request_timeout: 10
+#
+#
+## Number of retries on failure (e.g., 3), or false/0 to disable retries.
+##    If set to `true`, it defaults to 3 retries.
+##    Default: 3
+#elasticsearch.retry_on_failure: 3
+#
+#
+## The amount of time to wait between requests after a failure occurs.
+##    Default: 2000
+#elasticsearch.delay_on_retry: 10000
+#
+#
+## Whether to reload connections (refresh node list) after a connection failure.
+##    Default: false
+#elasticsearch.reload_on_failure: false
+#
+#
+## Enable gzip compression for requests sent to Elasticsearch.
 ##    Defaults to `true` if not specified. Set to `false` to disable.
 #elasticsearch.compression: true
+#
 #
 ## ------------------------------- Bulk API -----------------------------------
 #
