@@ -65,6 +65,24 @@ When performing a crawl with both a crawl config and an Elasticsearch config:
 bin/crawler crawl config/my-crawler.yml --es-config config/elasticsearch.yml
 ```
 
+## Environment Variables
+
+```yaml
+elasticsearch:
+  username: <%= ENV['ES_USER'] %>
+  password: <%= ENV['ES_PASS'] %>
+```
+
+**Example: Default Value Logic**
+
+```yaml
+output_path: <%= ENV['OUTPUT_PATH'] || '/tmp/crawl-output' %>
+```
+
+**How it works:**
+- Before parsing YAML, the file is processed with [Embedded Ruby (ERB) template syntax](https://github.com/ruby/erb).
+- You can use any Ruby code inside `<%= ... %>` tags, but the most common use is referencing environment variables.
+
 ## Example configurations
 
-See [examples](../config/examples) for example configurations.
+For more examples, see the sample configuration files in the `config/` directory.
