@@ -9,13 +9,17 @@
 #
 ## ------------------------------- Elasticsearch -------------------------------
 #
-## The host of the Elasticsearch deployment, excluding the port.
+## The url (with scheme and port) or the hostname / IP address of the Elasticsearch deployment.
 ##    If your Elasticsearch is running on Docker and is on the same machine as
-##    Crawler, this value should be `http://host.docker.internal`
-#elasticsearch.host: http://localhost
+##    Crawler, this value might be `host.docker.internal`
+#elasticsearch.host: https://localhost:9200
 #
 #
-## The port of the Elasticsearch deployment host.
+## The scheme (http or https) of the Elasticsearch deployment host. Not normally needed, only needed if you do not provide the scheme in the host url and the scheme cannot be guessed from the port (for example http on port 443).
+#elasticsearch.scheme: https
+#
+#
+## The port of the Elasticsearch deployment host. Only needed if you do not provide the port in the host url.
 #elasticsearch.port: 9200
 #
 #
@@ -38,8 +42,27 @@
 #elasticsearch.password: changeme
 #
 #
-##  The SHA256 CA cert fingerprint used to verify SSL connection to Elasticsearch.
-##    SSL usage is configured by the presence of `https` in `elasticsearch.host`
+## ---------------------------- SSL Configuration -----------------------------
+#
+## Controls whether SSL certificate verification is enabled. Defaults to true.
+## Setting to false disables all SSL verification (insecure, use with caution).
+#elasticsearch.ssl_verify: true
+#
+#
+## Path to a trusted CA certificate for SSL verification.
+## Use this when connecting to an Elasticsearch instance with a self-signed certificate
+## or a certificate signed by a private CA.
+#elasticsearch.ca_file: /path/to/your/ca.crt
+#
+#
+## Path to a directory containing trusted CA certificates for SSL verification.
+## Use this when connecting to an Elasticsearch instance with a self-signed certificate
+## or a certificate signed by a private CA.
+#elasticsearch.ca_path: /path/to/your/ca/certs
+#
+#
+## The SHA256 CA cert fingerprint used to verify SSL connection to Elasticsearch.
+## SSL usage is typically inferred by the client based on the port (e.g., 9200 vs 443) or explicit SSL settings.
 #elasticsearch.ca_fingerprint: null
 #
 #
