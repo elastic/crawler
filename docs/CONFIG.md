@@ -45,20 +45,7 @@ If your Elasticsearch instance uses SSL/TLS with certificates signed by a privat
 
 ## Configuration files in Docker
 
-### Quickstart and mounted volumes
-
-If you are running Crawler using the `docker-compose` command in the quickstart guide, then a shared volume will be used to connect your local `./crawler/config` directory with the Docker container.
-This means that Crawler can access any file in your local `./crawler/config` directory.
-Creating and editing files here is enough to have them usable by Crawler.
-
-### Copying files
-
-If you are running Crawler in docker manually without a mounted volume, you will need to copy any configuration files into the container before you can crawl content.
-This will need to be done every time a change is made to these files, unless you are editing the file directly inside the Docker container.
-
-```bash
-docker cp /path/to/my-crawler.yml crawler:/home/app/config/my-crawler.yml
-```
+See [CLI in Docker](./CLI.md#cli-in-docker) for details on how to mount configuration files into the Docker container for use with commands.
 
 ## Example usage
 
