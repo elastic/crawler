@@ -7,6 +7,7 @@
 # frozen_string_literal: true
 
 require_dependency(File.join(__dir__, 'success'))
+require_dependency(File.join(__dir__, '..', '..', '..', 'constants'))
 
 module Crawler
   module Data
@@ -136,7 +137,7 @@ module Crawler
               meta['content'],
               limit
             )
-            extractions[meta['name']] = truncated_content
+            extractions[meta['name']] = truncated_content unless Constants::RESERVED_FIELD_NAMES.include?(meta['name'])
           end
           extractions
         end
@@ -151,7 +152,9 @@ module Crawler
               data.text.to_s.squish,
               limit
             )
-            extractions[data[data_elastic_name]] = truncated_content
+            unless Constants::RESERVED_FIELD_NAMES.include?(data[data_elastic_name])
+              extractions[data[data_elastic_name]] = truncated_content
+            end
           end
           extractions
         end
