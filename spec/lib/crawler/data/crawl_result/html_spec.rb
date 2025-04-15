@@ -37,7 +37,7 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
 
         <!-- should remove this whole tag -->
         <script>alert("hello from Javascript")</script>
-      #{'  '}
+
         <div data-elastic-name="in-body-tag">Elasticize</div>
         <div data-elastic-name="second-in-body-tag">ELK</div>
 
