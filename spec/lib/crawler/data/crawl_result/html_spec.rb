@@ -373,21 +373,22 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
 
   describe '#meta_tag_elastic' do
     it 'should return all elastic class meta tags' do
-      expect(crawl_result.meta_tag_elastic).to eq({ 'Number' => '0451', 'String' => 'elastician' })
+      expect(crawl_result.meta_tags_elastic).to eq({ 'Number' => '0451', 'String' => 'elastician' })
     end
 
     it 'should truncate values to a given length' do
-      expect(crawl_result.meta_tag_elastic(limit: 10)['String'].bytesize).to eq(10)
+      expect(crawl_result.meta_tags_elastic(limit: 10)['String'].bytesize).to eq(10)
     end
   end
 
-  describe '#meta_tag_data' do
+  describe '#data_attributes_from_body' do
     it 'should return all body data tags' do
-      expect(crawl_result.meta_tag_data).to eq({ 'in-body-tag' => 'Elasticize', 'second-in-body-tag' => 'ELK' })
+      expect(crawl_result.data_attributes_from_body).to eq({ 'in-body-tag' => 'Elasticize',
+                                                             'second-in-body-tag' => 'ELK' })
     end
 
     it 'should truncate values to a given length' do
-      expect(crawl_result.meta_tag_data(limit: 10)['in-body-tag'].bytesize).to eq(10)
+      expect(crawl_result.data_attributes_from_body(limit: 10)['in-body-tag'].bytesize).to eq(10)
     end
   end
 

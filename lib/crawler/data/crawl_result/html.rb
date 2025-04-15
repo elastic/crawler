@@ -124,7 +124,7 @@ module Crawler
           Crawler::ContentEngine::Utils.limit_bytesize(description, limit)
         end
 
-        def meta_tag_elastic(limit: 1024)
+        def meta_tags_elastic(limit: 1024)
           meta_elastic_class = 'elastic'
           meta_tag_selector = "meta.#{meta_elastic_class}"
 
@@ -141,7 +141,7 @@ module Crawler
           extractions
         end
 
-        def meta_tag_data(limit: 1024)
+        def data_attributes_from_body(limit: 1024)
           data_elastic_name = 'data-elastic-name'
           body_embedded_tag_selector = "[#{data_elastic_name}]"
 
