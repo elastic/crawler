@@ -97,4 +97,4 @@ output_path: <%= ENV['OUTPUT_PATH'] || '/tmp/crawl-output' %>
 
 ## Example configurations
 
-For more examples, see the sample configuration files in the `config/` directory.
+For more examples, see the sample configuration files in the [config directory](../config).
