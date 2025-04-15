@@ -124,6 +124,38 @@ module Crawler
           Crawler::ContentEngine::Utils.limit_bytesize(description, limit)
         end
 
+        def meta_tag_elastic(limit: 1024)
+          meta_elastic_class = 'elastic'
+          meta_tag_selector = "meta.#{meta_elastic_class}"
+
+          # filter by the meta_tag_selector first to only get meta tags with class='elastic'
+          extractions = {}
+          parsed_content.css(meta_tag_selector).css('meta[name][content]').each do |meta|
+            # truncate the content field of each tag we extract
+            truncated_content = Crawler::ContentEngine::Utils.limit_bytesize(
+              meta['content'],
+              limit
+            )
+            extractions[meta['name']] = truncated_content
+          end
+          extractions
+        end
+
+        def meta_tag_data(limit: 1024)
+          data_elastic_name = 'data-elastic-name'
+          body_embedded_tag_selector = "[#{data_elastic_name}]"
+
+          extractions = {}
+          parsed_content.css('body').css(body_embedded_tag_selector).each do |data|
+            truncated_content = Crawler::ContentEngine::Utils.limit_bytesize(
+              data.text.to_s.squish,
+              limit
+            )
+            extractions[data[data_elastic_name]] = truncated_content
+          end
+          extractions
+        end
+
         #---------------------------------------------------------------------------------------------
         # Returns the title of the document, cleaned up for indexing
         def document_title(limit: 1000)

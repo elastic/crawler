@@ -24,6 +24,8 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
         <link rel="canonical" href="https://example.com/canonical" />
         <meta name="keywords" content="keywords, stuffing, SEO" />
         <meta name="description" content="The best site in the universe!" />
+        <meta class="elastic" name="Number" content="0451">
+        <meta class="elastic" name="String" content="elastician">
       </head>
       <body>
         <h1>Page header</h1>
@@ -35,6 +37,9 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
 
         <!-- should remove this whole tag -->
         <script>alert("hello from Javascript")</script>
+      #{'  '}
+        <div data-elastic-name="in-body-tag">Elasticize</div>
+        <div data-elastic-name="second-in-body-tag">ELK</div>
 
         <!-- should remove this whole tag -->
         <svg height="130" width="500">
@@ -356,7 +361,6 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
     end
   end
 
-  #-------------------------------------------------------------------------------------------------
   describe '#meta_description' do
     it 'should return keywords' do
       expect(crawl_result.meta_description).to eq('The best site in the universe!')
@@ -364,6 +368,26 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
 
     it 'should truncate the value to a given length' do
       expect(crawl_result.meta_description(limit: 10).bytesize).to eq(10)
+    end
+  end
+
+  describe '#meta_tag_elastic' do
+    it 'should return all elastic class meta tags' do
+      expect(crawl_result.meta_tag_elastic).to eq({ 'Number' => '0451', 'String' => 'elastician' })
+    end
+
+    it 'should truncate values to a given length' do
+      expect(crawl_result.meta_tag_elastic(limit: 10)['String'].bytesize).to eq(10)
+    end
+  end
+
+  describe '#meta_tag_data' do
+    it 'should return all body data tags' do
+      expect(crawl_result.meta_tag_data).to eq({ 'in-body-tag' => 'Elasticize', 'second-in-body-tag' => 'ELK' })
+    end
+
+    it 'should truncate values to a given length' do
+      expect(crawl_result.meta_tag_data(limit: 10)['in-body-tag'].bytesize).to eq(10)
     end
   end
 
