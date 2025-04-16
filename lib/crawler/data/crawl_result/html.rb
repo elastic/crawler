@@ -34,7 +34,6 @@ module Crawler
           end
         end
 
-        #---------------------------------------------------------------------------------------------
         # Returns the base URL that should be used for all relative links
         def base_url
           @base_url ||= begin
@@ -56,7 +55,6 @@ module Crawler
           end
         end
 
-        #---------------------------------------------------------------------------------------------
         # Returns all links from the document as a set of URL objects
         def extract_links(limit: nil, skip_invalid: false)
           links = Set.new
@@ -90,7 +88,6 @@ module Crawler
           links.to_a.map(&:to_url).map(&:to_s).sort
         end
 
-        #---------------------------------------------------------------------------------------------
         # Returns the canonical URL of the document
         def canonical_url
           canonical_link&.to_url
@@ -102,7 +99,6 @@ module Crawler
           Link.new(base_url: url, link: canonical_url) if canonical_url
         end
 
-        #---------------------------------------------------------------------------------------------
         # Returns +true+ if the page contains a robots nofollow meta tag
         def meta_nofollow?
           !!parsed_content.at_css('meta[name=robots][content*=nofollow]')
@@ -125,7 +121,7 @@ module Crawler
           Crawler::ContentEngine::Utils.limit_bytesize(description, limit)
         end
 
-        def meta_tags_elastic(limit: 1024)
+        def meta_tags_elastic(limit: 512)
           meta_elastic_class = 'elastic'
           meta_tag_selector = "meta.#{meta_elastic_class}"
 
@@ -137,12 +133,14 @@ module Crawler
               meta['content'],
               limit
             )
-            extractions[meta['name']] = truncated_content unless Constants::RESERVED_FIELD_NAMES.include?(meta['name'])
+            unless !validate_field_name(meta['name']) || Constants::RESERVED_FIELD_NAMES.include?(meta['name'])
+              extractions[meta['name']] = truncated_content
+            end
           end
           extractions
         end
 
-        def data_attributes_from_body(limit: 1024)
+        def data_attributes_from_body(limit: 512)
           data_elastic_name = 'data-elastic-name'
           body_embedded_tag_selector = "[#{data_elastic_name}]"
 
@@ -152,14 +150,24 @@ module Crawler
               data.text.to_s.squish,
               limit
             )
-            unless Constants::RESERVED_FIELD_NAMES.include?(data[data_elastic_name])
+            unless !validate_field_name(data[data_elastic_name]) ||
+                   Constants::RESERVED_FIELD_NAMES.include?(data[data_elastic_name])
               extractions[data[data_elastic_name]] = truncated_content
             end
           end
           extractions
         end
 
-        #---------------------------------------------------------------------------------------------
+        def validate_field_name(field_name)
+          # Meta tag field names are subject to field name rules
+          # - Must contain a lowercase letter and may only contain lowercase letters, numbers, and underscores.
+          # - Must not contain whitespace or have a leading underscore.
+          # - Must not contain more than 64 characters
+          field_name.match?(/\A[a-z0-9_]+\z/) &&
+            !field_name.start_with?('_') &&
+            field_name.length <= 64
+        end
+
         # Returns the title of the document, cleaned up for indexing
         def document_title(limit: 1000)
           title_tag = parsed_content.css('title').first
@@ -193,7 +201,6 @@ module Crawler
           end.to_a
         end
 
-        #---------------------------------------------------------------------------------------------
         def extract_attribute_value(tag_name, attribute_name)
           parsed_content.css(tag_name)&.attr(attribute_name)&.content
         end
@@ -213,7 +220,6 @@ module Crawler
           end
         end
 
-        #---------------------------------------------------------------------------------------------
         def full_html(enabled: false)
           return unless enabled
 

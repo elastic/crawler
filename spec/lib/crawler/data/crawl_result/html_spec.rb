@@ -28,7 +28,7 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
         <meta class="elastic" name="number_value_tag" content="0451">
         <meta class="elastic" name="string_value_tag" content="elastician">
         <meta class="elastic" name="domains" content="reserved_should_not_appear">
-        <meta class="elastic" name="invalid" content="does_not_meet_rules_should_not_appear">
+        <meta class="elastic" name="_Does Not Meet Field Name Rules" content="invalid_should_not_appear">
       </head>
       <body>
         <h1>Page header</h1>
@@ -43,6 +43,8 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
 
         <div data-elastic-name="in_body_tag">Elasticize</div>
         <div data-elastic-name="in_body_tag_two">ELK</div>
+        <div data-elastic-name="highlight">reserved_should_not_appear</div>
+        <div data-elastic-name="_Does Not Meet Field Name Rules">invalid_should_not_appear</div>
 
         <!-- should remove this whole tag -->
         <svg height="130" width="500">
