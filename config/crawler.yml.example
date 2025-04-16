@@ -72,6 +72,8 @@
 #max_description_size: 512
 #max_indexed_links_count: 10
 #max_headings_count: 10
+#max_elastic_tag_size: 512
+#max_data_attribute_size: 512
 #
 ## ------------------------------- Crawler - Advanced --------------------------
 #
