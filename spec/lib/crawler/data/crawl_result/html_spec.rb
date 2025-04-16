@@ -43,7 +43,7 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
 
         <div data-elastic-name="in_body_tag">Elasticize</div>
         <div data-elastic-name="in_body_tag_two">ELK</div>
-        <div data-elastic-name="highlight">reserved_should_not_appear</div>
+        <div data-elastic-name="headings">reserved_should_not_appear</div>
         <div data-elastic-name="_Does Not Meet Field Name Rules">invalid_should_not_appear</div>
 
         <!-- should remove this whole tag -->

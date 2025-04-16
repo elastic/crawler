@@ -10,9 +10,6 @@ module Constants
   # Field names used in every crawl result when creating an ES doc
   RESERVED_FIELD_NAMES = %w[
     id
-    engine_id
-    search_index_id
-    highlight
     any
     all
     none

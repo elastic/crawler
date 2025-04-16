@@ -133,9 +133,7 @@ module Crawler
               meta['content'],
               limit
             )
-            unless !validate_field_name(meta['name']) || Constants::RESERVED_FIELD_NAMES.include?(meta['name'])
-              extractions[meta['name']] = truncated_content
-            end
+            extractions[meta['name']] = truncated_content if valid_field_name?(meta['name'])
           end
           extractions
         end
@@ -150,22 +148,23 @@ module Crawler
               data.text.to_s.squish,
               limit
             )
-            unless !validate_field_name(data[data_elastic_name]) ||
-                   Constants::RESERVED_FIELD_NAMES.include?(data[data_elastic_name])
-              extractions[data[data_elastic_name]] = truncated_content
-            end
+            extractions[data[data_elastic_name]] = truncated_content if valid_field_name?(data[data_elastic_name])
           end
           extractions
         end
 
-        def validate_field_name(field_name)
+        def valid_field_name?(field_name)
           # Meta tag field names are subject to field name rules
           # - Must contain a lowercase letter and may only contain lowercase letters, numbers, and underscores.
           # - Must not contain whitespace or have a leading underscore.
           # - Must not contain more than 64 characters
-          field_name.match?(/\A[a-z0-9_]+\z/) &&
-            !field_name.start_with?('_') &&
-            field_name.length <= 64
+          # - Must not be a reserved word (see lib/constants.rb)
+          # Method returns true if the field name is valid
+          character_validation = field_name.match?(/\A[a-z0-9_]+\z/) &&
+                                 !field_name.start_with?('_') &&
+                                 field_name.length <= 64
+
+          true unless character_validation == false || Constants::RESERVED_FIELD_NAMES.include?(field_name) == true
         end
 
         # Returns the title of the document, cleaned up for indexing
