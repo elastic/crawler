@@ -14,32 +14,52 @@ require 'crawler/api/config'
 RSpec.describe Crawler::CLI::Helpers do
   describe '.load_yaml' do
     let(:tmpfile) { Tempfile.new('config.yml') }
+    let(:path) { tmpfile.path }
 
     after { tmpfile.close! }
 
-    it 'loads YAML content from a file path' do
-      yaml_content = { 'key' => 'value', 'nested' => { 'subkey' => 123 } }
-      tmpfile.write(YAML.dump(yaml_content))
-      tmpfile.rewind
-      expect(described_class.load_yaml(tmpfile.path)).to eq(yaml_content)
+    context 'when loading valid YAML' do
+      subject(:loaded_yaml) { described_class.load_yaml(path) }
+
+      it 'loads YAML content from a file path' do
+        yaml_content = { 'key' => 'value', 'nested' => { 'subkey' => 123 } }
+        tmpfile.write(YAML.dump(yaml_content))
+        tmpfile.rewind
+        expect(loaded_yaml).to eq(yaml_content)
+      end
+
+      it 'returns nil if the file is empty' do
+        tmpfile.write('')
+        tmpfile.rewind
+        expect(loaded_yaml).to be_nil
+      end
     end
 
-    it 'returns nil if the file is empty' do
-      tmpfile.write('')
-      tmpfile.rewind
-      expect(described_class.load_yaml(tmpfile.path)).to be_nil
-    end
+    context 'when encountering errors' do
+      subject(:load_action) { described_class.load_yaml(path) }
 
-    it 'exits if the file does not exist' do
-      non_existent_path = '/path/to/non/existent/file.yml'
-      expect { described_class.load_yaml(non_existent_path) }.to raise_error(SystemExit)
-    end
+      context 'when the file does not exist' do
+        # Override path for this specific context
+        let(:path) { '/path/to/non/existent/file.yml' }
 
-    it 'exits for invalid YAML syntax' do
-      tmpfile.write('key: [unclosed')
-      tmpfile.rewind
-      allow(described_class).to receive(:puts) # Prevent noise during test
-      expect { described_class.load_yaml(tmpfile.path) }.to raise_error(SystemExit)
+        it 'exits' do
+          allow(described_class).to receive(:puts) # Prevent noise during test.
+          expect { load_action }.to raise_error(SystemExit)
+        end
+      end
+
+      context 'when the YAML syntax is invalid' do
+        before do
+          tmpfile.write('key: [unclosed')
+          tmpfile.rewind
+
+          allow(described_class).to receive(:puts) # Prevent noise during test.
+        end
+
+        it 'exits' do
+          expect { load_action }.to raise_error(SystemExit)
+        end
+      end
     end
   end
 
@@ -92,43 +112,35 @@ RSpec.describe Crawler::CLI::Helpers do
       allow(Crawler::API::Config).to receive(:new).and_return(crawl_configuration)
     end
 
-    context 'when given just a crawl config' do
+    RSpec.shared_examples 'loads crawl configuration correctly' do
       it 'generates a new Config instance' do
-        expect(
-          described_class.load_crawl_config(
-            crawl_config_fixture,
-            nil
-          )
-        ).to eq(crawl_configuration)
+        expect(described_class.load_crawl_config(crawl_fixture, es_fixture)).to eq(crawl_configuration)
       end
     end
 
+    context 'when given just a crawl config' do
+      let(:crawl_fixture) { crawl_config_fixture }
+      let(:es_fixture) { nil }
+      include_examples 'loads crawl configuration correctly'
+    end
+
     context 'when given a crawl and elasticsearch config' do
-      it 'generates a new Config instance with nested YAML' do
-        expect(
-          described_class.load_crawl_config(
-            crawl_config_fixture,
-            es_config_fixture
-          )
-        ).to eq(crawl_configuration)
+      context 'with nested YAML' do
+        let(:crawl_fixture) { crawl_config_fixture }
+        let(:es_fixture) { es_config_fixture }
+        include_examples 'loads crawl configuration correctly'
       end
 
-      it 'generates a new Config instance with flat YAML' do
-        expect(
-          described_class.load_crawl_config(
-            crawl_config_fixture,
-            es_config_flat_fixture
-          )
-        ).to eq(crawl_configuration)
+      context 'with flat YAML' do
+        let(:crawl_fixture) { crawl_config_fixture }
+        let(:es_fixture) { es_config_flat_fixture }
+        include_examples 'loads crawl configuration correctly'
       end
 
-      it 'generates a new Config instance with YAML of mixed-flatness' do
-        expect(
-          described_class.load_crawl_config(
-            crawl_config_fixture,
-            es_config_partially_flat_fixture
-          )
-        ).to eq(crawl_configuration)
+      context 'with YAML of mixed-flatness' do
+        let(:crawl_fixture) { crawl_config_fixture }
+        let(:es_fixture) { es_config_partially_flat_fixture }
+        include_examples 'loads crawl configuration correctly'
       end
     end
 
@@ -164,48 +176,61 @@ RSpec.describe Crawler::CLI::Helpers do
     end
   end
 
-  describe '.nest_configs' do
-    it 'returns an empty hash for nil/empty input' do
-      expect(described_class.nest_configs(nil)).to eq({})
-      expect(described_class.nest_configs({})).to eq({})
+  describe '.dedot_hash' do
+    subject(:dedotted_hash) { described_class.dedot_hash(input) }
+
+    context 'with nil input' do
+      let(:input) { nil }
+      let(:expected) { {} }
+      it { is_expected.to eq(expected) }
     end
 
-    it 'unnests simple dot notation keys' do
-      input = { 'a.b' => 1, 'c.d' => 2 }
-      expected = { 'a' => { 'b' => 1 }, 'c' => { 'd' => 2 } }
-      expect(described_class.nest_configs(input)).to eq(expected)
+    context 'with empty hash input' do
+      let(:input) { {} }
+      let(:expected) { {} }
+      it { is_expected.to eq(expected) }
     end
 
-    it 'unnests multiple levels of dot notation' do
-      input = { 'a.b.c' => 1, 'x.y.z' => 'hello' }
-      expected = { 'a' => { 'b' => { 'c' => 1 } }, 'x' => { 'y' => { 'z' => 'hello' } } }
-      expect(described_class.nest_configs(input)).to eq(expected)
+    context 'with simple dot notation keys' do
+      let(:input) { { 'a.b' => 1, 'c.d' => 2 } }
+      let(:expected) { { 'a' => { 'b' => 1 }, 'c' => { 'd' => 2 } } }
+      it { is_expected.to eq(expected) }
     end
 
-    it 'handles mixed dot notation and regular keys' do
-      input = { 'a.b' => 1, 'c' => 2, 'd.e.f' => 3 }
-      expected = { 'a' => { 'b' => 1 }, 'c' => 2, 'd' => { 'e' => { 'f' => 3 } } }
-      expect(described_class.nest_configs(input)).to eq(expected)
+    context 'with multiple levels of dot notation' do
+      let(:input) { { 'a.b.c' => 1, 'x.y.z' => 'hello' } }
+      let(:expected) { { 'a' => { 'b' => { 'c' => 1 } }, 'x' => { 'y' => { 'z' => 'hello' } } } }
+      it { is_expected.to eq(expected) }
     end
 
-    it 'merges keys with common prefixes' do
-      input = { 'a.b' => 1, 'a.c' => 2 }
-      expected = { 'a' => { 'b' => 1, 'c' => 2 } }
-      expect(described_class.nest_configs(input)).to eq(expected)
+    context 'with mixed dot notation and regular keys' do
+      let(:input) { { 'a.b' => 1, 'c' => 2, 'd.e.f' => 3 } }
+      let(:expected) { { 'a' => { 'b' => 1 }, 'c' => 2, 'd' => { 'e' => { 'f' => 3 } } } }
+      it { is_expected.to eq(expected) }
     end
 
-    it 'recursively unnests hashes within values' do
-      input = {
-        'top' => 1,
-        'nested' => { 'a.b' => 2, 'c' => 3 },
-        'deep.nest' => { 'x.y' => 4 }
-      }
-      expected = {
-        'top' => 1,
-        'nested' => { 'a' => { 'b' => 2 }, 'c' => 3 },
-        'deep' => { 'nest' => { 'x' => { 'y' => 4 } } }
-      }
-      expect(described_class.nest_configs(input)).to eq(expected)
+    context 'when merging keys with common prefixes' do
+      let(:input) { { 'a.b' => 1, 'a.c' => 2 } }
+      let(:expected) { { 'a' => { 'b' => 1, 'c' => 2 } } }
+      it { is_expected.to eq(expected) }
+    end
+
+    context 'when recursively unnesting hashes within values' do
+      let(:input) do
+        {
+          'top' => 1,
+          'nested' => { 'a.b' => 2, 'c' => 3 },
+          'deep.nest' => { 'x.y' => 4 }
+        }
+      end
+      let(:expected) do
+        {
+          'top' => 1,
+          'nested' => { 'a' => { 'b' => 2 }, 'c' => 3 },
+          'deep' => { 'nest' => { 'x' => { 'y' => 4 } } }
+        }
+      end
+      it { is_expected.to eq(expected) }
     end
   end
 end

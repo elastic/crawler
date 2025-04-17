@@ -24,19 +24,22 @@ module Crawler
       end
 
       def self.load_crawl_config(crawl_config, es_config)
-        config = nest_configs(load_yaml(crawl_config))
+        config = load_yaml(crawl_config)
         unless es_config.nil?
-          es_config = nest_configs(load_yaml(es_config))
-          # deep merge config into es_config to ensure crawler cfg takes precedence
-          # then overwrite config var with result of deep merge for the Config.new() call
-          config = es_config.deep_merge!(config) unless es_config.empty?
+          es_config = load_yaml(es_config) || {}
+
+          # Crawl config takes precedence over ES config
+          config = es_config.deep_merge(config)
+
         end
 
-        Crawler::API::Config.new(**config.deep_symbolize_keys)
+        dedotted_data = dedot_hash(config)
+
+        Crawler::API::Config.new(**dedotted_data.deep_symbolize_keys)
       end
 
       # Recursively nests keys in a hash based on the dot notation typical in yaml and json
-      def self.nest_configs(config)
+      def self.dedot_hash(config)
         return {} if config.nil?
         return config unless config.is_a?(Hash)
 
@@ -46,7 +49,7 @@ module Crawler
 
           target_hash = find_or_create_target_hash(nested_config, all_fields)
 
-          target_hash[last_key] = value.is_a?(Hash) ? nest_configs(value) : value
+          target_hash[last_key] = value.is_a?(Hash) ? dedot_hash(value) : value
         end
       end
 
