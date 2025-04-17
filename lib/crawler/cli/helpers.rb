@@ -8,6 +8,7 @@
 
 require 'yaml'
 require 'erb'
+
 module Crawler
   module CLI
     module Helpers
