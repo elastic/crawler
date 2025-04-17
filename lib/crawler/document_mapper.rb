@@ -37,7 +37,8 @@ module Crawler
         core_fields(crawl_result),
         html_fields(crawl_result),
         url_components(crawl_result.url),
-        extraction_rule_fields(crawl_result)
+        extraction_rule_fields(crawl_result),
+        meta_tags_and_data_attributes(crawl_result)
       )
     end
 
@@ -48,6 +49,13 @@ module Crawler
         url_components(crawl_result.url),
         extraction_rule_fields(crawl_result)
       )
+    end
+
+    def meta_tags_and_data_attributes(crawl_result)
+      {}.merge(
+        crawl_result.meta_tags_elastic(limit: config.max_elastic_tag_size),
+        crawl_result.data_attributes_from_body(limit: config.max_data_attribute_size)
+      ).symbolize_keys
     end
 
     def core_fields(crawl_result)

@@ -111,6 +111,8 @@ module Crawler
         :max_body_size,          # HTML body length limit in bytes
         :max_keywords_size,      # HTML meta keywords length limit in bytes
         :max_description_size,   # HTML meta description length limit in bytes
+        :max_elastic_tag_size,   # HTML meta tag length limit in bytes
+        :max_data_attribute_size, # HTML body data attribute length limit in bytes
 
         :max_extracted_links_count, # Number of links to extract for crawling
         :max_indexed_links_count,   # Number of links to extract for indexing
@@ -172,6 +174,8 @@ module Crawler
         max_body_size: 5.megabytes,
         max_keywords_size: 512.bytes,
         max_description_size: 1.kilobyte,
+        max_elastic_tag_size: 512.bytes,
+        max_data_attribute_size: 512.bytes,
 
         max_extracted_links_count: 1000,
         max_indexed_links_count: 25,

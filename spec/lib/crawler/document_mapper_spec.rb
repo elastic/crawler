@@ -16,6 +16,10 @@ RSpec.describe(Crawler::DocumentMapper) do
     context 'when crawl result is HTML' do
       let(:meta_description) { 'An apt description!' }
       let(:meta_keywords) { 'foo, faa, fee' }
+      let(:meta_tag_number) { '0451' }
+      let(:meta_tag_string) { 'elastician' }
+      let(:body_data_attr_one) { 'Elasticize' }
+      let(:body_data_attr_two) { 'ELK' }
       let(:title) { 'A website!' }
       let(:link1) { '/link1' }
       let(:link2) { '/link2' }
@@ -27,6 +31,8 @@ RSpec.describe(Crawler::DocumentMapper) do
             <head>
               <meta name="description" content="#{meta_description}">
               <meta name="keywords" content="#{meta_keywords}">
+              <meta class="elastic" name="number_value_tag" content="#{meta_tag_number}">
+              <meta class="elastic" name="string_value_tag" content="#{meta_tag_string}">
             </head>
             <body>
               <title>#{title}</title>
@@ -36,6 +42,8 @@ RSpec.describe(Crawler::DocumentMapper) do
               <a href="#{link2}">Goodbye</a>
               <p class="chosen">Chosen 1</p>
               <div class="chosen">Chosen 2</div>
+              <div data-elastic-name="in_body_tag">#{body_data_attr_one}</div>
+              <div data-elastic-name="in_body_tag_two">#{body_data_attr_two}</div>
             </body>
           </html>
         HTML
@@ -49,6 +57,10 @@ RSpec.describe(Crawler::DocumentMapper) do
           body: crawl_result.document_body,
           meta_keywords:,
           meta_description:,
+          number_value_tag: meta_tag_number,
+          string_value_tag: meta_tag_string,
+          in_body_tag: body_data_attr_one,
+          in_body_tag_two: body_data_attr_two,
           links: %W[#{url}#{link1} #{url}#{link2}],
           headings: [heading1, heading2],
           url: url.to_s,

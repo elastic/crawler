@@ -24,6 +24,11 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
         <link rel="canonical" href="https://example.com/canonical" />
         <meta name="keywords" content="keywords, stuffing, SEO" />
         <meta name="description" content="The best site in the universe!" />
+
+        <meta class="elastic" name="number_value_tag" content="0451">
+        <meta class="elastic" name="string_value_tag" content="elastician">
+        <meta class="elastic" name="domains" content="reserved_should_not_appear">
+        <meta class="elastic" name="_Does Not Meet Field Name Rules" content="invalid_should_not_appear">
       </head>
       <body>
         <h1>Page header</h1>
@@ -35,6 +40,11 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
 
         <!-- should remove this whole tag -->
         <script>alert("hello from Javascript")</script>
+
+        <div data-elastic-name="in_body_tag">Elasticize</div>
+        <div data-elastic-name="in_body_tag_two">ELK</div>
+        <div data-elastic-name="headings">reserved_should_not_appear</div>
+        <div data-elastic-name="_Does Not Meet Field Name Rules">invalid_should_not_appear</div>
 
         <!-- should remove this whole tag -->
         <svg height="130" width="500">
@@ -356,7 +366,6 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
     end
   end
 
-  #-------------------------------------------------------------------------------------------------
   describe '#meta_description' do
     it 'should return keywords' do
       expect(crawl_result.meta_description).to eq('The best site in the universe!')
@@ -364,6 +373,27 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
 
     it 'should truncate the value to a given length' do
       expect(crawl_result.meta_description(limit: 10).bytesize).to eq(10)
+    end
+  end
+
+  describe '#meta_tag_elastic' do
+    it 'should return all elastic class meta tags' do
+      expect(crawl_result.meta_tags_elastic).to eq({ 'number_value_tag' => '0451', 'string_value_tag' => 'elastician' })
+    end
+
+    it 'should truncate values to a given length' do
+      expect(crawl_result.meta_tags_elastic(limit: 10)['string_value_tag'].bytesize).to eq(10)
+    end
+  end
+
+  describe '#data_attributes_from_body' do
+    it 'should return all body data tags' do
+      expect(crawl_result.data_attributes_from_body).to eq({ 'in_body_tag' => 'Elasticize',
+                                                             'in_body_tag_two' => 'ELK' })
+    end
+
+    it 'should truncate values to a given length' do
+      expect(crawl_result.data_attributes_from_body(limit: 10)['in_body_tag'].bytesize).to eq(10)
     end
   end
 
