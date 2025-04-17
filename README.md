@@ -1,59 +1,67 @@
 # Elastic Open Web Crawler
 
+Elastic Open Crawler is a lightweight, open code web crawler designed for discovering, extracting, and indexing web content directly into Elasticsearch. This CLI-driven tool streamlines web content ingestion into Elasticsearch, enabling easy searchability through on-demand or scheduled crawls defined by configuration files. 
+
 This repository contains code for the Elastic Open Web Crawler.
-Open Crawler enables users to easily ingest web content into Elasticsearch.
+Docker images are available for the crawler at [the Elastic Docker registry](https://www.docker.elastic.co/r/integrations/crawler).
 
 > [!IMPORTANT]
 > _The Open Crawler is currently in **beta**_.
 Beta features are subject to change and are not covered by the support SLA of generally available (GA) features.
 Elastic plans to promote this feature to GA in a future release.
 
-### ES Version Compatibility
+### Compatibility Matrix
 
-| Elasticsearch | Open Crawler       |
-|---------------|--------------------|
-| `8.x`         | `v0.2.x`           |
-| `9.x`         | `v0.2.1` and above |
+| Elasticsearch | Open Crawler       | Operating System |
+|---------------|--------------------|------------------|
+| `8.x`         | `v0.2.x`           | Linux, OSX       |
+| `9.x`         | `v0.2.1` and above | Linux, OSX       |
 
-### Quickstart
+## Simple Docker Quickstart
 
-The docker image can be found at https://www.docker.elastic.co/r/integrations/crawler.
+Let's scrape our first website using the Open Crawler running on Docker!
+Just paste the following commands into your terminal:
+``` bash
+cat > crawl-config.yml << EOF
+output_sink: console
+domains:
+  - url: https://example.com
+EOF
 
-The following will run the latest Crawler in a Docker container using a docker-compose file.
-It mounts the `config` directory as a shared volume, so any changes made to files there are automatically accessible to Crawler.
+docker run \
+  -v ./crawl-config.yml:/crawl-config.yml \
+  -it docker.elastic.co/integrations/crawler:latest jruby bin/crawler crawl /crawl-config.yml
+```
 
-1. Run the init script, which will output the current Crawler version when complete:
-    ```bash
-    git clone git@github.com:elastic/crawler.git && \
-    cd crawler && \
-    docker-compose up -d && \
-    cp config/examples/simple.yml config/my-crawler.yml && \
-    docker exec -it crawler bin/crawler version
-    ```
-2. Update the new config file `config/my-crawler.yml` if necessary
-3. Run a crawl:
-    ```bash
-    docker exec -it crawler bin/crawler crawl config/my-crawler.yml
-    ```
+If everything is set up correctly, you should see Crawler start up and begin crawling `example.com`.
+It will print the following output to the screen and then return control to the terminal:
+``` bash
+[primary] Initialized an in-memory URL queue for up to 10000 URLs
+[primary] Starting the primary crawl with up to 10 parallel thread(s)...
+...
+<HTML Content from example.com>
+...
+[primary] Finished a crawl. Result: success;
+```
 
-### User workflow
+To run alternative crawls, start by changing the `- url: ...` in the `crawl-config.yml` file.
+After each change just run the `docker run...` command again to see the results.
+
+Once you're ready to run a more complex crawl, check out the sections below to send data to Elasticsearch, schedule crawls, and more.
+
+## Understanding Elastic Open Crawler
 
 Indexing web content with the Open Crawler requires:
 
-1. Running an instance of Elasticsearch (on-prem, cloud, or serverless)
-2. Running the official Docker image (see [Setup](#setup))
-3. Configuring a crawler config file (see [Configuring crawlers](#configuring-crawlers))
-4. Using the CLI to begin a crawl job (see [CLI commands](#cli-commands))
+1. An instance of Elasticsearch (on-prem, cloud, or serverless)
+2. A valid Crawler configuration file (see [Configuring crawlers](#configuring-crawlers))
 
-### Execution logic
+Crawler runs crawl jobs on-demand or on a schedule, based on configuration files you reference when running crawler.
+As Crawler runs, each URL endpoint found during the crawl will be handed to a different thread to be visited, resulting in one document per page being indexed into Elasticsearch.
 
-Crawler runs crawl jobs on command, based on config files in the `config` directory.
-Each URL endpoint found during the crawl will result in one document to be indexed into Elasticsearch.
-Crawler performs crawl jobs in a multithreaded environment, where one thread will be used to visit one URL endpoint.
+Crawls are performed in two stages: a primary crawl and a purge crawl.
 
-Crawls are performed in two stages:
-
-#### 1. Primary crawl
+### The Primary crawl
 
 Beginning with URLs included as `seed_urls`, the Crawler begins crawling web content.
 While crawling, each link it encounters will be added to the crawl queue, unless the link should be ignored due to [crawl rules](./docs/features/CRAWL_RULES.md) or [crawler directives](./docs/features/CRAWLER_DIRECTIVES.md).
@@ -61,7 +69,7 @@ While crawling, each link it encounters will be added to the crawl queue, unless
 The crawl results from visiting these webpages are added to a pool of results.
 These are indexed into Elasticsearch using the `_bulk` API once the pool reaches the configured threshold.
 
-#### 2. Purge crawl
+### The Purge crawl
 
 After a primary crawl is completed, Crawler will then fetch every doc from the associated index that was not encountered during the primary crawl.
 It does this through comparing the `last_crawled_at` date on the doc to the primary crawl's start time.
@@ -77,14 +85,12 @@ A webpage can be inaccessible due to any of the following reasons:
 
 At the end of the purge crawl, all docs in the index that were not updated during either the primary crawl or the purge crawl are deleted.
 
-### Setup
-
-#### Prerequisites
+## Setup Elastic Open Crawler
 
 A running instance of Elasticsearch is required to index documents into.
 If you don't have this set up yet, you can sign up for an [Elastic Cloud free trial](https://www.elastic.co/cloud/cloud-trial-overview) or check out the [quickstart guide for Elasticsearch](https://www.elastic.co/guide/en/elasticsearch/reference/master/quickstart.html).
 
-#### Connecting to Elasticsearch
+### Connecting to Elasticsearch
 
 Open Crawler will attempt to use the `_bulk` API to index crawl results into Elasticsearch.
 To facilitate this connection, Open Crawler needs to have either an API key or a username/password configured to access the Elasticsearch instance.
@@ -121,19 +127,76 @@ If using an API key, ensure that the API key has read and write permissions to a
   ```
 </details>
 
-#### Running Open Crawler with Docker
+### Configuring Crawlers
 
-> [!IMPORTANT]
-> **Do not trigger multiple crawl jobs that reference the same index simultaneously.**
-A single crawl execution can be thought of as a single crawler.
-Even if two crawl executions share a configuration file, the two crawl processes will not communicate with each other.
-Two crawlers simultaneously interacting with a single index can lead to data loss.
+Crawler has template configuration files that contain every configuration available.
 
-1. Run the official Docker image through the docker-compose file `docker-compose up -d`
-    - `-d` allows the container to run "detached" so you don't have to dedicate a terminal window to it
-2. Confirm that CLI commands are working `docker exec -it crawler bin/crawler version` 
-3. Create a config file for your crawler
-4. See [Configuring crawlers](#configuring-crawlers) for next steps.
+- [config/crawler.yml.example](config/crawler.yml.example)
+- [config/elasticsearch.yml.example](config/elasticsearch.yml.example)
+
+Crawler can be configured using two config files, a Crawler configuration and an optional Elasticsearch configuration.
+The Elasticsearch configuration exists to allow users with multiple crawlers to share a common Elasticsearch configuration.
+
+See [CONFIG.md](docs/CONFIG.md) for more details on these files.
+
+### Logging
+You can learn more about setting up Crawler's logging [here](docs/features/LOGGING.md).
+
+### Running a Crawl Job
+
+As covered in the quickstart, running a crawl job is simple.
+Just navigate to the directory with your Crawler configuration and run:
+
+```bash
+docker run \
+  -v ./<your crawler configuration>.yml:/crawl-config.yml \
+  -it docker.elastic.co/integrations/crawler:latest jruby bin/crawler crawl /crawl-config.yml
+```
+
+### Scheduling Recurring Crawl Jobs
+
+Crawl jobs can also be scheduled to recur. Scheduled crawl jobs run until terminated by the user.
+
+These schedules are defined through standard cron expressions. You can use the tool https://crontab.guru to test different cron expressions.
+
+For example, to schedule a crawl job that will execute once every 30 minutes, create a configuration file called `scheduled-crawl.yml` with the following contents:
+
+```yaml
+domains:
+  - url: "https://example.com"
+schedule:
+  pattern: "*/30 * * * *" # run every 30th minute
+```
+
+Then, use the CLI to then begin the crawl job schedule:
+
+```bash
+docker run \
+  -v ./scheduled-crawl.yml:/scheduled-crawl.yml \
+  -it docker.elastic.co/integrations/crawler:latest jruby bin/crawler schedule /scheduled-crawl.yml
+```
+
+**Scheduled crawl jobs from a single execution will not overlap.**
+
+Scheduled jobs will also not wait for existing jobs to complete. That means if a crawl job is already in progress when another schedule is triggered, the new job will be dropped. For example, if you have a schedule that triggers at every hour, but your crawl job takes 1.5 hours to complete, the crawl schedule will effectively trigger on every 2nd hour.
+
+**Executing multiple crawl schedules _can_ cause overlap.**
+Be wary of executing multiple schedules against the same index. As with ad-hoc triggered crawl jobs, two crawlers simultaneously interacting with a single index can lead to data loss.
+
+## Other Resources
+
+### Crawler Document Schema and Mappings
+
+See [DOCUMENT_SCHEMA.md](docs/DOCUMENT_SCHEMA.md) for information regarding the Elasticsearch document schema and mappings.
+
+### CLI Commands
+
+Open Crawler does not have a graphical user interface.
+All interactions with Open Crawler take place through the CLI.
+When given a command, Open Crawler will run until the process is finished.
+OpenCrawler is not kept alive in any way between commands.
+
+See [CLI.md](docs/CLI.md) for a full list of CLI commands available for Crawler.
 
 #### Running Open Crawler from source
 
@@ -172,80 +235,3 @@ Two crawlers simultaneously interacting with a single index can lead to data los
       $ CRAWLER_MANAGE_ENV=true make install
       ```
 </details>
-
-### Configuring Crawlers
-
-If you ran Crawler using `docker-compose up`, config YAML files should be placed in your _local_ `./config` directory.
-This is because the Crawler docker image uses a mounted volume to connect your local `./config` to the Crawler container's `/app/config` directory.
-This means any edits you make to config files in the `./config` directory are immediately accessible to the running Crawler image.
-
-Crawler has template configuration files that contain every configuration available.
-
-- [config/crawler.yml.example](config/crawler.yml.example)
-- [config/elasticsearch.yml.example](config/elasticsearch.yml.example)
-
-To use these files, make a copy locally without the `.example` suffix.
-Then remove the `#` comment-out characters from the configurations that you need.
-
-Crawler can be configured using two config files, a Crawler configuration and an Elasticsearch configuration.
-The Elasticsearch configuration file is optional.
-It exists to allow users with multiple crawlers to only need a single Elasticsearch configuration.
-See [CONFIG.md](docs/CONFIG.md) for more details on these files.
-
-### Logging
-You can learn more about setting up Crawler's logging [here](docs/features/LOGGING.md).
-
-### Running a Crawl Job
-
-Once everything is configured, you can run a crawl job using the CLI:
-
-```bash
-$ docker exec -it crawler bin/crawler crawl path/to/my-crawler.yml
-```
-
-### Scheduling Recurring Crawl Jobs
-
-Crawl jobs can also be scheduled to recur.
-Scheduled crawl jobs run until terminated by the user.
-
-These schedules are defined through a cron expression.
-This expression needs to be included in the Crawler config file.
-You can use the tool https://crontab.guru to test different cron expressions.
-Crawler supports all standard cron expressions.
-
-See an example below for a crawl schedule that will execute once every 30 minutes.
-
-```yaml
-domains:
-  - url: "https://elastic.co"
-schedule:
-  pattern: "*/30 * * * *" # run every 30th minute
-```
-
-Then, use the CLI to then begin the crawl job schedule:
-
-```bash
-docker exec -it crawler bin/crawler schedule path/to/my-crawler.yml
-```
-
-**Scheduled crawl jobs from a single execution will not overlap.**
-Scheduled jobs will also not wait for existing jobs to complete.
-If a crawl job is already in progress when another schedule is triggered, the job will be dropped.
-For example, if you have a schedule that triggers at every hour, but your crawl job takes 1.5 hours to complete, the crawl schedule will effectively trigger on every 2nd hour.
-
-**Executing multiple crawl schedules _can_ cause overlap**.
-Be wary of executing multiple schedules against the same index.
-As with ad-hoc triggered crawl jobs, two crawlers simultaneously interacting with a single index can lead to data loss.
-
-### Crawler Document Schema and Mappings
-
-See [DOCUMENT_SCHEMA.md](docs/DOCUMENT_SCHEMA.md) for information regarding the Elasticsearch document schema and mappings.
-
-### CLI Commands
-
-Open Crawler does not have a graphical user interface.
-All interactions with Open Crawler take place through the CLI.
-When given a command, Open Crawler will run until the process is finished.
-OpenCrawler is not kept alive in any way between commands.
-
-See [CLI.md](docs/CLI.md) for a full list of CLI commands available for Crawler.

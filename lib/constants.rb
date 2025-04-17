@@ -10,12 +10,21 @@ module Constants
   # Field names used in every crawl result when creating an ES doc
   RESERVED_FIELD_NAMES = %w[
     id
+    any
+    all
+    none
+    or
+    and
+    not
+    additional_urls
+    body_content
     body
     domains
     headings
     last_crawled_at
     links
     meta_description
+    meta_keywords
     title
     url
     url_host

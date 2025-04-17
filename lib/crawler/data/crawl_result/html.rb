@@ -7,6 +7,7 @@
 # frozen_string_literal: true
 
 require_dependency(File.join(__dir__, 'success'))
+require_dependency(File.join(__dir__, '..', '..', '..', 'constants'))
 
 module Crawler
   module Data
@@ -33,7 +34,6 @@ module Crawler
           end
         end
 
-        #---------------------------------------------------------------------------------------------
         # Returns the base URL that should be used for all relative links
         def base_url
           @base_url ||= begin
@@ -55,7 +55,6 @@ module Crawler
           end
         end
 
-        #---------------------------------------------------------------------------------------------
         # Returns all links from the document as a set of URL objects
         def extract_links(limit: nil, skip_invalid: false)
           links = Set.new
@@ -89,7 +88,6 @@ module Crawler
           links.to_a.map(&:to_url).map(&:to_s).sort
         end
 
-        #---------------------------------------------------------------------------------------------
         # Returns the canonical URL of the document
         def canonical_url
           canonical_link&.to_url
@@ -101,7 +99,6 @@ module Crawler
           Link.new(base_url: url, link: canonical_url) if canonical_url
         end
 
-        #---------------------------------------------------------------------------------------------
         # Returns +true+ if the page contains a robots nofollow meta tag
         def meta_nofollow?
           !!parsed_content.at_css('meta[name=robots][content*=nofollow]')
@@ -124,7 +121,52 @@ module Crawler
           Crawler::ContentEngine::Utils.limit_bytesize(description, limit)
         end
 
-        #---------------------------------------------------------------------------------------------
+        def meta_tags_elastic(limit: 512)
+          meta_elastic_class = 'elastic'
+          meta_tag_selector = "meta.#{meta_elastic_class}"
+
+          # filter by the meta_tag_selector first to only get meta tags with class='elastic'
+          extractions = {}
+          parsed_content.css(meta_tag_selector).css('meta[name][content]').each do |meta|
+            # truncate the content field of each tag we extract
+            truncated_content = Crawler::ContentEngine::Utils.limit_bytesize(
+              meta['content'],
+              limit
+            )
+            extractions[meta['name']] = truncated_content if valid_field_name?(meta['name'])
+          end
+          extractions
+        end
+
+        def data_attributes_from_body(limit: 512)
+          data_elastic_name = 'data-elastic-name'
+          body_embedded_tag_selector = "[#{data_elastic_name}]"
+
+          extractions = {}
+          parsed_content.css('body').css(body_embedded_tag_selector).each do |data|
+            truncated_content = Crawler::ContentEngine::Utils.limit_bytesize(
+              data.text.to_s.squish,
+              limit
+            )
+            extractions[data[data_elastic_name]] = truncated_content if valid_field_name?(data[data_elastic_name])
+          end
+          extractions
+        end
+
+        def valid_field_name?(field_name)
+          # Meta tag field names are subject to field name rules
+          # - Must contain a lowercase letter and may only contain lowercase letters, numbers, and underscores.
+          # - Must not contain whitespace or have a leading underscore.
+          # - Must not contain more than 64 characters
+          # - Must not be a reserved word (see lib/constants.rb)
+          # Method returns true if the field name is valid
+          character_validation = field_name.match?(/\A[a-z0-9_]+\z/) &&
+                                 !field_name.start_with?('_') &&
+                                 field_name.length <= 64
+
+          true unless character_validation == false || Constants::RESERVED_FIELD_NAMES.include?(field_name) == true
+        end
+
         # Returns the title of the document, cleaned up for indexing
         def document_title(limit: 1000)
           title_tag = parsed_content.css('title').first
@@ -158,7 +200,6 @@ module Crawler
           end.to_a
         end
 
-        #---------------------------------------------------------------------------------------------
         def extract_attribute_value(tag_name, attribute_name)
           parsed_content.css(tag_name)&.attr(attribute_name)&.content
         end
@@ -178,7 +219,6 @@ module Crawler
           end
         end
 
-        #---------------------------------------------------------------------------------------------
         def full_html(enabled: false)
           return unless enabled
 
