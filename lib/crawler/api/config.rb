@@ -276,9 +276,7 @@ module Crawler
         ssl_ca_certificates.map! do |cert|
           unless cert.is_a?(String)
             raise ArgumentError,
-                  "each entry of ssl_ca_certificates must be a certificate or a path to a certificate, but found: #{
-                    cert.inspect
-                  }"
+                  'each entry of ssl_ca_certificates must be a certificate or a path to a certificate'
           end
 
           if /BEGIN CERTIFICATE/.match?(cert)

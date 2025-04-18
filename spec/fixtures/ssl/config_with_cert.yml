@@ -1,4 +1,5 @@
 ssl_ca_certificates:
+  # These certificates are from spec/fixtures/ssl/ca.crt
   - |-
     -----BEGIN CERTIFICATE-----
     MIIDwDCCAqgCCQCgaeTT+pTAQzANBgkqhkiG9w0BAQsFADCBoTELMAkGA1UEBhMC

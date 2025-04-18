@@ -207,7 +207,7 @@ RSpec.describe(Crawler::API::Config) do
           Crawler::API::Config.new(base_params.merge(ssl_ca_certificates: [123]))
         end.to raise_error(
           ArgumentError,
-          'each entry of ssl_ca_certificates must be a certificate or a path to a certificate, but found: 123'
+          'each entry of ssl_ca_certificates must be a certificate or a path to a certificate'
         )
       end
 
