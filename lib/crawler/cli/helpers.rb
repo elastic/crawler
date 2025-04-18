@@ -24,35 +24,41 @@ module Crawler
       end
 
       def self.load_crawl_config(crawl_config, es_config)
-        config = nest_configs(load_yaml(crawl_config))
+        config = load_yaml(crawl_config)
         unless es_config.nil?
-          es_config = nest_configs(load_yaml(es_config))
-          # deep merge config into es_config to ensure crawler cfg takes precedence
-          # then overwrite config var with result of deep merge for the Config.new() call
-          config = es_config.deep_merge!(config) unless es_config.empty?
+          es_config = load_yaml(es_config) || {}
+
+          # Crawl config takes precedence over ES config
+          config = es_config.deep_merge(config)
+
         end
 
-        Crawler::API::Config.new(**config.deep_symbolize_keys)
+        dedotted_data = dedot_hash(config)
+
+        Crawler::API::Config.new(**dedotted_data.deep_symbolize_keys)
       end
 
-      def self.nest_configs(config)
-        # return empty hashmap if config is nil, to catch cases where
-        # a yaml is given but no content is inside
+      # Recursively nests keys in a hash based on the dot notation typical in yaml and json
+      def self.dedot_hash(config)
         return {} if config.nil?
+        return config unless config.is_a?(Hash)
 
-        nested_config = {}
-        config.each do |key, value|
+        config.each_with_object({}) do |(key, value), nested_config|
           all_fields = key.split('.')
-          last_key = all_fields[-1]
+          last_key = all_fields.pop
 
-          pointer = nested_config
-          all_fields[...-1].each do |field|
-            pointer[field] = {} unless pointer.key?(field)
-            pointer = pointer[field]
-          end
-          pointer[last_key] = value
+          target_hash = find_or_create_target_hash(nested_config, all_fields)
+
+          target_hash[last_key] = value.is_a?(Hash) ? dedot_hash(value) : value
         end
-        nested_config
+      end
+
+      # Recursively finds or creates a nested hash structure based on the provided path fields.
+      def self.find_or_create_target_hash(root_hash, path_fields)
+        path_fields.reduce(root_hash) do |current_hash, field|
+          current_hash[field] = {} unless current_hash.key?(field) && current_hash[field].is_a?(Hash)
+          current_hash[field]
+        end
       end
     end
   end
