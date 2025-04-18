@@ -117,6 +117,7 @@ module Crawler
     end
 
     def run_urltest_crawl!(endpoint)
+      @crawl_stage = CRAWL_STAGE_PRIMARY
       @url_test = true
       url_obj = Crawler::Data::URL.parse(endpoint)
       add_url_to_backlog(
