@@ -10,10 +10,11 @@ module Crawler
   class DocumentMapper
     class UnsupportedCrawlResultError < StandardError; end
 
-    attr_reader :config
+    attr_reader :config, :domains_config
 
-    def initialize(config)
+    def initialize(config, domains_config: [])
       @config = config
+      @domains_config = domains_config
     end
 
     def create_doc(crawl_result)
@@ -36,7 +37,7 @@ module Crawler
       {}.merge(
         core_fields(crawl_result),
         html_fields(crawl_result),
-        url_components(crawl_result.url),
+        rewrite_url_components(crawl_result),
         extraction_rule_fields(crawl_result),
         meta_tags_and_data_attributes(crawl_result)
       )
@@ -46,7 +47,7 @@ module Crawler
       {}.merge(
         core_fields(crawl_result),
         binary_file_fields(crawl_result),
-        url_components(crawl_result.url),
+        rewrite_url_components(crawl_result),
         extraction_rule_fields(crawl_result)
       )
     end
@@ -65,13 +66,13 @@ module Crawler
       }
     end
 
-    def html_fields(crawl_result) # rubocop:disable Metrics/AbcSize
+    def html_fields(crawl_result)
       remove_empty_values(
         title: crawl_result.document_title(limit: config.max_title_size),
         body: crawl_result.document_body(limit: config.max_body_size),
         meta_keywords: crawl_result.meta_keywords(limit: config.max_keywords_size),
         meta_description: crawl_result.meta_description(limit: config.max_description_size),
-        links: crawl_result.links(limit: config.max_indexed_links_count),
+        links: rewrite_links(crawl_result),
         headings: crawl_result.headings(limit: config.max_headings_count),
         full_html: crawl_result.full_html(enabled: config.full_html_extraction_enabled)
       )
@@ -84,6 +85,34 @@ module Crawler
         content_type: crawl_result.content_type,
         _attachment: crawl_result.base64_encoded_content
       )
+    end
+
+    def rewrite_url(site_url, original_url)
+      site_url_s = site_url.to_s
+      original_url_s = original_url.to_s
+
+      rewrite_rule = @config.rewrite_rules[site_url_s].to_s
+      if rewrite_rule.present? && original_url_s.starts_with?(site_url_s)
+        new_url_string = original_url_s.sub(site_url_s, rewrite_rule)
+        Crawler::Data::URL.parse(new_url_string)
+      else
+        original_url
+      end
+    end
+
+    def rewrite_links(crawl_result)
+      original_links = crawl_result.links(limit: config.max_indexed_links_count)
+
+      original_links.map do |link_string|
+        site_url = crawl_result.site_url
+        rewritten_url_object = rewrite_url(site_url, link_string)
+        rewritten_url_object.to_s
+      end
+    end
+
+    def rewrite_url_components(crawl_result)
+      url = rewrite_url(crawl_result.site_url, crawl_result.url)
+      url_components(url)
     end
 
     def url_components(url)

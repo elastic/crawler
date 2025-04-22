@@ -43,7 +43,7 @@ module Crawler
 
         :crawl_id,             # Unique identifier of the crawl (used in logs, etc)
         :crawl_stage,          # Stage name for multi-stage crawls
-
+        :rewrite,              # Rewrite rule for the crawler, e.g. to rewrite URLs before indexing
         :domains,              # Array of domains
         :domain_allowlist,     # Array of domain names for restricting which links to follow
         :seed_urls,            # An array or an enumerator of initial URLs to crawl
@@ -51,6 +51,7 @@ module Crawler
         :crawl_rules,          # Array of allow/deny-listed URL patterns
         :extraction_rules,     # Contains domains extraction rules
         :schedule,             # For scheduled jobs; not used outside of CLI
+        :rewrite_rules,        # Contains domains rewrite rules
 
         :robots_txt_service,   # Service to fetch robots.txt
         :output_sink,          # The type of output, either :console | :file | :elasticsearch
@@ -241,6 +242,7 @@ module Crawler
         configure_http_header_service!
         configure_sitemap_urls!
         configure_extraction_rules!
+        configure_rewrite_rule!
       end
 
       def to_s
@@ -379,6 +381,20 @@ module Crawler
           Crawler::Data::URL.parse(sitemap_url).tap do |url|
             raise ArgumentError, "Unsupported scheme for a sitemap URL: #{url}" unless url.supported_scheme?
           end
+        end
+      end
+
+      # Configures rewrite rules for the crawler
+      def configure_rewrite_rule!
+        @rewrite_rules = @domains.each_with_object({}) do |domain, rewrite_rules|
+          next unless domain[:rewrite]
+
+          url = domain[:url]
+          rule = domain[:rewrite] || Nil
+
+          validate_domain!(rule)
+
+          rewrite_rules[url] = Crawler::Data::URL.parse(rule)
         end
       end
 

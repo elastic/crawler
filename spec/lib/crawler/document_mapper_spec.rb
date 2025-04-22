@@ -247,4 +247,114 @@ RSpec.describe(Crawler::DocumentMapper) do
       end
     end
   end
+
+  describe 'URL Rewriting' do
+    let(:site_url_str) { 'https://original.com' }
+    let(:site_url) { Crawler::Data::URL.parse(site_url_str) }
+    let(:rewrite_target) { 'https://rewritten.com' }
+    let(:config_params) do
+      {
+        domains: [{ url: site_url_str, rewrite: rewrite_target }] # Basic domain config
+      }
+    end
+
+    describe '#rewrite_url' do
+      context 'when a matching rewrite rule exists' do
+        it 'rewrites a URL starting with the site URL' do
+          original_url = "#{site_url_str}/path/page.html"
+          expected_url = "#{rewrite_target}/path/page.html"
+          rewritten = subject.send(:rewrite_url, site_url, original_url)
+          expect(rewritten.to_s).to eq(expected_url)
+        end
+
+        it 'does not rewrite a URL that does not start with the site URL' do
+          original_url = "https://another-domain.com/path/page.html"
+          rewritten = subject.send(:rewrite_url, site_url, original_url)
+          expect(rewritten.to_s).to eq(original_url) # Should be unchanged
+        end
+
+        it 'handles URL objects as input' do
+          original_url_obj = Crawler::Data::URL.parse("#{site_url_str}/path/page.html")
+          expected_url = "#{rewrite_target}/path/page.html"
+          rewritten = subject.send(:rewrite_url, site_url, original_url_obj)
+          expect(rewritten.to_s).to eq(expected_url)
+        end
+      end
+
+      context 'when no matching rewrite rule exists' do
+        let(:config_params) { { domains: [{ url: site_url_str }] } } # No rewrite_rules
+
+        it 'returns the original URL' do
+          original_url = "#{site_url_str}/path/page.html"
+          rewritten = subject.send(:rewrite_url, site_url, original_url)
+          expect(rewritten.to_s).to eq(original_url)
+        end
+      end
+
+      context 'when rewrite rules are empty' do
+        let(:config_params) { { domains: [{ url: site_url_str }], rewrite_rules: {} } }
+
+        it 'returns the original URL' do
+          original_url = "#{site_url_str}/path/page.html"
+          rewritten = subject.send(:rewrite_url, site_url, original_url)
+          expect(rewritten.to_s).to eq(original_url)
+        end
+      end
+    end
+
+    describe '#rewrite_links' do
+      # Use the correct constant HTML
+      let(:crawl_result) { instance_double(Crawler::Data::CrawlResult::HTML) }
+      let(:original_links_array) do
+        [
+          "#{site_url_str}/page1",
+          "#{site_url_str}/another/page2",
+          'https://unrelated.com/page3', # Should not be rewritten
+          'http://original.com/page4'    # Different scheme, should not match site_url_str key
+        ]
+      end
+      let(:expected_rewritten_links) do
+        [
+          "#{rewrite_target}/page1",
+          "#{rewrite_target}/another/page2",
+          'https://unrelated.com/page3',
+          'http://original.com/page4'
+        ]
+      end
+
+      before do
+        # Stub the methods called on crawl_result within rewrite_links
+        allow(crawl_result).to receive(:site_url).and_return(site_url)
+        # Stub the links method to return our controlled array, bypassing its internal logic/limit
+        allow(crawl_result).to receive(:links).and_return(original_links_array)
+        # Stub url method used only for logging
+        allow(crawl_result).to receive(:url).and_return('https://original.com/source_page')
+      end
+
+      context 'when rewrite rules are defined' do
+        it 'returns a new array with links rewritten according to rules' do
+          rewritten = subject.send(:rewrite_links, crawl_result)
+
+          expect(rewritten).to eq(expected_rewritten_links)
+        end
+
+        it 'does not modify the original array returned by crawl_result.links' do
+          original_links_array_copy = original_links_array.dup
+          allow(crawl_result).to receive(:links).and_return(original_links_array_copy)
+
+          subject.send(:rewrite_links, crawl_result)
+          expect(original_links_array_copy).to eq(original_links_array)
+        end
+      end
+
+      context 'when no rewrite rules are defined' do
+        let(:config_params) { { domains: [{ url: site_url_str }] } }
+
+        it 'returns an array identical to the original links' do
+          rewritten = subject.send(:rewrite_links, crawl_result)
+          expect(rewritten).to eq(original_links_array)
+        end
+      end
+    end
+  end
 end
