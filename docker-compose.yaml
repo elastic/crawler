@@ -1,17 +1,69 @@
 services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.security.http.ssl.enabled=false
+      - ES_JAVA_OPTS=-Xms2g -Xmx2g
+      # Enable ML
+      - xpack.ml.enabled=true
+      - node.roles=data,master,ml
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+      - ./config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+    networks:
+      - elastic
+    ports:
+      - "9200:9200"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.12.0
+    container_name: kibana
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - elastic
+    ports:
+      - "5601:5601"
+    environment:
+      - SERVER_HOST=0.0.0.0
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - XPACK_MONITORING_UI_CONTAINER_ELASTICSEARCH_ENABLED=true
+      # ML Configuration
+      - XPACK_ML_ENABLED=true
+      - XPACK_ML_LAZY_ML_OPEN=true
+      # Security (disabled for development)
+      - XPACK_SECURITY_ENABLED=false
+      - XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=32characterslongrandomstring123456
+      - XPACK_REPORTING_ENCRYPTIONKEY=32characterslongrandomstring123456
+      - XPACK_SECURITY_ENCRYPTIONKEY=32characterslongrandomstring123456
+
   crawler:
     image: docker.elastic.co/integrations/crawler:${CRAWLER_VERSION:-latest}
     container_name: crawler
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
     volumes:
       - ./config:/home/app/config
-#      - ./logs:/home/app/logs # Enable this to access log files outside the Docker container
     networks:
       - elastic
     stdin_open: true   # Equivalent to -i
     tty: true          # Required for interactive mode
-    # Uncomment enviroment variable if running on MacOS M4 and experiencing Java Runtime errors
-    # environment:
-    #   - "_JAVA_OPTIONS=-XX:UseSVE=0"
+    environment:
+      - ELASTICSEARCH_HOST=http://elasticsearch:9200
+
+volumes:
+  es_data:
+    driver: local
 
 networks:
   elastic:
