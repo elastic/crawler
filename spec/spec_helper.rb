@@ -25,6 +25,12 @@ ENV['CRAWLER_ENV'] = 'test'
 require 'webmock/rspec'
 WebMock.disable_net_connect!(allow_localhost: true)
 
+WebMock.stub_request(:get, /support\.zendesk\.com/).to_return(
+  status: 200,
+  body: '{"articles":[], "next_page": null, "count": 0}',
+  headers: { 'Content-Type' => 'application/json' }
+)
+
 # Load WebMock before crawler, so that proper mock http subclass is swapped in
 WebMock.enable!
 
