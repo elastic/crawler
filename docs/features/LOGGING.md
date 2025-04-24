@@ -1,5 +1,7 @@
 # Logging
 
+## NOTE: The logging features outlined in this document are to be included in version 0.3.0 and newer builds of Open Crawler.
+
 ## Configure your Crawler YAML to write system and/or event logs to file
 By default, Crawler will output system logs to `stdout`. You have the option to write these logs to file, in addition to stdout, by setting the following in your Crawler YAML config:
 
