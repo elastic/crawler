@@ -1,6 +1,7 @@
 # Logging
 
-## NOTE: The logging features outlined in this document are to be included in version 0.3.0 and newer builds of Open Crawler.
+[!IMPORTANT]
+The logging features in this document are supported in version 0.3.0 and newer builds of Open Crawler.
 
 ## Configure your Crawler YAML to write system and/or event logs to file
 By default, Crawler will output system logs to `stdout`. You have the option to write these logs to file, in addition to stdout, by setting the following in your Crawler YAML config:
@@ -9,7 +10,9 @@ By default, Crawler will output system logs to `stdout`. You have the option to 
     system_logs_to_file: true
 ```
 
-Crawler also is capable of generating 'event' logs that contain details regarding each crawl being performed. These are meant for debugging and are quite verbose, and as such are only available to be written to file (see "Event Logs" section below for more information). You can enable these via the following:
+Crawler also is capable of generating 'event' logs that contain details regarding each crawl being performed.
+These are meant for debugging and are quite verbose, and as such are only available to be written to file (see "event Logs" section below for more information).
+You can enable these via the following:
 
 ```
     event_logs_to_file: true
@@ -60,17 +63,30 @@ If you are running Crawler inside of a Docker container and you have set it up t
 Check out [Filebeat's quickstart guide](https://www.elastic.co/guide/en/beats/filebeat/current/index.html) to learn more about how to get it installed and running.
 
 ## Event Logs
-### What are event logs?
-Event logs are detailed logs that contain information regarding pertinent 'events' Crawler undertakes during normal operation. These events include, but are not limited to:
 
-- When a Crawl starts
-- When a URL is discovered
-- When a URL is extracted
-- When a Crawl ends
+### What are Event logs?
+Event logs are detailed logs that contain information regarding pertinent 'events' Crawler undertakes during normal operation.
 
-On a practical level, Event logs are log messages. What differentiates them from typical log messages, however, is that they are not related to _system_ level logs. In other words, Event logs are not tied to the typical DEBUG, INFO, WARN, ERROR and FATAL levels, and oftentimes are not generated from the same places those logs get generated from.
+These events include:
 
-Event logs are in Elastic Common Schema (ECS) format. This makes filtering by specific log fields inside of Elastic easy, especially when used in conjunction with Filebeat.
+- Overall crawl start/end
+- Crawl stage start/end
+- A crawl being seeded with URLs
+- A URL is enqueued in the in-memory queue
+- A URL is discovered
+- A URL is fetched
+- A URL is crawled
+- A URL is extracted
+- A URL is re-processed
+- Report of a crawl's status
+
+On a practical level, event logs are log messages.
+What differentiates them from typical log messages, however, is that they do not report _system_ level logs.
+In other words, event logs are not tied to the typical DEBUG, INFO, WARN, ERROR and FATAL levels, and oftentimes are not generated from the same places those logs are generated from.
+
+Event logs are in Elastic Common Schema (ECS) format.
+This makes filtering by specific log fields inside of Elasticsearch easy, especially when used in conjunction with Filebeat.
+You can find out more about Elastic Common Schema [here](https://www.elastic.co/docs/reference/ecs).
 
 ### What do they contain?
 The following is a typical event log that Open Crawler might generate:
@@ -104,4 +120,4 @@ The following is a typical event log that Open Crawler might generate:
 }
 ```
 
-The above data can potentially help you debug Crawler issues, such as issues around URl crawl rules, or why a URL you believe can be crawled wasn't able to be.
+The above data can potentially help you debug Crawler issues, such as problems with URL crawl rules, or why a URL you believe can be crawled wasn't able to.
