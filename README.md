@@ -1,3 +1,115 @@
+# Zendesk RAG assessment
+
+1. Run `docker-compose.yml`
+2. Make sure that both Elasticsearch and Kibana are up and running
+3. Run `/lib/crawler/zendesk_crawler.rb`
+4. Make sure Articles were crawled into `articles` index
+5. Open Kibana UI at [http://localhost:5601](http://localhost:5601)
+6. Download and deploy `.multilingual-e5-small` trained model
+7. Setup ML ingestion pipeline and index with Kibana DevTools:
+
+**Deploy E5 Embedding Model**
+```json
+POST _ml/trained_models/.multilingual-e5-small/_deploy
+```
+**Create Index with Dense Vector Mapping**
+```json
+PUT /semantic_search_index
+{
+  "mappings": {
+    "properties": {
+      "title": {
+        "type": "text"
+      },
+      "title_embedding": {
+        "type": "dense_vector",
+        "dims": 384,               // Must match model dimensions
+        "index": true,             // Enables approximate kNN search
+        "similarity": "cosine"     // Other options: l2_norm, dot_product
+      }
+    }
+  }
+}
+```
+
+**Create Embedding Pipeline**
+```json
+PUT _ingest/pipeline/embedding_pipeline
+{
+  "description": "Generates E5 embeddings for titles",
+  "processors": [
+    {
+      "script": {
+        "lang": "painless",
+        "source": """
+          // Create model's required input field
+          ctx.text_field = (ctx.title != null) ? ctx.title : "";
+        """
+      }
+    },
+    {
+      "inference": {
+        "model_id": ".multilingual-e5-small",
+        "target_field": "temp_embedding",
+        "field_map": {
+          "text_field": "text_field"
+        }
+      }
+    },
+    {
+      "script": {
+        "lang": "painless",
+        "source": """
+          // Transform model output to dense_vector format
+          if (ctx.temp_embedding?.predicted_value != null) {
+            ctx.title_embedding = ctx.temp_embedding.predicted_value;
+          }
+        """
+      }
+    },
+    {
+      "remove": {
+        "field": ["text_field", "temp_embedding"]
+      }
+    }
+  ]
+}
+```
+
+**Re-index your data**
+```json
+POST _reindex
+{
+     "source": {
+          "index": "articles",
+          "_source": ["title"]
+     },
+     "dest": {
+          "index": "semantic_search_index",
+          "pipeline": "embedding_pipeline"
+     }
+}
+```
+
+**Perform Semantic Search**
+```json
+GET /semantic_search_index/_search
+{
+  "knn": {
+    "field": "title_embedding",
+    "query_vector_builder": {
+      "text_embedding": {
+        "model_id": ".multilingual-e5-small",
+        "model_text": "zendesk AI agents"
+      }
+    },
+    "k": 10,
+    "num_candidates": 100
+  },
+  "_source": ["title"]
+}
+```
+
 # Elastic Open Web Crawler
 
 Elastic Open Crawler is a lightweight, open code web crawler designed for discovering, extracting, and indexing web content directly into Elasticsearch. This CLI-driven tool streamlines web content ingestion into Elasticsearch, enabling easy searchability through on-demand or scheduled crawls defined by configuration files. 
