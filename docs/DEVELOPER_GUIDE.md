@@ -46,7 +46,7 @@ There are instructions for setting up these env managers here:
 
 The crawler details need to be provided in a crawler configuration file.
 You can specify Elasticsearch instance configuration within that file, or optionally in a separate configuration file.
-This is possible so that multiple crawlers can run using a single Elasticsearch configuration.
+This allows multiple crawlers to share a single Elasticsearch configuration.
 
 For more details check out the following [documentation](https://github.com/elastic/elastic-crawler/blob/main/docs/CONFIG.md).
 

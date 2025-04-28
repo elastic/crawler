@@ -15,7 +15,7 @@ If using an API key, ensure that the API key has read and write permissions to a
 ### Creating an API key
 Here is an example of creating an API key with minimal permissions for Open Crawler.
 This will return a JSON with an `encoded` key.
-The value of `encoded` is what Open Crawler can use in its configuration.
+The value of `encoded` is the API key Open Crawler will use in its configuration.
 
 ```bash
 POST /_security/api_key

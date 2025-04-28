@@ -21,8 +21,8 @@ Elastic plans to promote this feature to GA in a future release.
 
 Let's scrape our first website using the Open Crawler running on Docker!
 
-The following command will create a simple config file in your local directory, which will then be used by the a Dockerized Crawler to run a crawl.
-This will output the crawl results to your console, so no Elasticsearch setup is required yet.
+The following command will create a simple config file in your local directory, which will then be used by a Dockerized Crawler to run a crawl.
+This will output the crawl results to your console, so no Elasticsearch setup is required for this step.
 
 Run the following commands from your terminal:
 
