@@ -1,18 +1,19 @@
 # Ingesting Data into Elasticsearch
 
-A running instance of Elasticsearch is required to index documents.
-If you don't have this set up yet, you can sign up for an [Elastic Cloud free trial](https://www.elastic.co/cloud/cloud-trial-overview) or check out the [quickstart guide for Elasticsearch](https://www.elastic.co/guide/en/elasticsearch/reference/master/quickstart.html).
+## Prerequisites
+- **Elasticsearch**: A running instance of Elasticsearch is required to index documents.
 
-## Connecting to Elasticsearch
+If an Elasticsearch instance is not yet available, you can sign up for an [Elastic Cloud free trial](https://www.elastic.co/cloud/cloud-trial-overview) or check out the [quickstart guide for Elasticsearch](https://www.elastic.co/guide/en/elasticsearch/reference/master/quickstart.html).
 
-Open Crawler interacts with a single Elasticsearch index, which is configured by the user in the config file under `output_index`.
+- **Authentication**: Open Crawler interacts with a single Elasticsearch index, which is configured by the user in the config file under `output_index`.
+
 To facilitate this, Open Crawler needs to have either an API key or a username/password configured to access the index.
 If using an API key, ensure that the API key has read and write permissions to access the configured index.
 
-- [Elasticsearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/security-api-create-api-key.html) for managing API keys for more details
-- [elasticsearch.yml.example](../config/elasticsearch.yml.example) file for all of the available Elasticsearch configurations for Crawler
+- [Elasticsearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/security-api-create-api-key.html) for managing API keys for more details.
+- [elasticsearch.yml.example](../config/elasticsearch.yml.example) file for all of the available Elasticsearch configurations for Crawler.
 
-### Creating an API key
+## Creating an API key
 Here is an example of creating an API key with minimal permissions for Open Crawler.
 This will return a JSON with an `encoded` key.
 The value of `encoded` is the API key Open Crawler will use in its configuration.

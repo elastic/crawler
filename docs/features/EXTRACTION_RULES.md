@@ -70,7 +70,7 @@ Possible values:
 ### `domains[].extraction_rulesets[].rules[].field_name`
 
 The document field name that Crawler will add the extracted content to.
-This can be any string value, as long as it is not one of the predefined field names in the [document schema](./DOCUMENT_SCHEMA.md).
+This can be any string value, as long as it is not one of the predefined field names in the [document schema](../ADVANCED.md#document-schema).
 
 ### `domains[].extraction_rulesets[].rules[].selector`
 

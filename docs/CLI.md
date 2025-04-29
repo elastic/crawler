@@ -5,7 +5,7 @@ This is the only user interface for interacting with Crawler.
 
 ## Installation and Configuration
 
-Ensure you are able to run Crawler in docker or have completed the steps to run Crawler [from source](../README.md#running-open-crawler-from-source) before using the CLI.
+Ensure you are able to run Crawler in docker or have completed the steps to run Crawler [from source](./DEVELOPER_GUIDE.md) before using the CLI.
 
 For instructions on configuring a Crawler, see [CONFIG.md](./CONFIG.md).
 
