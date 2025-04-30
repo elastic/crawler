@@ -3,11 +3,16 @@
 ## Configure your crawler YAML to write system and/or event logs to file
 By default, Elastic Open Web Crawler will output system logs to `stdout`. You have the option to write these logs to file, in addition to stdout, by setting the following in your crawler YAML config:
 
+[!IMPORTANT]
+The logging features in this document are supported in version 0.3.0 and newer builds of Open Crawler.
+
 ```
     system_logs_to_file: true
 ```
 
-The Open Crawler also is capable of generating 'event' logs that contain details regarding each crawl being performed. These are meant for debugging and are quite verbose, and as such are only available to be written to file. You can enable these via the following:
+The Open Crawler also is capable of generating 'event' logs that contain details regarding each crawl being performed.
+These are meant for debugging and are quite verbose, and as such are only available to be written to file (see "event Logs" section below for more information).
+You can enable these via the following:
 
 ```
     event_logs_to_file: true
@@ -56,3 +61,63 @@ output.elasticsearch:
 If you are running Open Crawler inside of a Docker container and you have set it up to write logs to a mounted volume, you can simply point the `paths` fields to the directory your logs are being written to.
 
 Check out [Filebeat's quickstart guide](https://www.elastic.co/guide/en/beats/filebeat/current/index.html) to learn more about how to get it installed and running.
+
+## Event Logs
+
+### What are Event logs?
+Event logs are detailed logs that contain information regarding pertinent 'events' Crawler undertakes during normal operation.
+
+These events include:
+
+- Overall crawl start/end
+- Crawl stage start/end
+- A crawl being seeded with URLs
+- A URL is enqueued in the in-memory queue
+- A URL is discovered
+- A URL is fetched
+- A URL is crawled
+- A URL is extracted
+- A URL is re-processed
+- Report of a crawl's status
+
+On a practical level, event logs are log messages.
+What differentiates them from typical log messages, however, is that they do not report _system_ level logs.
+In other words, event logs are not tied to the typical DEBUG, INFO, WARN, ERROR and FATAL levels, and oftentimes are not generated from the same places those logs are generated from.
+
+Event logs are in Elastic Common Schema (ECS) format.
+This makes filtering by specific log fields inside of Elasticsearch easy, especially when used in conjunction with Filebeat.
+You can find out more about Elastic Common Schema [here](https://www.elastic.co/docs/reference/ecs).
+
+### What do they contain?
+The following is a typical event log that Open Crawler might generate:
+
+```
+{
+    "service.ephemeral_id":"6807937b2fe88a837f68cb36",
+    "service.type":"crawler",
+    "service.version":"0.3.0",
+    "process.pid":1283,
+    "host.name":"85811fb66e17",
+    "@timestamp":"2025-04-22T13:43:33Z",
+    "event.id":"68079d052fe88ab2087a5f17",
+    "process.thread.id":32728,
+    "crawler.crawl.id":"680793792fe88a837f68cb35",
+    "crawler.crawl.stage":"primary",
+    "url.full":"https://sfbay.craigslist.org/eby/apa/d/berkeley-charming-1br-in-excellent/7831506997.html",
+    "url.scheme":"https",
+    "url.domain":"sfbay.craigslist.org",
+    "url.path":"/eby/apa/d/berkeley-charming-1br-in-excellent/7831506997.html",
+    "crawler.url.hash":"823d1c5611fd8be2fd3faa1268d9712dd0174da3",
+    "event.type":"denied",
+    "event.action":"url-extracted",
+    "event.module":"html",
+    "event.outcome":"success",
+    "event.start":"2025-04-22T13:43:33Z",
+    "event.end":"2025-04-22T13:43:33Z",
+    "event.duration":3417,"crawler.url.deny_reason":"content_type_denied",
+    "message":"Unexpected content type  for a crawl task with type=content",
+    "event.kind":"event"
+}
+```
+
+The above data can potentially help you debug Crawler issues, such as problems with URL crawl rules, or why a URL you believe can be crawled wasn't able to.
