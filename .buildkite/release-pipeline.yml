@@ -27,6 +27,7 @@ steps:
     if: "(build.branch =~ /^[0-9]+\\.[0-9x]+.*/ || build.branch == \"release_from_main\")"
     steps:
       - label: "Setting IS_SNAPSHOT"
+        command: "echo"
         env:
           IS_SNAPSHOT: "true"
         if: "(build.branch == \"release_from_main\")"
@@ -62,6 +63,7 @@ steps:
     if: "(build.branch =~ /^[0-9]+\\.[0-9x]+.*/ || build.branch == \"release_from_main\")"
     steps:
       - label: "Setting IS_SNAPSHOT"
+        command: "echo"
         env:
           IS_SNAPSHOT: "true"
         if: "(build.branch == \"release_from_main\")"
