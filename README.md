@@ -76,7 +76,7 @@ Once you're ready to run a more complex crawl, check out [Connecting to Elastics
 
 ### Configuration
 
-- [Configuration files](docs/CONFIG.md): Understand the crawler and Elasticsearch YAML configuration files, how to structure them, and how they interact.
+- [Configuration files](docs/CONFIG.md): Understand the crawler and Elasticsearch YAML configuration files and how both can be leveraged to create a complete configuration.
 
 ## Developer guide
 ### Crawler CLI
