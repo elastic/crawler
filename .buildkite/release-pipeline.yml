@@ -119,13 +119,13 @@ steps:
           diskName: '/dev/xvda'
         commands:
           - "mkdir -p .artifacts"
-         - buildkite-agent artifact download '.artifacts/*.tar.gz*' .artifacts/ --step build_docker_image_arm64
+          - buildkite-agent artifact download '.artifacts/*.tar.gz*' .artifacts/ --step build_docker_image_arm64
           - ".buildkite/publish/push-docker.sh"
       - label: "Build and push multiarch Docker image"
         agents:
           image: "docker.elastic.co/ci-agent-images/drivah:0.25.0"
-         ephemeralStorage: "20G"
-         memory: "4G"
+          ephemeralStorage: "20G"
+          memory: "4G"
         command: ".buildkite/publish/build-and-push-multiarch-docker.sh"
         depends_on:
           - "push_amd64_docker_image"
