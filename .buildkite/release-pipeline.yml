@@ -17,7 +17,7 @@ steps:
   # ----
   - group: ":package: amd64 Build and Test"
     key: "build_and_test_amd64"
-    if: "(build.branch =~ /^[0-9]+\\.[0-9x]+.*/ || build.branch == \"release_from_main\")"
+    if: "(build.branch =~ /^[0-9]+\\.[0-9x]+.*/ || build.branch == \"main\")"
     steps:
       - command: "buildkite-agent meta-data set is_snapshot false"
       - label: "Determine if snapshot"
@@ -52,7 +52,7 @@ steps:
   # ----
   - group: ":package: arm64 Build and Test"
     key: "build_and_test_arm64"
-    if: "(build.branch =~ /^[0-9]+\\.[0-9x]+.*/ || build.branch == \"release_from_main\")"
+    if: "(build.branch =~ /^[0-9]+\\.[0-9x]+.*/ || build.branch == \"main\")"
     steps:
       - command: "buildkite-agent meta-data set is_snapshot false"
       - label: "Determine if snapshot"
@@ -90,7 +90,7 @@ steps:
   # Multiarch Docker image build and push
   # ----
   - group: ":truck: Publish images"
-    if: "(build.branch =~ /^[0-9]+\\.[0-9x]+.*/ || build.branch == \"release_from_main\")"
+    if: "(build.branch =~ /^[0-9]+\\.[0-9x]+.*/ || build.branch == \"main\")"
     depends_on:
       - "build_and_test_amd64"
       - "build_and_test_arm64"
