@@ -17,6 +17,13 @@ This documentation outlines the following ways to run the Elastic Open Web Crawl
 - [Ingest into Elasticsearch](docs/ELASTICSEARCH.md): Configure the Open Crawler to connect to Elasticsearch and index crawl results.
 - [Developer guide](#developer-guide): Build and run Open Crawler from source, for developers who want to modify or extend the code.
 
+### Version compatibility
+
+| Elasticsearch | Open Crawler       | Operating System |
+|---------------|--------------------|------------------|
+| `8.x`         | `v0.2.x`           | Linux, OSX       |
+| `9.x`         | `v0.2.1` and above | Linux, OSX       |
+
 ### Simple Docker quickstart
 
 Let's scrape our first website using the Open Crawler running on Docker!
@@ -90,14 +97,6 @@ Detailed setup steps, including environment requirements, are in the [Developer 
 ### Contribute
 Want to contribute? We welcome bug reports, code contributions, and documentation improvements.
 Read the [Contributing Guide](docs/CONTRIBUTING.md) for contribution types, PR guidelines, and coding standards.
-
-
-## Version compatibility
-
-| Elasticsearch | Open Crawler       | Operating System |
-|---------------|--------------------|------------------|
-| `8.x`         | `v0.2.x`           | Linux, OSX       |
-| `9.x`         | `v0.2.1` and above | Linux, OSX       |
 
 ## Contact
 
