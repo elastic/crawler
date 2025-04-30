@@ -1,4 +1,4 @@
-# Advanced Crawler Details
+# Advanced Open Crawler Details
 
 - [Crawl Lifecycle](#crawl-lifecycle)
   - [The Primary crawl](#the-primary-crawl)
@@ -7,14 +7,14 @@
 
 ## Crawl Lifecycle
 
-Crawler runs crawl jobs based on configuration files you reference when running crawler.
-As Crawler runs, each URL endpoint found during the crawl will be handed to a different thread to be visited, resulting in one document per page being indexed into Elasticsearch.
+The Elastic Open Web Crawler runs crawl jobs based on configuration files you reference when running crawler.
+As Open Crawler runs, each URL endpoint found during the crawl will be handed to a different thread to be visited, resulting in one document per page being indexed into Elasticsearch.
 
 Crawls are performed in two stages: a primary crawl and a purge crawl.
 
 ### The Primary crawl
 
-Beginning with URLs included as `seed_urls`, the Crawler begins crawling web content.
+Beginning with URLs included as `seed_urls`, the crawler begins crawling web content.
 While crawling, each link it encounters will be added to the crawl queue, unless the link should be ignored due to [crawl rules](./docs/features/CRAWL_RULES.md) or [crawler directives](./docs/features/CRAWLER_DIRECTIVES.md).
 
 The crawl results from visiting these webpages are added to a pool of results.
@@ -22,12 +22,12 @@ These are indexed into Elasticsearch using the `_bulk` API once the pool reaches
 
 ### The Purge crawl
 
-After a primary crawl is completed, Crawler will then fetch every doc from the associated index that was not encountered during the primary crawl.
+After a primary crawl is completed, the crawler fetches all documents from the associated index that were not seen during the crawl.
 It does this through comparing the `last_crawled_at` date on the doc to the primary crawl's start time.
 If `last_crawled_at` is earlier than the start time, that means the webpage was not updated during the primary crawl and should be added to the purge crawl.
 
-Crawler then re-crawls all of these webpages.
-If a webpage is still accessible, Crawler will update its Elasticsearch doc.
+The crawler then re-crawls all of these webpages.
+If a page is still accessible, it updates the corresponding document in Elasticsearch.
 A webpage can be inaccessible due to any of the following reasons:
 
 - Updated [crawl rules](./docs/features/CRAWL_RULES.md) in the configuration file that now exclude the URL
@@ -38,10 +38,10 @@ At the end of the purge crawl, all docs in the index that were not updated durin
 
 ## Document Schema
 
-Crawler generates Elasticsearch documents from crawl results.
+Open Crawler generates Elasticsearch documents from crawl results.
 These documents have a predefined list of fields that are always included.
 
-Crawler does not impose any mappings onto indices that it ingests docs into.
+Open Crawler does not impose any mappings onto indices that it ingests docs into.
 This means you are free to create whatever mappings you like for an index, so long as you create the mappings _before_ indexing any documents.
 
 If any [content extraction rules](./features/EXTRACTION_RULES.md) have been configured, you can add more fields to the Elasticsearch documents.

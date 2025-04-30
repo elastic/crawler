@@ -14,15 +14,15 @@ Elastic plans to promote this feature to GA in a future release.
 
 This documentation outlines the following ways to run the Elastic Open Web Crawler:
 - [Simple Docker quickstart](#simple-docker-quickstart): Run a basic crawl with zero setup. No Elasticsearch instance required.
-- [Ingest into Elasticsearch](docs/ELASTICSEARCH.md): Configure the crawler to connect to Elasticsearch and index crawl results.
+- [Ingest into Elasticsearch](docs/ELASTICSEARCH.md): Configure the Open Crawler to connect to Elasticsearch and index crawl results.
 - [Developer guide](#developer-guide): Build and run Open Crawler from source, for developers who want to modify or extend the code.
 
 ### Simple Docker quickstart
 
 Let's scrape our first website using the Open Crawler running on Docker!
 
-The following command will create a simple config file in your local directory, which will then be used by a Dockerized Crawler to run a crawl.
-This will output the crawl results to your console, so no Elasticsearch setup is required for this step.
+The following commands will create a simple config file in your local directory, which will then be used by the Dockerized crawler to run a crawl.
+The results will be printed to your console, so no Elasticsearch setup is required for this step.
 
 Run the following commands from your terminal:
 
@@ -38,7 +38,7 @@ docker run \
   -it docker.elastic.co/integrations/crawler:latest jruby bin/crawler crawl /crawl-config.yml
 ```
 
-If everything is set up correctly, you should see Crawler start up and begin crawling `example.com`.
+If everything is set up correctly, you should see the crawler start up and begin crawling `example.com`.
 It will print the following output to the screen and then return control to the terminal:
 
 ``` bash
@@ -50,8 +50,8 @@ It will print the following output to the screen and then return control to the 
 [primary] Finished a crawl. Result: success;
 ```
 
-To run alternative crawls, start by changing the `- url: ...` in the `crawl-config.yml` file.
-After each change just run the `docker run...` command again to see the results.
+To run different crawls, start by changing the `- url: ...` in the `crawl-config.yml` file.
+After each change, just run the `docker run...` command again to see the results.
 
 ### Ingest into Elasticsearch
 
@@ -62,7 +62,7 @@ Once you're ready to run a more complex crawl, check out [Connecting to Elastics
 
 - [Crawl lifecycle](docs/ADVANCED.md#crawl-lifecycle): Learn how the crawler discovers, queues, and indexes content across two stages: the primary crawl and the purge crawl.
 - [Document schema](docs/ADVANCED.md#document-schema): Review the standard fields used in Elasticsearch documents, and how to extend them with custom extraction rules.
-- [Feature comparison](docs/FEATURE_COMPARISON.md): See how Open Crawler compares to Elastic crawler, including feature support and deployment differences.
+- [Feature comparison](docs/FEATURE_COMPARISON.md): See how Open Crawler compares to Elastic Crawler, including feature support and deployment differences.
 
 ### Crawler features
 
@@ -76,15 +76,15 @@ Once you're ready to run a more complex crawl, check out [Connecting to Elastics
 
 ### Configuration
 
-- [Configuration files](docs/CONFIG.md): Understand the crawler and Elasticsearch YAML configuration files and how both can be leveraged to create a complete configuration.
+- [Configuration files](docs/CONFIG.md): Understand the Open Crawler and Elasticsearch YAML configuration files and how both can be leveraged to create a complete configuration.
 
 ## Developer guide
 ### Crawler CLI
-The crawler includes a CLI for running and managing crawl jobs, validating configs, and more.
+The Open Crawler includes a CLI for running and managing crawl jobs, validating configs, and more.
 See the [CLI reference](docs/CLI.md) for available commands and usage examples.
 
 ### Build from source
-You can build and run the crawler locally using the provided setup instructions.
+You can build and run the Open Crawler locally using the provided setup instructions.
 Detailed setup steps, including environment requirements, are in the [Developer Guide](docs/DEVELOPER_GUIDE.md).
 
 ### Contribute

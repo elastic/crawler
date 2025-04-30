@@ -5,13 +5,12 @@ The last section provides [usage examples](#examples).
 
 ## Summary
 
-Extraction rules enable you to customize how the crawler extracts content from webpages.
-Extraction rules are configured in the Crawler config file.
-These are configured under the `domains[].extraction_rulesets` field.
+Extraction rules enable you to customize how the Elastic Open Web Crawler extracts content from webpages.
+Extraction rules are configured in the crawler config file, under the `domains[].extraction_rulesets` field.
 
-`domains[].extraction_rulesets` is an array, and it is tied to the `url` within the same `domains` array item.
-If a crawl result's base URL matches the configured `domains[].url`, then Crawler will check if the crawl result's full URL matches any of the URL filters.
-If any of the URL filters match, then Crawler will execute the extraction rules.
+`domains[].extraction_rulesets` is an array tied to the `url` within the same `domains` array item.
+If a crawl result's base URL matches the configured `domains[].url`, Open Crawler will then check whether the result’s full URL matches any of the URL filters.
+If any filter matches, the crawler will execute the associated extraction rules.
 
 ## URL Filters
 
@@ -50,26 +49,26 @@ The following examples would all work for the URL `http://example.com/blog/help/
 ## Rules
 
 Rules are an array.
-If any of the URL filters are true for an endpoint, then Crawler will attempt to execute all of the configured rules in the array.
+If any of the URL filters are true for an endpoint, the crawler will attempt to execute all of the configured rules in the array.
 
 ### `domains[].extraction_rulesets[].rules[].action`
 
-What Crawler should do for this rule.
+Specifies what action the crawler should take for this rule.
 
 Possible values:
 
 - `extract` 
-  - Crawler will extract the full HTML element found using the `selector`
-  - Crawler will directly add it to the document using `field_name` as the doc's field name
+  - Extracts the full HTML element found using the `selector`
+  - The crawler will directly add it to the document using `field_name` as the doc's field name
   - If multiple values are found, they will be concatenated according to the `join_as` value
 - `set`
-  - Crawler will see if the HTML element configured in `selector` exists or not
-  - If one or multiple elements exist, Crawler will add the configured `value` to the document using `field_name` as the doc's field name
-  - If it does not exist, Crawler will not add anything to the document
+  - The crawler will see if the HTML element configured in `selector` exists or not
+  - If one or multiple elements exist, the crawler will add the configured `value` to the document using `field_name` as the doc's field name
+  - If it does not exist, the crawler will not add anything to the document
 
 ### `domains[].extraction_rulesets[].rules[].field_name`
 
-The document field name that Crawler will add the extracted content to.
+The `field_name` of the document where the extracted content will be stored.
 This can be any string value, as long as it is not one of the predefined field names in the [document schema](../ADVANCED.md#document-schema).
 
 ### `domains[].extraction_rulesets[].rules[].selector`
@@ -116,7 +115,7 @@ Value can be anything except `null`.
 
 ### `domains[].extraction_rulesets[].rules[].source`
 
-The source that Crawler will try to extract content from.
+Specifies the content source to extract from.
 Currently only `html` or `url` is supported.
 
 ## Examples
@@ -141,7 +140,7 @@ The HTML for this page looks like this:
 
 I want to extract all of the cities as an array, but only from the webpage that ends with `/cities`.
 First I must set the `url_filters` for this extraction rule to apply to only this URL.
-Then I can define what the Crawler should do when it encounters this webpage.
+Then I can define what the Open Crawler should do when it encounters this webpage.
 
 ```yaml
 domains:
@@ -210,7 +209,7 @@ In this example, the ingested documents will include the following fields on top
 
 ### Multiple rulesets
 
-There's no limit to the number of extraction rulesets that can be defined for a single Crawler.
+There's no limit to the number of extraction rulesets that can be defined for a single crawler.
 Taking the above two examples, we can combine them into a single configuration.
 
 ```yaml
