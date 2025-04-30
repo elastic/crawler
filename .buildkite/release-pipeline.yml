@@ -19,9 +19,10 @@ steps:
     key: "build_and_test_amd64"
     if: "(build.branch =~ /^[0-9]+\\.[0-9x]+.*/ || build.branch == \"release_from_main\")"
     steps:
+      - command: "buildkite-agent meta-data set is_snapshot false"
       - label: "Determine if snapshot"
         command: "buildkite-agent meta-data set is_snapshot true"
-        if: "(build.branch == \"mai\")"
+        if: "(build.branch == \"main\")"
       - label: "Building amd64 Docker image"
         agents:
           provider: aws
@@ -53,9 +54,10 @@ steps:
     key: "build_and_test_arm64"
     if: "(build.branch =~ /^[0-9]+\\.[0-9x]+.*/ || build.branch == \"release_from_main\")"
     steps:
+      - command: "buildkite-agent meta-data set is_snapshot false"
       - label: "Determine if snapshot"
         command: "buildkite-agent meta-data set is_snapshot true"
-        if: "(build.branch == \"mai\")"
+        if: "(build.branch == \"main\")"
       - label: "Building arm64 Docker image"
         agents:
           provider: aws
