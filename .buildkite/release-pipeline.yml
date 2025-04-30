@@ -26,6 +26,10 @@ steps:
     key: "build_and_test_amd64"
     if: "(build.branch =~ /^[0-9]+\\.[0-9x]+.*/ || build.branch == \"release_from_main\")"
     steps:
+      - label: "Setting IS_SNAPSHOT"
+        env:
+          IS_SNAPSHOT: "true"
+        if: "(build.branch == \"release_from_main\")"
       - label: "Building amd64 Docker image"
         agents:
           provider: aws
@@ -34,9 +38,6 @@ steps:
         env:
           ARCHITECTURE: "amd64"
           DOCKERFILE_PATH: "Dockerfile.wolfi"
-        env:
-          IS_SNAPSHOT: "true"
-        if: "(build.branch == \"release_from_main\")"
         command: ".buildkite/publish/build-docker.sh"
         key: "build_docker_image_amd64"
         artifact_paths: ".artifacts/*.tar.gz"
@@ -60,6 +61,10 @@ steps:
     key: "build_and_test_arm64"
     if: "(build.branch =~ /^[0-9]+\\.[0-9x]+.*/ || build.branch == \"release_from_main\")"
     steps:
+      - label: "Setting IS_SNAPSHOT"
+        env:
+          IS_SNAPSHOT: "true"
+        if: "(build.branch == \"release_from_main\")"
       - label: "Building arm64 Docker image"
         agents:
           provider: aws
