@@ -17,7 +17,7 @@ This documentation outlines the following ways to run the Elastic Open Web Crawl
 - [Ingest into Elasticsearch](docs/ELASTICSEARCH.md): Configure the crawler to connect to Elasticsearch and index crawl results.
 - [Developer guide](#developer-guide): Build and run Open Crawler from source, for developers who want to modify or extend the code.
 
-## Simple Docker quickstart
+### Simple Docker quickstart
 
 Let's scrape our first website using the Open Crawler running on Docker!
 
@@ -53,7 +53,7 @@ It will print the following output to the screen and then return control to the 
 To run alternative crawls, start by changing the `- url: ...` in the `crawl-config.yml` file.
 After each change just run the `docker run...` command again to see the results.
 
-## Ingest into Elasticsearch
+### Ingest into Elasticsearch
 
 Once you're ready to run a more complex crawl, check out [Connecting to Elasticsearch](docs/ELASTICSEARCH.md) to ingest data into your Elasticsearch instance.
 
