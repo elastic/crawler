@@ -66,7 +66,7 @@ Once you're ready to run a more complex crawl, check out [Connecting to Elastics
 
 ### Crawler features
 
-- [Crawl rules](docs/features/CRAWL_RULES.md): Control which URLs the crawler is allowed to visit using.
+- [Crawl rules](docs/features/CRAWL_RULES.md): Control which URLs the Open Crawler is allowed to visit.
 - [Extraction rules](docs/features/EXTRACTION_RULES.md): Define how and where the crawler extracts content from HTML or URLs.
 - [Binary content extraction](docs/features/BINARY_CONTENT_EXTRACTION.md): Extract text from downloadable files like PDFs and DOCX using MIME-type matching and ingest pipelines.
 - [Crawler directives](docs/features/CRAWLER_DIRECTIVES.md): Use robots.txt, meta tags, or embedded data attributes to guide discovery and content extraction.
