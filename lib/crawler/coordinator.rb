@@ -22,9 +22,6 @@ module Crawler
     CRAWL_STAGE_PRIMARY = :primary
     CRAWL_STAGE_PURGE = :purge
 
-    SINK_LOCK_RETRY_INTERVAL = 1.second
-    SINK_LOCK_MAX_RETRIES = 120
-
     ELASTICSEARCH_OUTPUT_SINK = 'elasticsearch'
 
     attr_reader :crawl, :crawl_results, :crawl_stage, :seen_urls, :started_at, :task_executors, :url_test_results
@@ -549,8 +546,8 @@ module Crawler
         # Adding a debug log here is incredibly noisy, so instead we should rely on logging from the sink
         # and only log here if the SINK_LOCK_MAX_RETRIES threshold is reached.
         retries += 1
-        unless retries >= SINK_LOCK_MAX_RETRIES
-          interruptible_sleep(SINK_LOCK_RETRY_INTERVAL)
+        unless retries > config.sink_lock_max_retries
+          interruptible_sleep(config.sink_lock_retry_interval)
           retry
         end
 
