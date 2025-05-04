@@ -55,7 +55,7 @@ RSpec.describe Crawler::CLI::Helpers do
       expect do
         described_class.load_yaml(tmpfile.path)
       end.to raise_error(SyntaxError)
-
+    end
     let(:path) { tmpfile.path }
 
     after { tmpfile.close! }
