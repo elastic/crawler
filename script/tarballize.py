@@ -12,7 +12,6 @@ def make_tarfile(output_filename, source_dir):
     with tarfile.open(output_filename, "w:gz") as tar:
         tar.add(source_dir, arcname=os.path.basename(source_dir))
 
-def main():
+if __name__ == "__main__":
     args = get_arguments()
     make_tarfile(args.output_filename, args.source_directory)
-main()
