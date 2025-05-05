@@ -112,7 +112,7 @@ RSpec.describe(ES::Client) do
   end
 
   describe '#connection_config' do
-    context 'when configuring host and port' do
+    context 'when configuring Elasticsearch client' do
       it 'handles full URL with scheme, host and port' do
         new_config = {
           host: 'https://localhost:9201'
