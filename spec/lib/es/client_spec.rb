@@ -125,6 +125,17 @@ RSpec.describe(ES::Client) do
         expect(result[:port]).to eq('9201')
       end
 
+      it 'configures Elasticsearch client with port in host string' do
+        new_config = {
+          host: 'https://localhost:9201'
+        }
+
+        result = subject.connection_config(new_config, '0.0.0-foo')
+        expect(result[:scheme]).to eq('https')
+        expect(result[:host]).to eq('localhost')
+        expect(result[:port]).to eq('9201')
+      end
+
       it 'configures Elasticsearch client with scheme and host' do
         new_config = {
           host: 'https://localhost'
