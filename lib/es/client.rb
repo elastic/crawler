@@ -106,9 +106,9 @@ module ES
       port ||= uri.port
 
       {
-        scheme: scheme,
-        host: host,
-        port: port
+        scheme:,
+        host:,
+        port:
       }.compact
     end
 
