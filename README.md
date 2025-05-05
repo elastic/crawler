@@ -68,7 +68,7 @@ Once you're ready to run a more complex crawl, check out [Connecting to Elastics
 ### Core concepts
 
 - [Crawl lifecycle](docs/ADVANCED.md#crawl-lifecycle): Learn how the crawler discovers, queues, and indexes content across two stages: the primary crawl and the purge crawl.
-- [Document schema](docs/ADVANCED.md#document-schema): Review the standard fields used in Elasticsearch documents, and how to extend them with custom extraction rules.
+- [Document schema](docs/ADVANCED.md#document-schema): Review the standard fields used in Elasticsearch documents, and how to extend the current schema and mappings with custom extraction rules.
 - [Feature comparison](docs/FEATURE_COMPARISON.md): See how Open Crawler compares to Elastic Crawler, including feature support and deployment differences.
 
 ### Crawler features
