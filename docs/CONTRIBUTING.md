@@ -6,6 +6,8 @@ There are many ways to contribute, from writing tutorials or blog posts, improvi
 If you want to be rewarded for your contributions, sign up for the [Elastic Contributor Program](https://www.elastic.co/community/contributor).
 Each time you make a valid contribution, you’ll earn points that increase your chances of winning prizes and being recognized as a top contributor.
 
+To find information on setting up your local environment to begin developing, see the [Developer Guide](./DEVELOPER_GUIDE.md).
+
 - [Reporting issues](#reporting-issues)
 - [Getting help](#getting-help)
 - [Types of contribution](#types-of-contribution)
@@ -87,7 +89,8 @@ A few tips per log level:
 Code style is important in shared codebases, as it helps ensure that everyone can read and understand code that they didn't write.
 In order to enforce code style, our CI jobs apply a linter (rubocop), and will fail to build (and block merging of) non-compliant changes.
 
-You can run the linter locally with `./script/bundle exec rubocop` to ensure that your changes do not introduce any issues.
+You can run the linter locally with `make lint` to ensure that your changes do not introduce any issues.
+Some linting fixes can also be automatically applied using `make autocorrect`.
 
 ### Testing
 
@@ -96,9 +99,7 @@ For this reason, it is important to both add tests when contributing new code, a
 
 Our goal is to maintain 92% test coverage for the Elastic Crawler.
 
-You can run the tests locally with `./script/bundle rspec <file-path>`.
-
-Be sure to read about our [unit tests](./DEVELOPING.md#unit-tests) and [integration tests](./DEVELOPING.md#integration-tests). # TODO: check
+Be sure to read about our [unit tests](./DEVELOPER_GUIDE#unit-tests).
 
 ### Backport labels
 

@@ -1,13 +1,13 @@
 # CLI
 
-Crawler CLI is a command-line interface for use in the terminal or scripts.
-This is the only user interface for interacting with Crawler.
+Elastic Open Web Crawler CLI is a command-line interface for use in the terminal or scripts.
+This is the only user interface for interacting with the Open Crawler.
 
 ## Installation and Configuration
 
-Ensure you are able to run Crawler in docker or have completed the steps to run Crawler [from source](../README.md#running-open-crawler-from-source) before using the CLI.
+Before using the CLI, make sure you can run the crawler either in Docker or [from source](./DEVELOPER_GUIDE.md).
 
-For instructions on configuring a Crawler, see [CONFIG.md](./CONFIG.md).
+For details on how to configure the crawler, see the [CONFIG.md](./CONFIG.md).
 
 ### CLI in Docker
 
@@ -18,7 +18,7 @@ docker run -it docker.elastic.co/integrations/crawler:latest jruby \
     bin/crawler <command> <args>
 ```
 
-For an interactive shell with Crawler, simply change the entrypoint to `/bin/bash`:
+For an interactive shell with the crawler, simply change the entrypoint to `/bin/bash`:
 
 ```bash
 docker run -it --entrypoint /bin/bash docker.elastic.co/integrations/crawler:latest
