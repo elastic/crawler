@@ -112,20 +112,8 @@ RSpec.describe(ES::Client) do
   end
 
   describe '#connection_config' do
-    context 'when various combinations of scheme, host and port are configured' do
-      it 'configures Elasticsearch client with scheme, host and port' do
-        new_config = {
-          host: 'https://localhost',
-          port: '9201'
-        }
-
-        result = subject.connection_config(new_config, '0.0.0-foo')
-        expect(result[:scheme]).to eq('https')
-        expect(result[:host]).to eq('localhost')
-        expect(result[:port]).to eq('9201')
-      end
-
-      it 'configures Elasticsearch client with port in host string' do
+    context 'when configuring host and port' do
+      it 'handles full URL with scheme, host and port' do
         new_config = {
           host: 'https://localhost:9201'
         }
@@ -133,36 +121,50 @@ RSpec.describe(ES::Client) do
         result = subject.connection_config(new_config, '0.0.0-foo')
         expect(result[:scheme]).to eq('https')
         expect(result[:host]).to eq('localhost')
-        expect(result[:port]).to eq('9201')
+        expect(result[:port]).to eq(9201)
       end
 
-      it 'configures Elasticsearch client with scheme and host' do
+      it 'handles URL with scheme and host' do
         new_config = {
           host: 'https://localhost'
         }
-        result = subject.connection_config(new_config, '0.0.0-foo')
 
+        result = subject.connection_config(new_config, '0.0.0-foo')
         expect(result[:scheme]).to eq('https')
         expect(result[:host]).to eq('localhost')
       end
 
-      it 'configures Elasticsearch client with host and port' do
+      it 'handles host with port' do
         new_config = {
           host: 'localhost',
-          port: '9201'
+          port: 9201
         }
 
         result = subject.connection_config(new_config, '0.0.0-foo')
+        expect(result[:scheme]).to be_nil
         expect(result[:host]).to eq('localhost')
-        expect(result[:port]).to eq('9201')
+        expect(result[:port]).to eq(9201)
       end
 
-      it 'configures Elasticsearch client with host only' do
+      it 'handles host only' do
         new_config = {
           host: 'localhost'
         }
+
         result = subject.connection_config(new_config, '0.0.0-foo')
+        expect(result[:scheme]).to be_nil
         expect(result[:host]).to eq('localhost')
+        expect(result[:port]).to be_nil
+      end
+
+      it 'gives precedence to separate port over port in host' do
+        new_config = {
+          host: 'https://localhost:9201',
+          port: 9300
+        }
+
+        result = subject.connection_config(new_config, '0.0.0-foo')
+        expect(result[:port]).to eq(9300)
       end
     end
 
