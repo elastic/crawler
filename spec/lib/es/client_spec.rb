@@ -115,8 +115,7 @@ RSpec.describe(ES::Client) do
     context 'when various combinations of scheme, host and port are configured' do
       it 'configures Elasticsearch client with scheme, host and port' do
         new_config = {
-          scheme: 'https',
-          host: 'localhost',
+          host: 'https://localhost',
           port: '9201'
         }
 
@@ -128,8 +127,7 @@ RSpec.describe(ES::Client) do
 
       it 'configures Elasticsearch client with scheme and host' do
         new_config = {
-          scheme: 'https',
-          host: 'localhost'
+          host: 'https://localhost'
         }
         result = subject.connection_config(new_config, '0.0.0-foo')
 
@@ -139,21 +137,21 @@ RSpec.describe(ES::Client) do
 
       it 'configures Elasticsearch client with host and port' do
         new_config = {
-          host: 'https://localhost',
+          host: 'localhost',
           port: '9201'
         }
 
         result = subject.connection_config(new_config, '0.0.0-foo')
-        expect(result[:host]).to eq('https://localhost')
+        expect(result[:host]).to eq('localhost')
         expect(result[:port]).to eq('9201')
       end
 
       it 'configures Elasticsearch client with host only' do
         new_config = {
-          host: 'https://localhost:9220'
+          host: 'localhost'
         }
         result = subject.connection_config(new_config, '0.0.0-foo')
-        expect(result[:host]).to eq('https://localhost:9220')
+        expect(result[:host]).to eq('localhost')
       end
     end
 
@@ -228,7 +226,8 @@ RSpec.describe(ES::Client) do
       it 'overrides username and password' do
         result = subject.connection_config(config[:elasticsearch], '0.0.0-bar')
 
-        expect(result[:host]).to eq(host)
+        expect(result[:host]).to eq('notreallyaserver')
+        expect(result[:port]).to eq('9200')
         expect(result[:api_key]).to eq('key')
 
         expect(result[:username]).to be_nil

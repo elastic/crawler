@@ -9,6 +9,8 @@
 require 'fileutils'
 require 'elasticsearch'
 require 'active_support/core_ext/integer/time'
+require 'uri'
+
 module ES
   class Client < ::Elasticsearch::Client
     USER_AGENT = 'elastic-web-crawler-'
@@ -49,7 +51,7 @@ module ES
       }
       @max_retries, @retry_delay = get_retry_configuration(es_config)
 
-      config.merge!(configure_scheme_host_port(es_config))
+      config.merge!(configure_host_port(es_config))
       config.merge!(configure_auth(es_config))
       config.deep_merge!(configure_ssl(es_config))
       config.merge!(configure_compression(es_config))
@@ -92,11 +94,21 @@ module ES
 
     private
 
-    def configure_scheme_host_port(es_config)
+    def configure_host_port(es_config)
+      host = es_config[:host]
+      port = es_config[:port]
+
+      uri = URI.parse(host)
+      scheme = uri.scheme
+      host = uri.host || host
+
+      # Port from separate argument takes precedence over port in hostname
+      port ||= uri.port
+
       {
-        scheme: es_config[:scheme],
-        host: es_config[:host],
-        port: es_config[:port]
+        scheme: scheme,
+        host: host,
+        port: port
       }.compact
     end
 
