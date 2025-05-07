@@ -42,14 +42,13 @@ RSpec.describe(Crawler::API::Crawl) do
     {
       completed: {
         docs_count: 9,
-        docs_volume: 14597
+        docs_volume: 14_597
       },
       failed: {
         docs_count: 0,
         docs_volume: 0
       }
     }
-
   end
 
   subject do
