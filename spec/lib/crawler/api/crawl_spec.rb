@@ -55,7 +55,7 @@ RSpec.describe(Crawler::API::Crawl) do
 
   it 'has a config' do
     expect(subject.config.seed_urls.map(&:to_s).to_a).to eq(["#{url}/"])
-    expect(subject.config.output_sink).to eq(:elasticsearch)
+    expect(subject.config.output_sink.to_s).to eq('elasticsearch')
   end
 
   it 'has a output sink' do
@@ -71,6 +71,17 @@ RSpec.describe(Crawler::API::Crawl) do
   end
 
   context 'after a successful crawl' do
+    it 'should print final crawl stats' do
+      expect(subject).to receive(:print_final_crawl_status)
+      subject.start!
+    end
+
+    it 'should print Elasticsearch ingestion stats' do
+      expect(subject).to receive(:print_crawl_ingestion_results)
+
+      subject.start!
+    end
+
     it 'should release URL queue resources' do
       expect(subject.crawl_queue).to receive(:delete)
       subject.start!

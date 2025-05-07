@@ -110,7 +110,7 @@ module Crawler
           crawl_queue.delete
           seen_urls.clear
           print_final_crawl_status
-          print_crawl_ingestion_results(ingestion_stats) if config.output_sink == 'elasticsearch'
+          print_crawl_ingestion_results(ingestion_stats) if config.output_sink.to_s == 'elasticsearch'
         end
       end
 
@@ -206,13 +206,23 @@ module Crawler
       end
 
       def print_crawl_ingestion_results(ingestion_stats)
+        return if ingestion_stats.nil?
+
+        completed_stats = ingestion_stats.fetch(:completed, {})
+        failed_stats = ingestion_stats.fetch(:failed, {})
+
         puts "\n---- Elasticsearch Ingestion Stats ----"
-        puts '- Completed'
-        puts "  - Documents upserted: #{ingestion_stats[:completed][:docs_count]}"
-        puts "  - Volume (bytes): #{ingestion_stats[:completed][:docs_volume]}"
+        unless completed_stats.empty?
+          puts '- Completed'
+          puts "  - Documents upserted: #{completed_stats.fetch(:docs_count, 0)}"
+          puts "  - Volume (bytes): #{completed_stats.fetch(:docs_volume, 0)}"
+        end
+
+        return if failed_stats.empty?
+
         puts '- Failed'
-        puts "  - Number of documents that failed to index: #{ingestion_stats[:failed][:docs_count]}"
-        puts "  - Volume (bytes): #{ingestion_stats[:failed][:docs_volume]}"
+        puts "  - Number of documents that failed to index: #{failed_stats.fetch(:docs_count, 0)}"
+        puts "  - Volume (bytes): #{failed_stats.fetch(:docs_volume, 0)}"
       end
 
       def print_final_crawl_status # rubocop:disable Metrics/AbcSize
