@@ -89,7 +89,7 @@ module Crawler
           url_queue_items: crawl_queue.length,
           seen_urls: seen_urls.count
         )
-        coordinator.run_crawl!
+        ingestion_stats = coordinator.run_crawl!
 
         record_overall_outcome(coordinator.crawl_results)
       rescue StandardError => e
@@ -109,6 +109,8 @@ module Crawler
           system_logger.info('Releasing resources used by the crawl...')
           crawl_queue.delete
           seen_urls.clear
+          print_final_crawl_status
+          print_crawl_ingestion_results(ingestion_stats) if config.output_sink == 'elasticsearch'
         end
       end
 
@@ -201,6 +203,29 @@ module Crawler
           puts "  \nA helpful suggestion: #{result.suggestion_message}"
         end
         puts "\nYou can find the downloaded document under #{config.output_dir}"
+      end
+
+      def print_crawl_ingestion_results(ingestion_stats)
+        puts "\n---- Elasticsearch Ingestion Stats ----"
+        puts '- Completed'
+        puts "  - Documents upserted: #{ingestion_stats[:completed][:docs_count]}"
+        puts "  - Volume (bytes): #{ingestion_stats[:completed][:docs_volume]}"
+        puts '- Failed'
+        puts "  - Number of documents that failed to index: #{ingestion_stats[:failed][:docs_count]}"
+        puts "  - Volume (bytes): #{ingestion_stats[:failed][:docs_volume]}"
+      end
+
+      def print_final_crawl_status # rubocop:disable Metrics/AbcSize
+        crawl_status = status
+        puts "\n---- Crawl Stats ----"
+        puts "- Pages visited: #{crawl_status[:pages_visited]}"
+        puts "- URLs allowed: #{crawl_status[:urls_allowed]}"
+        puts '- URLs denied'
+        puts "  - Already seen: #{crawl_status[:urls_denied][:already_seen]}"
+        puts "  - Domain filter: #{crawl_status[:urls_denied][:domain_filter_denied]}"
+        puts "- Crawl duration (seconds): #{crawl_status[:crawl_duration_msec] / 1000}"
+        puts "- Crawling time (seconds): #{crawl_status[:crawling_time_msec] / 1000}"
+        puts "- Average response time (seconds): #{crawl_status[:avg_response_time_msec] / 1000}"
       end
 
       def print_extracted_links(result)

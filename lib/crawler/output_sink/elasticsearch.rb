@@ -152,13 +152,8 @@ module Crawler
           Failed to index #{@failed[:docs_count]} docs with a volume of #{@failed[:docs_volume]} bytes.
           Deleted #{@deleted} outdated docs from the index.
         LOG
-        msg_improved = <<~LOG
-          All indexing operations completed
-          - Successfully upserted #{@completed[:docs_count]} documents (#{@completed[:docs_volume]} bytes)
-          - Failed to index #{@failed[:docs_count]} documents (#{@failed[:docs_volume]} bytes)
-          - Deleted #{@deleted} documents from index #{config.output_index}.
-        LOG
-        system_logger.info(msg_improved)
+        system_logger.info(msg)
+        ingestion_stats # return ingestion stats to run_crawl! method
       end
 
       def flush # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
