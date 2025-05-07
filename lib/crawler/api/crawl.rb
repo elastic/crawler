@@ -171,7 +171,7 @@ module Crawler
 
       def combined_outcome(results)
         if coordinator.url_test # ignore outcome of purge crawl if url test command
-          results[:primary][:outcome] == :success
+          results[:primary][:outcome]
         else
           results[:primary][:outcome] == :success && results[:purge][:outcome] == :success ? :success : :failure
         end
