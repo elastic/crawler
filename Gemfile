@@ -35,7 +35,7 @@ group :default do
   gem 'bson', '~> 4.15.0', platform: :jruby
   gem 'bigdecimal', '~> 3.1.7', platform: :jruby
   gem 'json', '~> 2.7.2', platform: :jruby
-  gem 'nokogiri', '~> 1.18.6', platform: :jruby
+  gem 'nokogiri', '~> 1.18.8', platform: :jruby
   gem 'racc', '~> 1.7.3', platform: :jruby
   gem 'strscan', '~> 3.1.0', platform: :jruby
   gem 'thread_safe', '~> 0.3.6', platform: :jruby
