@@ -233,7 +233,7 @@ module Crawler
         configure_logging!(params[:log_level], params[:event_logs_to_file], params[:system_logs_to_file])
 
         # Normalize and validate parameters
-        confugure_ssl_ca_certificates!
+        configure_ssl_ca_certificates!
         configure_domain_allowlist!
         configure_crawl_rules!
         configure_seed_urls!
@@ -267,8 +267,18 @@ module Crawler
         @crawl_id ||= BSON::ObjectId.new.to_s # rubocop:disable Naming/MemoizedInstanceVariableName
       end
 
-      def confugure_ssl_ca_certificates!
+      def configure_ssl_ca_certificates!
+        unless ssl_ca_certificates.is_a?(Array)
+          raise ArgumentError,
+                'ssl_ca_certificates must be a list of certificates or paths to certificates'
+        end
+
         ssl_ca_certificates.map! do |cert|
+          unless cert.is_a?(String)
+            raise ArgumentError,
+                  'each entry of ssl_ca_certificates must be a certificate or a path to a certificate'
+          end
+
           if /BEGIN CERTIFICATE/.match?(cert)
             parse_certificate_string(cert)
           else
