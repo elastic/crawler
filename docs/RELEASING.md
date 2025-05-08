@@ -17,14 +17,14 @@ Build steps in buildkite:
 2. Click `New Build`
 3. Enter a message (e.g. `x.y release`)
 4. Choose a version branch with the pattern `x.y`
-   - Builds will only run from a versioned branch, you cannot build from `main`
+    - Building from `main` is possible, but it will yield a _snapshot_ build.
+    - For example, if the version inside the `product_version` file is `0.3.0`, then a build triggered from `main` will result in `0.3.0-SNAPSHOT` images.
 5. Choose a commit
-   - the default `HEAD` is usually fine
+   - The default `HEAD` is usually fine
 6. Click `Create Build`
 7. Wait a minute for the Buildkite configuration to be loaded
    - When it has loaded, a `Build Information` button will appear
-8. Select whether or not the release should be a snapshot
-   - It is recommended to release a snapshot and do a quick test before committing to a full release
+8. Select whether or not the build should have a `:latest` tag
 9. Wait for the build to finish
 
 Creating a release in GitHub

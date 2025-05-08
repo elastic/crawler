@@ -1,36 +1,54 @@
 # Elastic Crawler Developer's Guide
 
-- [General Configuration](#general-configuration)
+- [Running from Source](#running-from-source)
+- [Configuration](#configuration)
 - [Installation](#installation)
 - [Architecture](#architecture)
 - [Testing the elastic-crawler](#testing-the-elastic-crawler)
   - [Unit tests](#unit-tests)
 
-## General Configuration
+## Running from Source
+
+ℹ️ Open Crawler uses both JRuby and Java.
+We recommend using version managers for both.
+When developing Open Crawler we use <b>rbenv</b> and <b>jenv</b>.
+There are instructions for setting up these env managers here:
+
+- [Official documentation for installing jenv](https://www.jenv.be/)
+- [Official documentation for installing rbenv](https://github.com/rbenv/rbenv?tab=readme-ov-file#installation)
+
+1. Clone the repository: `git clone https://github.com/elastic/crawler.git`
+2. Go to the root of the Open Crawler directory and check the expected Java and Ruby versions are being used:
+    ```bash
+    # should output the same version as `.ruby-version`
+    ruby --version
+
+    # should output the same version as `.java-version`
+    java -version
+    ```
+3. If the versions seem correct, you can install dependencies:
+    ```bash
+    make install
+    ```
+
+   You can also use the env variable `CRAWLER_MANAGE_ENV` to have the install script automatically check whether `rbenv` and `jenv` are installed, and that the correct versions are running on both:
+   Doing this requires that you use both `rbenv` and `jenv` in your local setup.
+
+    ```bash
+    CRAWLER_MANAGE_ENV=true make install
+    ```
+4. Now you should be able to run Crawler locally
+    ```bash
+   bin/crawler crawl path/to/config.yml
+   ```
+
+## Configuration
 
 The crawler details need to be provided in a crawler configuration file.
 You can specify Elasticsearch instance configuration within that file, or optionally in a separate configuration file.
-This is possible so that multiple crawlers can run using a single Elasticsearch configuration.
+This allows multiple crawlers to share a single Elasticsearch configuration.
 
 For more details check out the following [documentation](https://github.com/elastic/elastic-crawler/blob/main/docs/CONFIG.md).
-
-## Installation
-
-This project uses JRuby. To simplify handling dependencies between both Ruby and Java, we have scripts that handle installation.
-To avoid breaking anything in your project, __avoid running bundle directly__.
-If you need to run bundle, always do so through the `./script/bundle` command.
-
-To install dependencies, run:
-```shell
-$ ./script/bundle install
-```
-
-Checkout the bundle script file if you're curious what is happening. A summary of its behaviour:
-
-- Inits rbenv and jenv
-- Sets versions for bundler, ruby, and java
-- Installs ruby and java dependencies
-- Executes whatever code comes after it
 
 ## Architecture
 

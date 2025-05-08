@@ -75,11 +75,13 @@ module Crawler
 
       # Close the sink to make sure all the in-flight content has been safely stored/indexed/etc
       system_logger.info('Closing the output sink before finishing the crawl...')
-      sink.close
+      ingestion_stats = sink.close
 
       # Final dump of crawl stats
       events.log_crawl_status(crawl, force: true)
       system_logger.info('Crawl shutdown complete')
+
+      ingestion_stats # return ingestion stats to be printed later
     end
 
     def run_primary_crawl!
