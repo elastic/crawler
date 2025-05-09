@@ -27,7 +27,8 @@ module Crawler
 
     ELASTICSEARCH_OUTPUT_SINK = 'elasticsearch'
 
-    attr_reader :crawl, :crawl_results, :crawl_stage, :seen_urls, :started_at, :task_executors, :url_test_results
+    attr_reader :crawl, :crawl_results, :crawl_stage, :seen_urls, :started_at, :task_executors, :url_test,
+                :url_test_results
 
     delegate :events, :system_logger, :config, :executor, :sink, :rule_engine,
              :interruptible_sleep, :shutdown_started?, :allow_resume?,
