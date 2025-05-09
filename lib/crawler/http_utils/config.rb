@@ -13,8 +13,6 @@ module Crawler
     class Config < SimpleDelegator
       DEFAULT_MAX_POOL_SIZE = 50
       DEFAULT_CONNECTION_REQUEST_TIMEOUT = 60
-      DEFAULT_SOCKET_TIMEOUT = 10
-      DEFAULT_CONNECT_TIMEOUT = 10
       DEFAULT_CHECK_CONNECTION_TIMEOUT = 2
 
       ALLOWED_OPTIONS = %i[
@@ -103,7 +101,7 @@ module Crawler
       end
 
       def socket_timeout
-        fetch(:socket_timeout, DEFAULT_SOCKET_TIMEOUT)
+        fetch(:socket_timeout, crawler_default(:socket_timeout))
       end
 
       def connection_request_timeout
@@ -111,7 +109,7 @@ module Crawler
       end
 
       def connect_timeout
-        fetch(:connect_timeout, DEFAULT_CONNECT_TIMEOUT)
+        fetch(:connect_timeout, crawler_default(:connect_timeout))
       end
 
       def check_connection_timeout
