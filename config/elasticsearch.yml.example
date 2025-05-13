@@ -20,9 +20,10 @@
 #
 #
 ## The encoded API key for Elasticsearch connection.
-##    Using `api_key` is recommended instead of `username`/`password`.
-##    Ensure this API key has read and write access to the configured
-##    `output_index` in the Crawler config
+##    Using `api_key` is recommended instead of `username`/`password`. Ensure
+##    this API key has read and write access to the configured `output_index`
+##    in the Crawler config. The api key can be read from the environment
+##    using <%= ENV['ES_API_KEY'] %>
 #elasticsearch.api_key: 1234
 #
 #
@@ -33,8 +34,9 @@
 #
 #
 ##  The password for the Elasticsearch connection.
-##    Using `password` requires `username` to also be configured.
-##    However, `elasticsearch.api_key` is the recommended configuration choice.
+##    Using `password` requires `username` to also be configured. However, 
+##    `elasticsearch.api_key` is the recommended configuration choice. The 
+##    password can be read from the environment using <%= ENV['ES_PASSWORD'] %>
 #elasticsearch.password: changeme
 #
 #

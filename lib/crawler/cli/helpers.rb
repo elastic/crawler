@@ -6,6 +6,9 @@
 
 # frozen_string_literal: true
 
+require 'yaml'
+require 'erb'
+
 module Crawler
   module CLI
     module Helpers
@@ -17,7 +20,11 @@ module Crawler
       def self.load_yaml(file_path)
         die("Config file #{file_path} does not exist!") unless File.readable?(file_path)
         begin
-          YAML.load_file(file_path)
+          raw_content = File.read(file_path)
+          erb_result = ERB.new(raw_content).result
+          YAML.safe_load(erb_result, permitted_classes: [Date, Time, Symbol], aliases: true)
+        rescue Psych::Exception => e
+          die("YAML parsing error in config file #{file_path}: #{e}")
         rescue StandardError => e
           die("Failed to load config file #{file_path}: #{e}")
         end
