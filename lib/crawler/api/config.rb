@@ -126,7 +126,11 @@ module Crawler
         :default_encoding,            # Default encoding used for responses that do not specify a charset
         :compression_enabled,         # Enable/disable HTTP content compression
         :sitemap_discovery_disabled,  # Enable/disable crawling of sitemaps defined in robots.txt
-        :head_requests_enabled        # Fetching HEAD requests before GET requests enabled
+        :head_requests_enabled,       # Fetching HEAD requests before GET requests enabled
+
+        # Sink lock retry settings
+        :sink_lock_retry_interval,  # Interval in seconds to retry acquiring a sink lock
+        :sink_lock_max_retries      # Maximum number of retries to acquire a sink lock
 
       ].freeze
 
@@ -197,7 +201,11 @@ module Crawler
         extraction_rules: {},
         crawl_rules: {},
         purge_crawl_enabled: true,
-        full_html_extraction_enabled: false
+        full_html_extraction_enabled: false,
+
+        # Sink lock retry settings
+        sink_lock_retry_interval: 1,
+        sink_lock_max_retries: 120
       }.freeze
 
       # Settings we are not allowed to log due to their sensitive nature
