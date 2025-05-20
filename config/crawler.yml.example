@@ -54,7 +54,7 @@
 ## The maximum depth that Open Crawler will follow links to.
 #max_crawl_depth: 2
 #
-## The maximum number of links  can extract from each page.
+## The maximum number of links Open Crawler can extract from each page.
 ##   Default value is 1000.
 #max_extracted_links_count: 1000
 #
@@ -152,7 +152,18 @@
 #http_proxy_protocol: http
 #http_proxy_username: ent-search
 #http_proxy_password: changeme
+#
+## Whether authenticated crawling of non-HTTPS URLs is allowed.
+## Defaults to 'false'.
+#http_auth_allowed: false
+#
+## Allow Open Crawler to access localhost (127.0.0.1)
+## Defaults to 'false'.
 #loopback_allowed: true
+#
+## Allow Open Crawler to access private IP space
+## Defaults to 'false'.
+#private_networks_allowed: false
 #
 ## SSL configurations.
 ## Whether to perform SSL Verification when crawling. Defaults to `true`
@@ -196,7 +207,7 @@
 #log_level: info
 #
 ## Whether or not event logging is enabled for output to file.
-##    Event logs are incredibly noisy but have a lot of granularity, these can
+##    Event logs are noisy but have a lot of granularity, these can
 ##    be useful for debugging failing Crawlers.
 #     Defaults to false
 #event_logs_to_file: false
