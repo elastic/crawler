@@ -1,13 +1,13 @@
 # Binary Content Extraction
 
-The web crawler can extract content from downloadable binary files, such as PDF and DOCX files.
+The Elastic Open Web Crawler can extract content from downloadable binary files, such as PDF and DOCX files.
 Binary content is extracted by converting file contents to base64 and including the output in a document to index.
 This value is picked up by an [Elasticsearch ingest pipeline](https://www.elastic.co/guide/en/elasticsearch/reference/current/ingest.html) that will convert the base64 content into plain text, to store in the `body` field of the same document.
 
 ## Using this feature
 
 1. Enable ingest pipelines in the Elasticsearch configuration
-2. Enable binary content extraction in the Crawler configuration
+2. Enable binary content extraction in the crawler configuration
 3. Select which MIME types should have their contents extracted
    - The MIME type is determined by the HTTP response’s `Content-Type` header when downloading a given file
    - While intended primarily for PDF and Microsoft Office formats, you can use any of the formats supported by [Apache Tika](https://tika.apache.org/)

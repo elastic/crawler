@@ -38,6 +38,19 @@ RSpec.describe(Crawler::API::Crawl) do
   let(:es_client_indices) { double(:es_client_indices, exists: double) }
   let(:build_info) { { version: { number: '8.99.0', build_flavor: 'default' } }.deep_stringify_keys }
 
+  let(:ingest_stats) do
+    {
+      completed: {
+        docs_count: 9,
+        docs_volume: 14_597
+      },
+      failed: {
+        docs_count: 0,
+        docs_volume: 0
+      }
+    }
+  end
+
   subject do
     described_class.new(crawl_config).tap do |crawl|
       crawl.executor = executor
@@ -51,11 +64,13 @@ RSpec.describe(Crawler::API::Crawl) do
     allow(ES::Client).to receive(:new).and_return(es_client)
     allow(es_client).to receive(:indices).and_return(es_client_indices)
     allow(es_client).to receive(:info).and_return(build_info)
+
+    allow(subject.coordinator.sink).to receive(:close).and_return(ingest_stats)
   end
 
   it 'has a config' do
     expect(subject.config.seed_urls.map(&:to_s).to_a).to eq(["#{url}/"])
-    expect(subject.config.output_sink).to eq(:elasticsearch)
+    expect(subject.config.output_sink.to_s).to eq('elasticsearch')
   end
 
   it 'has a output sink' do
@@ -71,6 +86,16 @@ RSpec.describe(Crawler::API::Crawl) do
   end
 
   context 'after a successful crawl' do
+    it 'should print final crawl stats' do
+      expect(subject).to receive(:print_final_crawl_status)
+      subject.start!
+    end
+
+    it 'should print Elasticsearch ingestion stats' do
+      expect(subject).to receive(:print_crawl_ingestion_results).with(ingest_stats)
+      subject.start!
+    end
+
     it 'should release URL queue resources' do
       expect(subject.crawl_queue).to receive(:delete)
       subject.start!
