@@ -1,6 +1,13 @@
 ## 🏠/.buildkite/pipeline-release.yml
 # Manual triggered pipeline to build and publish Docker images
 
+notify:
+  - if: 'build.branch =~ /^((main)|([0-9]+\.[0-9]+))\$/ && (build.state == "failed" || pipeline.started_passing)'
+    slack:
+      channels:
+        - "#search-et-alerts"
+      message: "${BUILDKITE_MESSAGE}"
+
 steps:
   - input: "Build information"
     fields:
