@@ -24,7 +24,8 @@ module Crawler
 
     ELASTICSEARCH_OUTPUT_SINK = 'elasticsearch'
 
-    attr_reader :crawl, :crawl_results, :crawl_stage, :seen_urls, :started_at, :task_executors, :url_test_results
+    attr_reader :crawl, :crawl_results, :crawl_stage, :seen_urls, :started_at, :task_executors, :url_test,
+                :url_test_results
 
     delegate :events, :system_logger, :config, :executor, :sink, :rule_engine,
              :interruptible_sleep, :shutdown_started?, :allow_resume?,
@@ -72,11 +73,13 @@ module Crawler
 
       # Close the sink to make sure all the in-flight content has been safely stored/indexed/etc
       system_logger.info('Closing the output sink before finishing the crawl...')
-      sink.close
+      ingestion_stats = sink.close
 
       # Final dump of crawl stats
       events.log_crawl_status(crawl, force: true)
       system_logger.info('Crawl shutdown complete')
+
+      ingestion_stats # return ingestion stats to be printed later
     end
 
     def run_primary_crawl!

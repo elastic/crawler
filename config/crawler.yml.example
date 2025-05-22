@@ -84,7 +84,24 @@
 #http_proxy_username: ent-search
 #http_proxy_password: changeme
 #loopback_allowed: true
+#
+## SSL configurations.
+## Whether to perform SSL Verification when crawling. Defaults to `true`
 #ssl_verification_mode: none
+#
+## When crawling, these custom certificate authorities are considered trusted
+##   CA Certificates can be provided in one of three ways
+##     1. CA Certificates can be read from a file:
+##     2. They can be provided as a single line with new lines replaced with `\n`
+##     3. Finally, they can be provided as a multi-line YAML String
+#ssl_ca_certificates:
+# - /path/to/ssl/certificate.pem
+# - "-----BEGIN CERTIFICATE-----\nMIID...\n...CERT DATA...\n-----END CERTIFICATE-----"
+# - |-
+#   -----BEGIN CERTIFICATE-----
+#   MIID...........
+#   ...CERT DATA...
+#   -----END CERTIFICATE-----
 #
 ## Authentication configurations.
 ##     Only required if a site has some form of authentication.

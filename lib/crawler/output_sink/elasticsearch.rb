@@ -153,6 +153,7 @@ module Crawler
           Deleted #{@deleted} outdated docs from the index.
         LOG
         system_logger.info(msg)
+        ingestion_stats # return ingestion stats to run_crawl! method
       end
 
       def flush # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
