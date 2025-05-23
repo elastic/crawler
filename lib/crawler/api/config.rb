@@ -174,6 +174,8 @@ module Crawler
         socket_timeout: 10,
         request_timeout: 60,
 
+        private_networks_allowed: false,
+
         max_title_size: 1.kilobyte,
         max_body_size: 5.megabytes,
         max_keywords_size: 512.bytes,
