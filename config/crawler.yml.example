@@ -83,7 +83,7 @@
 ## ------------------------------- URL Limits ----------------------------------
 ## The maximum amount of time, in seconds, to crawl a single web page.
 ##   Default value is 24 hours.
-#max_duration: 86400 # 24 hours
+#max_duration: 86_400 # 24 hours
 #
 ## The maximum number of unique URLs Open Crawler can process before stopping.
 ##   Default is 100000.
@@ -97,7 +97,7 @@
 ##   Default value is 16.
 #max_url_segments: 16
 #
-## The maximum amount of threads Open Crawler can utilize.
+## The maximum amount of parameters a URL can contain.
 ##   Default value is 10.
 #max_url_params: 10
 #
@@ -157,7 +157,7 @@
 ## Defaults to 'false'.
 #http_auth_allowed: false
 #
-## Allow Open Crawler to access localhost (127.0.0.1)
+## Allow Open Crawler to access localhost. 
 ## Defaults to 'false'.
 #loopback_allowed: true
 #
@@ -231,7 +231,7 @@
 #
 ## Set a custom crawl ID for this crawler.
 ##   Will appear in log messages as [crawl:unique-crawl_id]
-##   Default is is a random hash value.
+##   Default is a random hash value.
 #crawl_id: custom-crawl-id
 #
 ## ------------------------------- Elasticsearch -------------------------------
