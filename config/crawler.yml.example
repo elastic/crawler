@@ -143,7 +143,6 @@
 ## Set a custom User-agent name for the requests Open Crawler makes.
 ##   Default is Elastic-Crawler (crawler-version-number-here).
 ##   Ex:   Elastic-Crawler (0.3.0)
-#
 #user_agent: custom-user-agent
 #
 ## Proxy configurations.
@@ -236,7 +235,7 @@
 #
 ## ------------------------------- Elasticsearch -------------------------------
 #
-## Elasticsearch connection settings for this specific Open Crawler/crawl job.
+## Elasticsearch connection settings for this specific crawler/crawl job.
 ##     See elasticsearch.yml.example for detailed configurations.
 ##
 #elasticsearch:
