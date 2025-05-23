@@ -253,3 +253,9 @@
 #  bulk_api:
 #    max_items: 10
 #    max_size_bytes: 1_048_576
+
+## The interval in seconds to wait before retrying to acquire the sink lock.
+#sink_lock_retry_interval: 1
+
+## The maximum number of times to retry acquiring the sink lock.
+#sink_lock_max_retries: 120

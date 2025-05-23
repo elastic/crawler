@@ -43,6 +43,13 @@ If your Elasticsearch instance uses SSL/TLS with certificates signed by a privat
 
 **Note:** For detailed explanations of all Elasticsearch connection parameters, including authentication and other SSL options, refer to the comments within the [config/elasticsearch.yml.example](../config/elasticsearch.yml.example) file.
 
+### Sink Lock Retry Settings
+
+These settings control the retry behavior when the Elasticsearch output sink is locked.
+
+*   `sink_lock_retry_interval`: The interval in seconds to wait before retrying to acquire the sink lock. Defaults to `1`.
+*   `sink_lock_max_retries`: The maximum number of times to retry acquiring the sink lock before dropping the crawl result. Defaults to `120`.
+
 ## Configuration files in Docker
 
 See [CLI in Docker](./CLI.md#cli-in-docker) for details on how to mount configuration files into the Docker container for use with commands.
