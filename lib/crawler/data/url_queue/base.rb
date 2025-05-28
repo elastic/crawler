@@ -17,7 +17,6 @@ module Crawler
         # How often should we alert
         WARN_THRESHOLD_INTERVAL = 5.minutes
 
-        #-------------------------------------------------------------------------------------------
         attr_reader :config, :last_threshold_alert_timestamp
 
         delegate :crawl_id, :system_logger, to: :config
@@ -27,7 +26,6 @@ module Crawler
           raise ArgumentError, 'Needs a config' unless config
         end
 
-        #-------------------------------------------------------------------------------------------
         # Checks the size of the queue before putting any more items on it
         # Raises an exception if the queue is full
         def check_queue_size!
@@ -57,7 +55,6 @@ module Crawler
           @last_threshold_alert_timestamp = Time.now
         end
 
-        #-------------------------------------------------------------------------------------------
         # Adds one item to the queue
         def push(_item)
           check_queue_size!
@@ -85,7 +82,6 @@ module Crawler
           # nothing to do by default
         end
 
-        #-------------------------------------------------------------------------------------------
         # Returns the length of the queue
         def length
           raise NotImplementedError

@@ -33,7 +33,6 @@ module Crawler
         # Allow constructor to be called on concrete result classes
         public_class_method :new
 
-        #---------------------------------------------------------------------------------------------
         def to_h
           super.merge(
             location:,

@@ -18,7 +18,6 @@ module Crawler
       xml: %w[text/xml application/xml]
     }.freeze
 
-    #-------------------------------------------------------------------------------------------------
     attr_reader :config, :logger
 
     def initialize(config) # rubocop:disable Lint/MissingSuper
@@ -35,7 +34,7 @@ module Crawler
       }
     end
 
-    #-------------------------------------------------------------------------------------------------
+    #
     # Make sure response.release_connection is called to return unused connection back to the pool
     # see more https://frameworks.readthedocs.io/en/latest/network/http/httpClientConnectionManagement.html#connection-persistence-re-use
     def run(crawl_task, follow_redirects: false) # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
@@ -101,7 +100,6 @@ module Crawler
       # rubocop:enable Metrics/BlockLength
     end
 
-    #-------------------------------------------------------------------------------------------------
     def handling_http_errors(crawl_task)
       yield
     rescue Crawler::HttpUtils::ResponseTooLarge => e
@@ -133,7 +131,7 @@ module Crawler
       )
     end
 
-    #-------------------------------------------------------------------------------------------------
+    #
     # Returns an HTTP client to be used for all requests
     def http_client
       @http_client ||= Crawler::HttpClient.new(
@@ -174,8 +172,6 @@ module Crawler
         error: "Unexpected content type #{response.content_type} for a crawl task with type=#{crawl_task.type}"
       )
     end
-
-    #-------------------------------------------------------------------------------------------------
 
     def handle_redirect(crawl_task:, response:, result_args:)
       redirect_location = response.redirect_location
@@ -269,7 +265,6 @@ module Crawler
       response.release_connection
     end
 
-    #-------------------------------------------------------------------------------------------------
     def generate_unexpected_type_crawl_result(crawl_task:, response:)
       content_type = response['content-type']
       Crawler::Data::CrawlResult::UnsupportedContentType.new(
@@ -280,7 +275,6 @@ module Crawler
       )
     end
 
-    #-------------------------------------------------------------------------------------------------
     def timeout_error(crawl_task:, exception:, error:)
       logger.error("Failed HTTP request with a timeout: #{exception.inspect}")
       Crawler::Data::CrawlResult::Error.new(
@@ -289,7 +283,6 @@ module Crawler
       )
     end
 
-    #-------------------------------------------------------------------------------------------------
     def generate_html_crawl_result(crawl_task:, response:, response_body:)
       if crawl_task.content?
         Crawler::Data::CrawlResult::HTML.new(
@@ -308,7 +301,6 @@ module Crawler
       end
     end
 
-    #-------------------------------------------------------------------------------------------------
     def generate_xml_sitemap_crawl_result(crawl_task:, response:, response_body:)
       if crawl_task.sitemap?
         Crawler::Data::CrawlResult::Sitemap.new(
@@ -327,7 +319,6 @@ module Crawler
       end
     end
 
-    #-------------------------------------------------------------------------------------------------
     def generate_content_extractable_file_crawl_result(crawl_task:, response:, response_body:)
       if SUPPORTED_MIME_TYPES[:xml].include?(response.mime_type) && crawl_task.sitemap?
         generate_xml_sitemap_crawl_result(crawl_task:, response:,
@@ -350,12 +341,10 @@ module Crawler
       end
     end
 
-    #-------------------------------------------------------------------------------------------------
     def content_extractable_file_mime_types
       config.binary_content_extraction_enabled ? config.binary_content_extraction_mime_types.map(&:downcase) : []
     end
 
-    #-------------------------------------------------------------------------------------------------
     def extractable_content
       SUPPORTED_MIME_TYPES.values.flatten + content_extractable_file_mime_types
     end

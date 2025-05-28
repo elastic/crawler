@@ -18,7 +18,6 @@ module Crawler
         # Allow constructor to be called on concrete result classes
         public_class_method :new
 
-        #---------------------------------------------------------------------------------------------
         # Returns links from a sitemap document as a set of URL objects
         def extract_links
           { limit_reached: false, links: { content: [], sitemap: [] } }.tap do |results|
@@ -32,7 +31,6 @@ module Crawler
           end
         end
 
-        #---------------------------------------------------------------------------------------------
         def coerce_to_links(sitemap_urls)
           sitemap_urls.map do |sitemap_url|
             # NOTE: We use the root of the site as the base, not the sitemap URL itself
@@ -43,7 +41,6 @@ module Crawler
           end
         end
 
-        #---------------------------------------------------------------------------------------------
         # Returns a sitemap parser to be used for extracting links, etc from the crawl result
         def sitemap_parser
           @sitemap_parser ||= begin
