@@ -63,7 +63,6 @@ module Crawler
       request_timeout: HTTP_CHECK_TIMEOUT
     }.freeze
 
-    #-------------------------------------------------------------------------------------------------
     attr_reader :raw_url, :checks, :results, :url_crawl_result
 
     def initialize(url:, crawl_config:, checks: nil)
@@ -83,13 +82,11 @@ module Crawler
       @results = []
     end
 
-    #-------------------------------------------------------------------------------------------------
     # Returns a list of check names that are valid for a given validator configuration
     def valid_checks
       DOMAIN_LEVEL_CHECKS
     end
 
-    #-------------------------------------------------------------------------------------------------
     # Validates a given domain, returns +true+ if the domain is valid, +false+ otherwise
     # Detailed results could be retrieved by calling `#results`
     def valid?

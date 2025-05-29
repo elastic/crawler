@@ -49,9 +49,7 @@ module Crawler
         }
       end
 
-      #---------------------------------------------------------------------------------------------
       # Serialization/deserialization methods used for persisting queue items
-      #---------------------------------------------------------------------------------------------
 
       # Returns a unique identifier used to persist the object into Elasticsearch
       def unique_id
@@ -78,7 +76,6 @@ module Crawler
         )
       end
 
-      #---------------------------------------------------------------------------------------------
       def sitemap?
         type == :sitemap
       end

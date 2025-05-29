@@ -53,7 +53,6 @@ module Crawler
       end
     end
 
-    #-------------------------------------------------------------------------------------------------
     def validation_warn_from_crawl_redirect
       location = url_crawl_result.location.to_s
       validation_warn(:url_content, <<~MESSAGE, location:)
@@ -63,7 +62,6 @@ module Crawler
       MESSAGE
     end
 
-    #-------------------------------------------------------------------------------------------------
     def validation_fail_from_crawl_error
       error_happened =
         if url_crawl_result.instance_of?(Crawler::Data::CrawlResult::Error)

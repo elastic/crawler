@@ -34,7 +34,6 @@ module Crawler
       Concurrent::Hash.new { |h, v| h[v] = Concurrent::AtomicFixnum.new(0) }
     end
 
-    #-----------------------------------------------------------------------------------------------
     # Returns the total crawl duration (in milliseconds) or nil if the crawl has not started yet
     def crawl_duration_msec
       return nil unless crawl_started_at
@@ -73,7 +72,6 @@ module Crawler
       fetched_pages_count.positive? ? time_spent_crawling_msec / fetched_pages_count : 0
     end
 
-    #-----------------------------------------------------------------------------------------------
     # Receives a crawl event (see `EventGenerator`) and updates stats based on its contents
     def update_from_event(event)
       case event['event.action']

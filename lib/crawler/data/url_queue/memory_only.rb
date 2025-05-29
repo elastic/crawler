@@ -23,7 +23,6 @@ module Crawler
           setup_memory_queue
         end
 
-        #-------------------------------------------------------------------------------------------
         def setup_memory_queue
           @memory_size_limit = (config.url_queue_size_limit || 10_000).to_i
           raise ArgumentError, 'Queue size limit should be a positive number' if memory_size_limit < 1
@@ -33,7 +32,6 @@ module Crawler
           system_logger.info("Initialized an in-memory URL queue for up to #{memory_size_limit} URLs")
         end
 
-        #-------------------------------------------------------------------------------------------
         # Checks the size of the queue before putting any more items on it
         # Raises an exception if the queue is full
         def check_queue_size!
@@ -62,7 +60,6 @@ module Crawler
           )
         end
 
-        #-------------------------------------------------------------------------------------------
         # Adds an item into the queue
         def push(item)
           check_queue_size!

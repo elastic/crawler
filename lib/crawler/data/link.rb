@@ -36,9 +36,7 @@ module Crawler
         "<Link: base_url=#{base_url}; link=#{link.inspect}; node=#{node.inspect}; error=#{error.inspect}>"
       end
 
-      #---------------------------------------------------------------------------------------------
       # Make it possible to compare links and use them as keys in hashes and sets
-      #---------------------------------------------------------------------------------------------
       def hash
         @hash ||= [base_url, link, node].map(&:to_s).map(&:hash).sum # rubocop:disable Performance/Sum
       end
@@ -55,7 +53,6 @@ module Crawler
         other.hash == hash
       end
 
-      #---------------------------------------------------------------------------------------------
       # Returns an absolute URL for the link destination
       # Raises an Addressable::URI::InvalidURIError exception if the link is invalid or empty
       # You can call +valid?+ before converting a link to a URL if you need to make sure it is valid
@@ -68,7 +65,6 @@ module Crawler
         base_url.join(link.strip)
       end
 
-      #---------------------------------------------------------------------------------------------
       # Returns +true+ if the link is valid and could be converted to an absolute URL
       # Returns +false+ otherwise, along with setting the error value on the object
       def valid?
@@ -79,7 +75,6 @@ module Crawler
         false
       end
 
-      #---------------------------------------------------------------------------------------------
       # Returns an error message for invalid URLs, +nil+ otherwise
       def error
         # Run the validation code if we don't have an error
@@ -87,7 +82,6 @@ module Crawler
         @error
       end
 
-      #---------------------------------------------------------------------------------------------
       # Returns an array with all the values of the rel attribute for the link
       # See https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel for details
       def rel
