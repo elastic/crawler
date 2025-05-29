@@ -131,7 +131,6 @@ module Crawler
       )
     end
 
-    #
     # Returns an HTTP client to be used for all requests
     def http_client
       @http_client ||= Crawler::HttpClient.new(
