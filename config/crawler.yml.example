@@ -48,7 +48,9 @@
 ## Elasticsearch index name to ingest crawl results into. Required if output_sink is elasticsearch
 #output_index: my-index
 #
-## Local directory to output crawl results. Required if output_sink is file
+## Local directory to output crawl results. The defult value is ./crawled_docs
+##   This will appear at the top level of your Open Crawler directory if running from source,
+##   and under the home/app/ directory inside your container if running via Docker.
 #output_dir: output/local-site
 #
 ## The maximum depth that Open Crawler will follow links to.
