@@ -81,7 +81,7 @@ GEM
     public_suffix (6.0.1)
     raabro (1.4.0)
     racc (1.7.3-java)
-    rack (2.2.13)
+    rack (2.2.16)
     rack-mount (0.8.3)
       rack (>= 1.0.0)
     rainbow (3.1.1)
@@ -175,7 +175,7 @@ DEPENDENCIES
   pry-nav
   pry-remote
   racc (~> 1.7.3)
-  rack (~> 2.2.13)
+  rack (~> 2.2.14)
   rexml (~> 3.4.0)
   rspec (~> 3.13.0)
   rubocop (~> 1.63)
