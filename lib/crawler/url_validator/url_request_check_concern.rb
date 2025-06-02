@@ -98,7 +98,6 @@ module Crawler
       end
     end
 
-    #-------------------------------------------------------------------------------------------------
     def redirect_validation_result(details) # rubocop:disable Metrics/AbcSize
       location = url_crawl_result.location
 

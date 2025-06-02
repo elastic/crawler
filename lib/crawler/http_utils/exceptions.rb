@@ -25,7 +25,6 @@ module Crawler
 
     class InvalidHost < BaseError; end
 
-    #-----------------------------------------------------------------------------
     class InvalidEncoding < BaseError
       def new(encoding)
         @encoding = encoding
@@ -48,7 +47,6 @@ module Crawler
       end
     end
 
-    #-----------------------------------------------------------------------------
     class BaseErrorFromJava < BaseError
       attr_reader :java_exception, :root_cause
 
@@ -73,7 +71,6 @@ module Crawler
 
     class ConnectTimeout < BaseErrorFromJava; end
 
-    #-----------------------------------------------------------------------------
     class NoHttpResponseError < BaseErrorFromJava
       def self.for_proxy_host(error:, proxy_host:)
         error_class = proxy_host ? NoProxyHttpResponseError : self
@@ -95,7 +92,6 @@ module Crawler
       end
     end
 
-    #-----------------------------------------------------------------------------
     class SslException < BaseErrorFromJava
       DISABLE_SSL = 'disable SSL certificate validation (non-production environments only)'
 
@@ -131,7 +127,6 @@ module Crawler
       end
     end
 
-    #-----------------------------------------------------------------------------
     class SslCertificateExpiredError < SslException
       def error_message
         'SSL certificate expired'
@@ -142,7 +137,6 @@ module Crawler
       end
     end
 
-    #-----------------------------------------------------------------------------
     class SslCertificateNotYetValidError < SslException
       def error_message
         'SSL certificate is not yet valid'
@@ -153,7 +147,6 @@ module Crawler
       end
     end
 
-    #-----------------------------------------------------------------------------
     class SslCertificateRevokedError < SslException
       def error_message
         'SSL certificate has been revoked'
@@ -164,7 +157,6 @@ module Crawler
       end
     end
 
-    #-----------------------------------------------------------------------------
     class SslHostNameError < SslException
       def error_message
         'SSL host name issue'
@@ -175,7 +167,6 @@ module Crawler
       end
     end
 
-    #-----------------------------------------------------------------------------
     class SslHandshakeError < SslException
       def error_message
         'SSL handshake error'
@@ -186,7 +177,6 @@ module Crawler
       end
     end
 
-    #-----------------------------------------------------------------------------
     class SslCertificateChainError < SslException
       def error_message
         'SSL certificate chain is invalid'
