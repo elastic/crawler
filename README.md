@@ -21,7 +21,7 @@ Elastic plans to promote this feature to GA in a future release.
 | `9.x`         | `v0.2.1` and above | Linux, OSX       |
 
 
-## Getting started
+## Quick links
 
 - [Quickstart](#quickstart): Use this hands-on guide to crawl a website's content into Elasticsearch using a simple configuration to get started.
 - [Learn more](#learn-more): Learn how to configure advanced features and understand detailed options.
