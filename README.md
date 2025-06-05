@@ -24,8 +24,8 @@ Elastic plans to promote this feature to GA in a future release.
 ## Getting started
 
 - [Quickstart](#quickstart): Use this hands-on guide to crawl a website's content into Elasticsearch using a simple configuration to get started.
-- [Documentation](#documentation): Learn how to configure advanced features and understand detailed options.
-- [Developer guide](#developer-guide): Learn how to build and run Open Crawler from source, for developers who want to modify or extend the code.
+- [Learn more](#learn-more): Learn how to configure advanced features and understand detailed options.
+- [Developer guide](#for-developers): Learn how to build and run Open Crawler from source, for developers who want to modify or extend the code.
 
 ### Quickstart
 
@@ -252,4 +252,6 @@ You can also view your data in Kibana by navigating to **Discover** and selectin
 
 ---
 
-💬 [Get support](docs/SUPPORT.md) — 
+### 💬 Support
+
+- [Get support](docs/SUPPORT.md) — L
