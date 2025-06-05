@@ -60,12 +60,8 @@ docker run \
 
 
 > [!TIP]
-> `output_sink: console` means results will be printed to your terminal instead of being indexed into Elasticsearch.
-> In the next steps, we'll configure the crawler to index content into Elasticsearch instead:
-> ```yaml
-> output_sink: elasticsearch
-> output_index: web-crawl-test
-> ```
+> `output_sink: console` means results will be printed to your terminal instead of being indexed into Elasticsearch. In the next steps, we'll configure the crawler to index content into Elasticsearch instead by using `output_sink: elasticsearch`.
+
 
 #### Step 2: Get your Elasticsearch details
 
