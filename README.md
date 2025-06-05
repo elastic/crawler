@@ -20,14 +20,13 @@ Elastic plans to promote this feature to GA in a future release.
 | `8.x`         | `v0.2.x`           | Linux, OSX       |
 | `9.x`         | `v0.2.1` and above | Linux, OSX       |
 
-
 ## Quick links
 
 - [Quickstart](#quickstart): Use this hands-on guide to crawl a website's content into Elasticsearch using a simple configuration to get started.
 - [Learn more](#learn-more): Learn how to configure advanced features and understand detailed options.
 - [Developer guide](#for-developers): Learn how to build and run Open Crawler from source, for developers who want to modify or extend the code.
 
-### Quickstart
+### Quickstart 
 
 Get from zero to crawling your website into Elasticsearch in just a few steps.
 
@@ -38,14 +37,11 @@ Get from zero to crawling your website into Elasticsearch in just a few steps.
     - Start a free [Elastic Cloud Hosted or Serverless trial](https://www.elastic.co/cloud/cloud-trial-overview)
     - [Get started locally](https://www.elastic.co/docs/solutions/search/run-elasticsearch-locally)
 
-> [!TIP]
-> If you haven't used Elasticsearch before, check out the [Elasticsearch basics quickstart](https://www.elastic.co/docs/solutions/search/elasticsearch-basics-quickstart) for a hands-on introduction to fundamental concepts.
+#### Step 1: Verify Docker setup and run a test crawl
 
-#### Step 1: Verify Docker setup
+First, let's test that the crawler works on your system by crawling a simple website and printing the results to your terminal. We'll create a basic config file and run the crawler against `https://example.com`.
 
-First, let's test that the crawler works on your system by crawling a simple website and printing results to your terminal.
-
-Create a basic config file:
+Run the following in your terminal:
 
 ```bash
 cat > crawl-config.yml << EOF
@@ -53,32 +49,45 @@ output_sink: console
 domains:
   - url: https://example.com
 EOF
-```
 
-Run the crawler:
-
-```bash
 docker run \
   -v "$(pwd)":/config \
   -it docker.elastic.co/integrations/crawler:latest jruby \
   bin/crawler crawl /config/crawl-config.yml
 ```
 
-✅ **Success check**: You should see HTML content from example.com printed to your console, ending with `[primary] Finished a crawl. Result: success;`
+✅ **Success check**: You should see HTML content from `example.com` printed to your console, ending with `[primary] Finished a crawl. Result: success;`
 
-If this fails, check that Docker is running and you have internet connectivity.
+
+> [!TIP]
+> `output_sink: console` means results will be printed to your terminal instead of being indexed into Elasticsearch.
+> In the next steps, we'll configure the crawler to index content into Elasticsearch instead:
+> ```yaml
+> output_sink: elasticsearch
+> output_index: web-crawl-test
+> ```
 
 #### Step 2: Get your Elasticsearch details
 
-Get your Elasticsearch endpoint URL and API key. For step-by-step guidance on finding endpoint URLs and creating API keys in the UI, see the [Elastic connection details guide](https://www.elastic.co/docs/solutions/search/search-connection-details).
+> [!TIP]
+> If you haven't used Elasticsearch before, check out the [Elasticsearch basics quickstart](https://www.elastic.co/docs/solutions/search/elasticsearch-basics-quickstart) for a hands-on introduction to fundamental concepts.
 
-If you'd prefer to work in the [Dev Tools Console](https://www.elastic.co/docs/explore-analyze/query-filter/tools/console) use the following command: 
+Before proceeding with Step 2, make sure you have a running Elasticsearch instance. See [prequisites](#prerequisites).
+
+For this step you'll need:
+
+- Your Elasticsearch endpoint URL
+- An API key
+
+For step-by-step guidance on finding endpoint URLs and creating API keys in the UI, see [connection details](https://www.elastic.co/docs/solutions/search/search-connection-details).
+
+If you'd prefer to create an API key in the [Dev Tools Console](https://www.elastic.co/docs/explore-analyze/query-filter/tools/console) use the following command: 
 
 <details> <summary>Create API key via Dev Tools Console</summary>
 
-If you prefer using the console, create an API key with the correct permissions by running this in Kibana's Dev Tools console or via curl:
+Run the following in Dev Tools Console:
 
-```bash
+```json
 POST /_security/api_key
 {
   "name": "crawler-key",
@@ -96,11 +105,14 @@ POST /_security/api_key
 }
 ```
 
-✅ **Save the `encoded` value** from the response - this is your API key.
+Save the `encoded` value from the response - this is your API key.
 
 </details>
 
-#### Step 3: Set environment variables
+#### Step 3: Set environment variables (optional)
+
+> [!TIP]
+> If you prefer not to use environment variables (or are on a system where they don't work as expected), you can skip this step and manually edit the configuration file in Step 4.
 
 Set your connection details and target website as environment variables. Replace the values with your actual values.
 
@@ -120,12 +132,9 @@ export TARGET_WEBSITE="https://your-website.com"
 - `ES_API_KEY`: The encoded API key from Step 2
 - `TARGET_WEBSITE`: The website you want to crawl
 
-> [!TIP]
-> If you prefer not to use environment variables or are on a system where they don't work as expected, you can skip this step and manually edit the configuration file in Step 4.
-
 #### Step 4: Update crawler configuration for Elasticsearch
 
-Create your crawler config file with the environment variables substituted:
+Create your crawler config file by running the following command. This will use the environment variables you set in Step 3 to populate the configuration file automatically.
 
 ```bash
 cat > crawl-config.yml << EOF
@@ -143,7 +152,7 @@ domains:
 EOF
 ```
 
-If you skipped Step 3 or the environment variables aren't working, create the config file and replace the placeholders manually.
+If you skipped Step 3 or the environment variables aren't working on your computer, create the config file and replace the placeholders manually.
 
 <details><summary>Manual configuration</summary>
 
@@ -167,24 +176,9 @@ EOF
 > [!TIP]
 > We disable the [ingest pipeline](https://www.elastic.co/docs/manage-data/ingest/transform-enrich/ingest-pipelines) option initially to avoid setup complexity. You can enable it later for advanced content processing.
 
-#### Step 5: Validate your target website
+#### Step 6: Crawl and ingest into Elasticsearch
 
-Test that your target website is accessible and crawlable:
-
-```bash
-docker run \
-  -v "$(pwd)":/config \
-  -it docker.elastic.co/integrations/crawler:latest jruby \
-  bin/crawler validate /config/crawl-config.yml
-```
-
-✅ **Success check**: You should see `Domain https://your-website.com is valid`
-
-This will verify your website can be crawled and warn about any issues like redirects.
-
-#### Step 6: Run full crawl to Elasticsearch
-
-Now run the crawler:
+Now you can ingest your target website content into Elasticsearch:
 
 ```bash
 docker run \
@@ -204,9 +198,7 @@ docker run \
 Check that your crawled data made it into Elasticsearch:
 
 1. Go to Kibana/Serverless UI
-2. Navigate to **Discover** or **Index Management**
-3. Look for your `web-crawl-test` index
-4. You should see documents with crawled content!
+2. Find your `web-crawl-test` index by [searching in the global header](https://www.elastic.co/docs/explore-analyze/find-and-organize/find-apps-and-objects)
 
 Alternatively, run the following API call in Dev Tools Console:
 
@@ -214,20 +206,19 @@ Alternatively, run the following API call in Dev Tools Console:
 GET /web-crawl-test/_search
 ```
 
-✅ **Success**: You should see JSON results with your crawled web pages
-
-You can also view your data in Kibana by navigating to **Discover** and selecting the `web-crawl-test` index.
+✅ **Success**: You should see Elasticsearch documents containing the crawled content. Documents will include fields such as `url`, `title`, `content`, per the [schema](docs/ADVANCED.md#document-schema).
 
 ---
 
 ## 📖 Learn more
 
-### 🚀 Essential guides
-- [CLI reference](docs/CLI.md) - Commands for running crawls, validation, and management
-- [Configuration files](docs/CONFIG.md) - Understand crawler and Elasticsearch configuration options
-- [Crawl rules](docs/features/CRAWL_RULES.md) - Control which URLs the crawler visits
+### 🚀 Essential guides and concepts
 
----
+- [CLI reference](docs/CLI.md) - Commands for running crawls, validation, and management
+- [Configuration files](docs/CONFIG.md) - Understand how to configure crawlers with `crawler.yml` and `elasticsearch.yml` files
+- [Crawl rules](docs/features/CRAWL_RULES.md) - Control which URLs the crawler visits
+- [Crawl lifecycle](docs/ADVANCED.md#crawl-lifecycle) - Understand how the crawler discovers, queues, and indexes content across two stages: the primary crawl and the purge crawl
+- [Document schema](docs/ADVANCED.md#document-schema) - Review the standard fields used in Elasticsearch documents, and how to extend the current schema and mappings with custom extraction rules
 
 ### ⚙️ Advanced features
 - [Extraction rules](docs/features/EXTRACTION_RULES.md) - Define how crawler extracts content from HTML
@@ -239,9 +230,8 @@ You can also view your data in Kibana by navigating to **Discover** and selectin
 
 ---
 
-### 📚 Reference
-- [Crawl lifecycle](docs/ADVANCED.md#crawl-lifecycle) - How the crawler discovers, queues, and indexes content across two stages: the primary crawl and the purge crawl
-- [Document schema](docs/ADVANCED.md#document-schema) - Review the standard fields used in Elasticsearch documents, and how to extend the current schema and mappings with custom extraction rules
+### ⚖️ Elastic Crawler comparison
+
 - [Feature comparison](docs/FEATURE_COMPARISON.md) - See how Open Crawler compares to Elastic Crawler, including feature support and deployment differences
 
 ---
@@ -254,4 +244,4 @@ You can also view your data in Kibana by navigating to **Discover** and selectin
 
 ### 💬 Support
 
-- [Get support](docs/SUPPORT.md) — L
+- [Get support](docs/SUPPORT.md) — Learn how to get help, report issues, and find community resources
