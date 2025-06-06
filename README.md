@@ -22,13 +22,23 @@ Elastic plans to promote this feature to GA in a future release.
 
 ## Quick links
 
-- [Quickstart](#quickstart): Use this hands-on guide to crawl a website's content into Elasticsearch using a simple configuration to get started.
+- [Hands-on quickstart](#quickstart): Run your first crawl to ingest web content into Elasticsearch.
 - [Learn more](#learn-more): Learn how to configure advanced features and understand detailed options.
 - [Developer guide](#for-developers): Learn how to build and run Open Crawler from source, for developers who want to modify or extend the code.
 
 ### Quickstart 
 
 Get from zero to crawling your website into Elasticsearch in just a few steps.
+
+#### Steps
+
+- [Prerequisites](#prerequisites)
+  - [Step 1: Test crawl](#step-1-verify-docker-setup-and-run-a-test-crawl)
+  - [Step 2: Get Elasticsearch details](#step-2-get-your-elasticsearch-details)
+  - [Step 3: Set environment variables](#step-3-set-environment-variables-optional)
+  - [Step 4: Configure crawler](#step-4-update-crawler-configuration-for-elasticsearch)
+  - [Step 5: Run crawl](#step-5-crawl-and-ingest-into-elasticsearch)
+  - [Step 6: View data](#step-6-view-your-data)
 
 #### Prerequisites
 
@@ -56,12 +66,12 @@ docker run \
   bin/crawler crawl /config/crawl-config.yml
 ```
 
+The `-v "$(pwd)":/config` flag maps your current directory to the container's `/config` directory, making your config file available to the crawler.
+
 ✅ **Success check**: You should see HTML content from `example.com` printed to your console, ending with `[primary] Finished a crawl. Result: success;`
 
-
 > [!TIP]
-> `output_sink: console` means results will be printed to your terminal instead of being indexed into Elasticsearch. In the next steps, we'll configure the crawler to index content into Elasticsearch instead by using `output_sink: elasticsearch`.
-
+> `output_sink: console` means results will be printed to your terminal instead of being indexed into Elasticsearch. We'll use `output_sink: elasticsearch` to index into Elasticsearch.
 
 #### Step 2: Get your Elasticsearch details
 
@@ -119,14 +129,20 @@ export ES_API_KEY="your_encoded_api_key_here"
 export TARGET_WEBSITE="https://your-website.com"
 ```
 
+> [!NOTE]
+> Connection settings differ based on where Elasticsearch is running (e.g., cloud hosted, serverless, or localhost).
+
 - `ES_HOST`: Your Elasticsearch endpoint URL
-	- Cloud Hosted/Serverless: `https://your-deployment.es.region.aws.elastic.cloud`
-	- Localhost: `http://localhost`
-- `ES_PORT`: Your Elasticsearch port
-	- Cloud Hosted/Serverless: `443`
-	- Localhost: `9200`
-- `ES_API_KEY`: The encoded API key from Step 2
-- `TARGET_WEBSITE`: The website you want to crawl
+	- **Cloud Hosted/Serverless**: Looks like `https://your-deployment.es.region.aws.elastic.cloud`
+	- **Localhost**:
+      - Use `http://host.docker.internal` if Elasticsearch is running locally but not in the same Docker network
+      - Use `http://elasticsearch` if Elasticsearch is running in a Docker container on the same network
+- `ES_PORT`: Elasticsearch port
+	- **Cloud Hosted/Serverless**: `443`
+	- **Localhost**: `9200`
+- `ES_API_KEY`: API key from Step 2
+- `TARGET_WEBSITE`: Website to crawl
+  - Delete any trailing slashes (`/`) or you'll hit an error. `ArgumentError: Domain "https://www.example.com/" cannot have a path`
 
 #### Step 4: Update crawler configuration for Elasticsearch
 
@@ -172,7 +188,7 @@ EOF
 > [!TIP]
 > We disable the [ingest pipeline](https://www.elastic.co/docs/manage-data/ingest/transform-enrich/ingest-pipelines) option initially to avoid setup complexity. You can enable it later for advanced content processing.
 
-#### Step 6: Crawl and ingest into Elasticsearch
+#### Step 5: Crawl and ingest into Elasticsearch
 
 Now you can ingest your target website content into Elasticsearch:
 
@@ -189,18 +205,36 @@ docker run \
 - `Index [web-crawl-test] was found!`
 - `Elasticsearch sink initialized`
 
-#### Step 7: View your data
+#### Step 6: View your data
 
-Check that your crawled data made it into Elasticsearch:
+Now that the crawl is complete, you can view the indexed data in Elasticsearch:
 
-1. Go to Kibana/Serverless UI
-2. Find your `web-crawl-test` index by [searching in the global header](https://www.elastic.co/docs/explore-analyze/find-and-organize/find-apps-and-objects)
+<details><summary><b>Use the API</b></summary>
+The fastest way is to use `curl` from the command line.
+ This reuses the environment variables you set earlier.
 
-Alternatively, run the following API call in Dev Tools Console:
+```bash
+curl -X GET "${ES_HOST}:${ES_PORT}/web-crawl-test/_search" \
+    -H "Authorization: ApiKey ${ES_API_KEY}" \
+    -H "Content-Type: application/json"
+```
+
+Alternatively, run the following API call in the Dev Tools Console:
 
 ```shell
 GET /web-crawl-test/_search
 ```
+
+</details>
+
+
+<details><summary><b>Use Kibana/Serverless UI</b></summary>
+
+1. Go to the Kibana or Serverless UI
+2. Find the **Index Management** page using the [global search bar](https://www.elastic.co/docs/explore-analyze/find-and-organize/find-apps-and-objects)
+3. Select the `web-crawl-test` index
+
+</details>
 
 ✅ **Success**: You should see Elasticsearch documents containing the crawled content. Documents will include fields such as `url`, `title`, `content`, per the [schema](docs/ADVANCED.md#document-schema).
 
@@ -211,12 +245,13 @@ GET /web-crawl-test/_search
 ### 🚀 Essential guides and concepts
 
 - [CLI reference](docs/CLI.md) - Commands for running crawls, validation, and management
-- [Configuration files](docs/CONFIG.md) - Understand how to configure crawlers with `crawler.yml` and `elasticsearch.yml` files
+- [Configuration](docs/CONFIG.md) - Understand how to configure crawlers with `crawler.yml` and `elasticsearch.yml` files
+- [Document schema](docs/ADVANCED.md#document-schema) - Understand how crawled content is indexed into a set of predefined fields in Elasticsearch and how to add fields using extraction rules
 - [Crawl rules](docs/features/CRAWL_RULES.md) - Control which URLs the crawler visits
-- [Crawl lifecycle](docs/ADVANCED.md#crawl-lifecycle) - Understand how the crawler discovers, queues, and indexes content across two stages: the primary crawl and the purge crawl
-- [Document schema](docs/ADVANCED.md#document-schema) - Review the standard fields used in Elasticsearch documents, and how to extend the current schema and mappings with custom extraction rules
 
-### ⚙️ Advanced features
+### ⚙️ Advanced topics
+
+- [Crawl lifecycle](docs/ADVANCED.md#crawl-lifecycle) - Understand how the crawler discovers, queues, and indexes content across two stages: the primary crawl and the purge crawl
 - [Extraction rules](docs/features/EXTRACTION_RULES.md) - Define how crawler extracts content from HTML
 - [Binary content extraction](docs/features/BINARY_CONTENT_EXTRACTION.md) - Extract text from PDFs, DOCX files
 - [Crawler directives](docs/features/CRAWLER_DIRECTIVES.md) - Use robots.txt, meta tags, or embedded data attributes to guide discovery and content extraction
@@ -232,9 +267,16 @@ GET /web-crawl-test/_search
 
 ---
 
-### 👩‍💻 For developers
-- [Build from source](docs/DEVELOPER_GUIDE.md) - Local development setup and environment requirements
-- [Contributing](docs/CONTRIBUTING.md) - Bug reports, code contributions, documentation improvements, PR guidelines, and coding standards
+## 👩🏽‍💻 Developer guide
+
+### Build from source
+
+You can build and run the Open Crawler locally using the provided setup instructions.
+Detailed setup steps, including environment requirements, are in the [Developer Guide](docs/DEVELOPER_GUIDE.md).
+
+### Contribute
+Want to contribute? We welcome bug reports, code contributions, and documentation improvements.
+Read the [Contributing Guide](docs/CONTRIBUTING.md) for contribution types, PR guidelines, and coding standards.
 
 ---
 
