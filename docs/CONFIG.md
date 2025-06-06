@@ -1,18 +1,21 @@
 # Configuration
 
-Configuration files live in the [config](../config) directory.
-There are two kinds of configuration files:
+The Open Crawler uses YAML configuration files to define crawl behavior and connection settings. Template configuration files and examples are located in the [config](../config) directory.
 
-- Crawler configuration - [config/crawler.yml.example](../config/crawler.yml.example)
-- Elasticsearch configuration - [config/elasticsearch.yml.example](../config/elasticsearch.yml.example)
+There are two types of configuration files:
 
-The Elasticsearch configuration file is optional.
-It exists to allow users with multiple crawlers to only need a single Elasticsearch configuration.
+- [`crawler.yml`](#crawler-configuration-files) 
+  - **Required** for all crawls. Defines what to crawl, where to send results, and crawl behavior settings.
+    - Example: [config/crawler.yml.example](../config/crawler.yml.example)
+- [`elasticsearch.yml`](#elasticsearch-configuration-files)
+  - **Optional** separate file for Elasticsearch connection settings. Useful when running multiple crawlers that share the same Elasticsearch instance.
+    - Example: [config/elasticsearch.yml.example](../config/elasticsearch.yml.example)
 
-There are no enforced pathing or naming for these files.
-They are differentiated only by how they are provided to the CLI when running a crawl.
+> [!NOTE]
+> You can include Elasticsearch settings directly in your crawler configuration file instead of using a separate file. Settings in the crawler configuration take precedence over the separate Elasticsearch configuration.
+> The standalone Elasticsearch configuration file is only needed if you want to share connection settings across multiple crawlers. Most users can put everything in the crawler configuration file.
 
-## Crawler configuration files
+## Crawler configuration files (`crawler.yml`)
 
 Crawler configuration files are required for all crawl jobs.
 If `elasticsearch` is the output sink, the elasticsearch instance configuration can also be included in a crawler configuration file.
@@ -20,7 +23,7 @@ If the elasticsearch configuration is provided this way, it will override any co
 
 These are provided in the CLI as a positional argument, e.g. `bin/crawler crawl path/to/my-crawler.yml`.
 
-## Elasticsearch configuration files
+## Elasticsearch configuration files (`elasticsearch.yml`)
 
 The Elasticsearch configuration is only required if the output sink is `elasticsearch`.
 It is not required for `file` or `console`.

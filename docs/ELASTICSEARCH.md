@@ -1,6 +1,10 @@
 # Ingesting Data into Elasticsearch
 
+> [!NOTE]
+> Looking to get started quickly? Check out the hands-on [Quickstart](../README.md#quickstart) guide for a step-by-step walkthrough of crawling into Elasticsearch.
+
 ## Prerequisites
+
 - **Elasticsearch**: A running instance of Elasticsearch is required to index documents.
 
 If an Elasticsearch instance is not yet available, you can sign up for an [Elastic Cloud free trial](https://www.elastic.co/cloud/cloud-trial-overview) or check out the [quickstart guide for Elasticsearch](https://www.elastic.co/guide/en/elasticsearch/reference/master/quickstart.html).
