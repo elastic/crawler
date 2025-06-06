@@ -210,8 +210,7 @@ docker run \
 Now that the crawl is complete, you can view the indexed data in Elasticsearch:
 
 <details><summary><b>Use the API</b></summary>
-The fastest way is to use `curl` from the command line.
- This reuses the environment variables you set earlier.
+The fastest way is to use `curl` from the command line. This reuses the environment variables you set earlier.
 
 ```bash
 curl -X GET "${ES_HOST}:${ES_PORT}/web-crawl-test/_search" \
@@ -226,7 +225,6 @@ GET /web-crawl-test/_search
 ```
 
 </details>
-
 
 <details><summary><b>Use Kibana/Serverless UI</b></summary>
 
