@@ -227,6 +227,7 @@ GET /web-crawl-test/_search
 3. Select the `web-crawl-test` index
 
 </details>
+
 ---
 
 ## 📖 Learn more
