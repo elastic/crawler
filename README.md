@@ -70,9 +70,6 @@ The `-v "$(pwd)":/config` flag maps your current directory to the container's `/
 
 ✅ **Success check**: You should see HTML content from `example.com` printed to your console, ending with `[primary] Finished a crawl. Result: success;`
 
-> [!TIP]
-> `output_sink: console` means results will be printed to your terminal instead of being indexed into Elasticsearch. We'll use `output_sink: elasticsearch` to index into Elasticsearch.
-
 #### Step 2: Get your Elasticsearch details
 
 > [!TIP]
@@ -185,9 +182,6 @@ EOF
 ```
 </details>
 
-> [!TIP]
-> We disable the [ingest pipeline](https://www.elastic.co/docs/manage-data/ingest/transform-enrich/ingest-pipelines) option initially to avoid setup complexity. You can enable it later for advanced content processing.
-
 #### Step 5: Crawl and ingest into Elasticsearch
 
 Now you can ingest your target website content into Elasticsearch:
@@ -233,9 +227,6 @@ GET /web-crawl-test/_search
 3. Select the `web-crawl-test` index
 
 </details>
-
-✅ **Success**: You should see Elasticsearch documents containing the crawled content. Documents will include fields such as `url`, `title`, `content`, per the [schema](docs/ADVANCED.md#document-schema).
-
 ---
 
 ## 📖 Learn more
@@ -276,8 +267,6 @@ Detailed setup steps, including environment requirements, are in the [Developer 
 Want to contribute? We welcome bug reports, code contributions, and documentation improvements.
 Read the [Contributing Guide](docs/CONTRIBUTING.md) for contribution types, PR guidelines, and coding standards.
 
----
+## 💬 Support
 
-### 💬 Support
-
-- [Get support](docs/SUPPORT.md) — Learn how to get help, report issues, and find community resources
+Learn how to get help, report issues, and find community resources in the [Support Guide](docs/SUPPORT.md).
