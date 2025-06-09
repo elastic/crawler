@@ -65,7 +65,7 @@ module Crawler
         validation_fail(:url_request, <<~MESSAGE, details)
           The web server at #{url} is configured to require an HTTP proxy for access (HTTP 407).
           This may mean that you're trying to index an internal (intranet) server.
-          You can configure proxy settings in your configuration here: https://github.com/elastic/crawler/blob/0a5ab5b74eae12f96b312d7cea39103a64b28700/config/crawler.yml.example#L150..
+          You can configure proxy settings in your configuration here: https://github.com/elastic/crawler/blob/0a5ab5b74eae12f96b312d7cea39103a64b28700/config/crawler.yml.example#L150.
         MESSAGE
 
       when 429
