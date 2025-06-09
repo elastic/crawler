@@ -23,13 +23,24 @@ module Crawler
       end
 
       def generate_filename_from_url(crawl_result)
-        url_filename = crawl_result.url.to_s
-        url_filename = url_filename.chop if url_filename.end_with?('/') # trim tailing slash if present
+        full_url = crawl_result.url.to_s
+        full_url = full_url.chop if full_url.end_with?('/') # trim tailing slash if present
 
-        url_filename
-          .gsub(/[^a-zA-Z0-9\-_]/, '_') # replace slashes with underscores
-          .squeeze('_') # remove repetitive underscores
-          .gsub(/^https?_?(www_)?/, '') # remove scheme and www
+        filename = full_url
+                   .gsub(/[^a-zA-Z0-9\-_]/, '_') # replace slashes with underscores
+                   .squeeze('_') # remove repetitive underscores
+                   .gsub(/^https?_?(www_)?/, '') # remove scheme and www
+
+        # Most OSes limit filenames to 256 chars, we should truncate if too long
+        if filename.length > 255
+          # 128 + 122 = 250 chars, leaving 6 chars for the file extension (.json)
+          starting_idx = 128
+          ending_idx = filename.length - 122
+          # slice out the middle to retain the domain and more unique paths at the end of the URL
+          filename.slice!(starting_idx..ending_idx)
+        end
+
+        filename
       end
 
       def write(crawl_result)

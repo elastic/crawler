@@ -6,6 +6,7 @@
 
 # frozen_string_literal: true
 
+# rubocop:disable Layout/LineLength
 RSpec.describe(Crawler::OutputSink::File) do
   let(:domains) { [{ url: 'http://example.com' }] }
 
@@ -52,8 +53,11 @@ RSpec.describe(Crawler::OutputSink::File) do
         'https://example.com/path/to/page/' => 'example_com_path_to_page',
         'https://www.test.com/some page.html/' => 'test_com_some_page_html',
         'https://sub.domain.com/path//double/slash/' => 'sub_domain_com_path_double_slash',
-        'http://www.example.com' => 'example_com', # NOTE: the lack of trailing slash in the original URL
-        'https://www.complex-url.com/path?param=value#fragment/' => 'complex-url_com_path_param_value_fragment'
+        'http://www.example.com' => 'example_com', # NOTE: there is no trailing slash in this URL
+        'https://www.complex-url.com/path?param=value#fragment/' => 'complex-url_com_path_param_value_fragment',
+        # the following looks scary, but it's just a long URL (over 256 characters) to test truncation
+        'https://www.long-url.com/path?param=value#over-two-fifty-six-chars/this-should-be-truncated-to-only-be-two-hundred/and-fifty-six-chars-long/this-should-be-truncated-to-only-be-two-hundred/and-fifty-six-chars-long/the-tail-end-is-unique-and-must-be-preserved' =>
+          'long-url_com_path_param_value_over-two-fifty-six-chars_this-should-be-truncated-to-only-be-two-hundred_and-fifty-six-chars-long_this-should-be-truncated-to-only-be-two-hundred_and-fifty-six-chars-long_the-tail-end-is-unique-and-must-be-preserved'
       }
 
       test_cases.each do |input, expected|
@@ -68,5 +72,6 @@ RSpec.describe(Crawler::OutputSink::File) do
         expect(result).not_to end_with('_')
       end
     end
+    # rubocop:enable Layout/LineLength
   end
 end
