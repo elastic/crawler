@@ -43,7 +43,7 @@ module Crawler
         validation_fail(:url_request, <<~MESSAGE, details)
           The web server at #{url} is configured to require an HTTP proxy for access (HTTP 305).
           This may mean that you're trying to index an internal (intranet) server.
-          Read more at: https://www.elastic.co/guide/en/enterprise-search/current/crawler-private-network-cloud.html.
+          You can configure proxy settings in your configuration here: https://github.com/elastic/crawler/blob/0a5ab5b74eae12f96b312d7cea39103a64b28700/config/crawler.yml.example#L150.
         MESSAGE
 
       when 401
@@ -53,7 +53,7 @@ module Crawler
         validation_fail(:url_request, <<~MESSAGE, details)
           The web server at #{url} denied us permission to view that page (HTTP 403).
           This website may require a user name and password.
-          Read more at: https://www.elastic.co/guide/en/enterprise-search/current/crawler-managing.html#crawler-managing-authentication.
+          You can configure authentication settings in your configuration here: https://github.com/elastic/crawler/blob/0a5ab5b74eae12f96b312d7cea39103a64b28700/config/crawler.yml.example#L187.
         MESSAGE
 
       when 404
@@ -65,7 +65,7 @@ module Crawler
         validation_fail(:url_request, <<~MESSAGE, details)
           The web server at #{url} is configured to require an HTTP proxy for access (HTTP 407).
           This may mean that you're trying to index an internal (intranet) server.
-          Read more at: https://www.elastic.co/guide/en/enterprise-search/current/crawler-private-network-cloud.html.
+          You can configure proxy settings in your configuration here: https://github.com/elastic/crawler/blob/0a5ab5b74eae12f96b312d7cea39103a64b28700/config/crawler.yml.example#L150.
         MESSAGE
 
       when 429
@@ -153,14 +153,14 @@ module Crawler
       if ::SharedTogo::Crawler2.license_allows_authenticated_crawls?
         validation_warn(:url_request, <<~MESSAGE, details)
           #{shared_message};
-          remember to configure auth for the associated domain.
-          Read more at: https://www.elastic.co/guide/en/enterprise-search/current/crawler-managing.html#crawler-managing-authentication.
+          Remember to configure auth for the associated domain.
+          You can configure authentication setting in your configuration here: https://github.com/elastic/crawler/blob/0a5ab5b74eae12f96b312d7cea39103a64b28700/config/crawler.yml.example#L187.
         MESSAGE
       else
         validation_fail(:url_request, <<~MESSAGE, details)
           #{shared_message}.
           #{::Crawler::AUTHENTICATED_CRAWL_LICENSE_ERROR}.
-          Read more at: https://www.elastic.co/guide/en/enterprise-search/current/crawler-managing.html#crawler-managing-authentication.
+          You can configure authentication setting in your configuration here: https://github.com/elastic/crawler/blob/0a5ab5b74eae12f96b312d7cea39103a64b28700/config/crawler.yml.example#L187.
         MESSAGE
       end
     end
