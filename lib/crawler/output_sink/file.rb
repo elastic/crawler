@@ -34,7 +34,9 @@ module Crawler
 
       def write(crawl_result)
         doc = to_doc(crawl_result)
-        result_file = "#{dir}/#{generate_filename_from_url(crawl_result)}.json"
+        document_filename = "#{generate_filename_from_url(crawl_result)}.json"
+        system_logger.debug("Writing crawled document to #{dir}/#{document_filename}")
+        result_file = "#{dir}/#{document_filename}"
         ::File.write(result_file, doc.to_json)
 
         success
