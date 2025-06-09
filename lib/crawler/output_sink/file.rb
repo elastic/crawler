@@ -22,9 +22,19 @@ module Crawler
         FileUtils.mkdir_p(dir)
       end
 
+      def generate_filename_from_url(crawl_result)
+        url_filename = crawl_result.url.to_s
+        url_filename = url_filename.chop if url_filename.end_with?('/') # trim tailing slash if present
+
+        url_filename
+          .gsub(/[^a-zA-Z0-9\-_]/, '_') # replace slashes with underscores
+          .squeeze('_') # remove repetitive underscores
+          .gsub(/^https?_?(www_)?/, '') # remove scheme and www
+      end
+
       def write(crawl_result)
         doc = to_doc(crawl_result)
-        result_file = "#{dir}/#{crawl_result.url_hash}.json"
+        result_file = "#{dir}/#{generate_filename_from_url(crawl_result)}.json"
         ::File.write(result_file, doc.to_json)
 
         success
