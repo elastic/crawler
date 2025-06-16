@@ -184,13 +184,7 @@
 #   ...CERT DATA...
 #   -----END CERTIFICATE-----
 #
-## Authentication configurations.
-##     Only required if a site has some form of authentication.
-#auth.domain: https://my-auth-domain.com
-#auth.type: basic
-#auth.username: user
-#auth.password: pass
-#
+
 ## Whether document metadata from certain content types will be indexed or not.
 ##     This does not allow binary content to be indexed from these files, only metadata.
 ##     See docs/features/BINARY_CONTENT_EXTRACTION.md for more details.
@@ -202,6 +196,27 @@
 #  - application/vnd.ms-powerpoint
 #  - application/vnd.openxmlformats-officedocument.presentationml.presentation
 #
+
+## ------------------------------- Authentication ------------------------------
+##Only required if a site has some form of authentication.
+
+##   Domain is required for all authentication configurations
+#auth.domain: https://my-auth-domain.com
+
+##  Type can be one of three settings:
+##    raw | basic | jwt
+#auth.type: basic
+
+##  Raw auth requires the following:
+#auth.header: your-header-here
+
+##  Basic authentication, requires username and password:
+#auth.username: user
+#auth.password: pass
+
+##  JWT authentication requires the JWT token you wish to use:
+#auth.jwt_token: your-jwt-token-here
+
 ## ------------------------------- Logging -------------------------------------
 #
 ## The log level for system logs. Defaults to `info`

@@ -14,6 +14,7 @@ module Crawler
     module AuthTypes
       BASIC = 'basic'
       RAW = 'raw'
+      JWT = 'jwt'
     end
 
     BASIC_AUTH_SCHEMA = {
@@ -31,6 +32,23 @@ module Crawler
           'type' => 'string'
         },
         'password' => {
+          'type' => 'string'
+        }
+      }
+    }.freeze
+
+    JWT_AUTH_SCHEMA = {
+      'type' => 'object',
+      'required' => %w[domain type token],
+      'additionalProperties' => false,
+      'properties' => {
+        'domain' => {
+          'type' => 'string'
+        },
+        'type' => {
+          'const' => AuthTypes::JWT
+        },
+        'token' => {
           'type' => 'string'
         }
       }
@@ -54,9 +72,9 @@ module Crawler
     }.freeze
 
     AUTH_SCHEMA = {
-      'type' => 'array',
+      'type' => 'object',
       'items' => {
-        'oneOf' => [BASIC_AUTH_SCHEMA, RAW_HEADER_SCHEMA]
+        'oneOf' => [BASIC_AUTH_SCHEMA, RAW_HEADER_SCHEMA, JWT_AUTH_SCHEMA]
       }
     }.freeze
 
@@ -69,20 +87,22 @@ module Crawler
     def authorization_header_for_url(url) # rubocop:disable Metrics/CyclomaticComplexity
       raise ArgumentError, 'Need a Crawler URL object!' unless url.is_a?(Crawler::Data::URL)
 
-      match = auth&.find { |item| item.fetch('domain') == url.site }
-
-      value =
-        case match&.fetch('type')
-        when AuthTypes::BASIC
-          "Basic #{Base64.strict_encode64("#{match.fetch('username')}:#{match.fetch('password')}")}"
-        when AuthTypes::RAW
-          match.fetch('header')
-        end
+      unless @auth.nil?
+        value =
+          case @auth.fetch(:type)
+          when AuthTypes::BASIC
+            "Basic #{Base64.strict_encode64("#{@auth.fetch(:username)}:#{@auth.fetch(:password)}")}"
+          when AuthTypes::RAW
+            @auth.fetch(:header)
+          when AuthTypes::JWT
+            "Bearer #{@auth.fetch(:jwt_token)}"
+          end
+      end
 
       return unless value
 
       {
-        type: match&.fetch('type'),
+        type: @auth.fetch(:type),
         value:
       }
     end
