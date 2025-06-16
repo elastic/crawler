@@ -87,19 +87,18 @@ module Crawler
     def authorization_header_for_url(url)
       raise ArgumentError, 'Need a Crawler URL object!' unless url.is_a?(Crawler::Data::URL)
 
-      unless @auth.nil?
-        value =
-          case @auth.fetch(:type)
-          when AuthTypes::BASIC
-            "Basic #{Base64.strict_encode64("#{@auth.fetch(:username)}:#{@auth.fetch(:password)}")}"
-          when AuthTypes::RAW
-            @auth.fetch(:header)
-          when AuthTypes::JWT
-            "Bearer #{@auth.fetch(:jwt_token)}"
-          end
-      end
+      return if @auth.nil?
+      return unless @auth.fetch(:domain) == url.site
 
-      return unless value
+      value =
+        case @auth.fetch(:type)
+        when AuthTypes::BASIC
+          "Basic #{Base64.strict_encode64("#{@auth.fetch(:username)}:#{@auth.fetch(:password)}")}"
+        when AuthTypes::RAW
+          @auth.fetch(:header)
+        when AuthTypes::JWT
+          "Bearer #{@auth.fetch(:jwt_token)}"
+        end
 
       {
         type: @auth.fetch(:type),
