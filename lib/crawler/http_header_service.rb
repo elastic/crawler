@@ -84,7 +84,7 @@ module Crawler
       @auth = auth
     end
 
-    def authorization_header_for_url(url) # rubocop:disable Metrics/CyclomaticComplexity
+    def authorization_header_for_url(url)
       raise ArgumentError, 'Need a Crawler URL object!' unless url.is_a?(Crawler::Data::URL)
 
       unless @auth.nil?
