@@ -94,6 +94,7 @@ module Crawler
 
       return if @auth.nil?
 
+      complete_auth_header = nil
       @auth&.each do |auth_hashmap|
         next unless auth_hashmap.fetch(:domain) == url.site
 
@@ -107,12 +108,12 @@ module Crawler
             "Bearer #{auth_hashmap.fetch(:jwt_token)}"
           end
 
-        return {
+        complete_auth_header = {
           type: auth_hashmap.fetch(:type),
           value:
         }
       end
-      nil # explicit nil return, otherwise it returns the contents of @auth.
+      complete_auth_header
     end
     # rubocop:enable Metrics/CyclomaticComplexity
     # rubocop:enable Metrics/MethodLength
