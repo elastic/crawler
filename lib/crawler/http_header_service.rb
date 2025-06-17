@@ -6,6 +6,9 @@
 
 # frozen_string_literal: true
 
+# rubocop:disable Metrics/CyclomaticComplexity
+# rubocop:disable Metrics/MethodLength
+
 require 'base64'
 require 'json-schema'
 
@@ -79,7 +82,9 @@ module Crawler
     }.freeze
 
     def initialize(auth: nil)
-      JSON::Validator.validate!(AUTH_SCHEMA, auth, validate_schema: true) if auth
+      auth&.each do |auth_hashmap|
+        JSON::Validator.validate!(AUTH_SCHEMA, auth_hashmap, validate_schema: true)
+      end
 
       @auth = auth
     end
@@ -88,23 +93,29 @@ module Crawler
       raise ArgumentError, 'Need a Crawler URL object!' unless url.is_a?(Crawler::Data::URL)
 
       return if @auth.nil?
-      return unless @auth.fetch(:domain) == url.site
 
-      value =
-        case @auth.fetch(:type)
-        when AuthTypes::BASIC
-          "Basic #{Base64.strict_encode64("#{@auth.fetch(:username)}:#{@auth.fetch(:password)}")}"
-        when AuthTypes::RAW
-          @auth.fetch(:header)
-        when AuthTypes::JWT
-          "Bearer #{@auth.fetch(:jwt_token)}"
-        end
+      @auth&.each do |auth_hashmap|
+        next unless auth_hashmap.fetch(:domain) == url.site
 
-      {
-        type: @auth.fetch(:type),
-        value:
-      }
+        value =
+          case auth_hashmap.fetch(:type)
+          when AuthTypes::BASIC
+            "Basic #{Base64.strict_encode64("#{auth_hashmap.fetch(:username)}:#{auth_hashmap.fetch(:password)}")}"
+          when AuthTypes::RAW
+            auth_hashmap.fetch(:header)
+          when AuthTypes::JWT
+            "Bearer #{auth_hashmap.fetch(:jwt_token)}"
+          end
+
+        return {
+          type: auth_hashmap.fetch(:type),
+          value:
+        }
+      end
+      nil # explicit nil return, otherwise it returns the contents of @auth.
     end
+    # rubocop:enable Metrics/CyclomaticComplexity
+    # rubocop:enable Metrics/MethodLength
 
     private
 

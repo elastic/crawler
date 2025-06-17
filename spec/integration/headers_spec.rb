@@ -50,12 +50,14 @@ RSpec.describe 'Headers' do
   it 'supports basic auth' do
     results = FauxCrawl.run(
       site1,
-      auth: {
-        domain: Crawler::Data::URL.parse(FauxCrawl::Settings.faux_url).site,
-        type: 'basic',
-        username: 'banana',
-        password: 'SECRET'
-      }
+      auth: [
+        {
+          domain: Crawler::Data::URL.parse(FauxCrawl::Settings.faux_url).site,
+          type: 'basic',
+          username: 'banana',
+          password: 'SECRET'
+        }
+      ]
     )
 
     expect(results).to have_only_these_results [
@@ -66,11 +68,13 @@ RSpec.describe 'Headers' do
   it 'supports raw Authorization header' do
     results = FauxCrawl.run(
       site2,
-      auth: {
-        domain: Crawler::Data::URL.parse(FauxCrawl::Settings.faux_url).site,
-        type: 'raw',
-        header: 'Bearer xyz'
-      }
+      auth: [
+        {
+          domain: Crawler::Data::URL.parse(FauxCrawl::Settings.faux_url).site,
+          type: 'raw',
+          header: 'Bearer xyz'
+        }
+      ]
     )
 
     expect(results).to have_only_these_results [
@@ -81,11 +85,13 @@ RSpec.describe 'Headers' do
   it 'does not set Authorization header for non-matching domain' do
     results = FauxCrawl.run(
       site3,
-      auth: {
-        domain: 'http://example.com',
-        type: 'raw',
-        header: 'Bearer xyz'
-      }
+      auth: [
+        {
+          domain: 'http://example.com',
+          type: 'raw',
+          header: 'Bearer xyz'
+        }
+      ]
     )
 
     expect(results).to have_only_these_results [
@@ -96,11 +102,13 @@ RSpec.describe 'Headers' do
   it 'supports JWT authorization header' do
     results = FauxCrawl.run(
       site4,
-      auth: {
-        domain: Crawler::Data::URL.parse(FauxCrawl::Settings.faux_url).site,
-        type: 'jwt',
-        jwt_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb29yX3Bhc3Nfa'
-      }
+      auth: [
+        {
+          domain: Crawler::Data::URL.parse(FauxCrawl::Settings.faux_url).site,
+          type: 'jwt',
+          jwt_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb29yX3Bhc3Nfa'
+        }
+      ]
     )
 
     expect(results).to have_only_these_results [

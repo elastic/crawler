@@ -198,24 +198,23 @@
 #
 
 ## ------------------------------- Authentication ------------------------------
-##Only required if a site has some form of authentication.
-
-##   Domain is required for all authentication configurations
-#auth.domain: https://my-auth-domain.com
-
-##  Type can be one of three settings:
-##    raw | basic | jwt
-#auth.type: basic
-
-##  Raw auth requires the following:
-#auth.header: your-header-here
-
-##  Basic authentication, requires username and password:
-#auth.username: user
-#auth.password: pass
-
-##  JWT authentication requires the JWT token you wish to use:
-#auth.jwt_token: your-jwt-token-here
+## Only required if your domains have some form of authentication.
+##   This is an array, one entry for each configured domain.
+##   Below is an example that shows all supported authentication types.
+#
+# auth:
+#   - domain: "http://localhost:8000"  # This should match a domain configured under the "domains" field
+#     type: jwt                        # One of three types: raw | basic | jwt
+#     jwt_token: your-jwt-token-here   # The JWT token you wish to use
+#
+#   - domain: "http://localhost:9200"  # This should match another domain under the "domains" field
+#     type: basic
+#     username: local                  # Basic authentication requires a username and password
+#     password: your-password-here
+#
+#   - domain: "http://localhost:443"   # This should match another domain under the "domains" field
+#     type: raw
+#     header: your-auth-header         # Raw authentication requires the authentication header to add to each request
 
 ## ------------------------------- Logging -------------------------------------
 #
