@@ -4,6 +4,13 @@ agents:
 
 defaultTimeoutInMinutes: 5
 
+notify:
+  - if: 'build.branch =~ /^((main)|([0-9]+\.[0-9]+))\$/ && (build.state == "failed" || pipeline.started_passing)'
+    slack:
+      channels:
+        - "#search-et-alerts"
+      message: "${BUILDKITE_MESSAGE}"
+
 # TODO: change docker build steps into pulling a ci-agent-image to speed up build time
 steps:
   - label: ":rubocop: Lint"

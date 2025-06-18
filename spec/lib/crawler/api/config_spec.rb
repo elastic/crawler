@@ -149,6 +149,22 @@ RSpec.describe(Crawler::API::Config) do
       end
     end
 
+    context 'when sink lock configuration is provided' do
+      let(:config_with_sink_lock) do
+        {
+          domains: [{ url: 'http://example.com' }],
+          sink_lock_retry_interval: 10,
+          sink_lock_max_retries: 50
+        }
+      end
+
+      it 'should load the provided sink lock values' do
+        config = Crawler::API::Config.new(config_with_sink_lock)
+        expect(config.sink_lock_retry_interval).to eq(10)
+        expect(config.sink_lock_max_retries).to eq(50)
+      end
+    end
+
     context 'when crawl rules exist' do
       let(:domain2) do
         {

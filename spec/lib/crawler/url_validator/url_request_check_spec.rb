@@ -79,10 +79,9 @@ RSpec.describe(Crawler::UrlValidator) do
         expect(validator)
           .to receive(:validation_fail)
           .with(:url_request,
-                "The web server at #{valid_url} denied us permission to view that page (HTTP 403).\nThis website " \
-                "may require a user name and password.\nRead more at: " \
-                'https://www.elastic.co/guide/en/enterprise-search/current/crawler-managing.html' \
-                "#crawler-managing-authentication.\n",
+                "The web server at #{valid_url} denied us permission to view that page (HTTP 403).\n" \
+                "This website may require a user name and password.\n" \
+                "You can configure authentication settings in your configuration here: https://github.com/elastic/crawler/blob/0a5ab5b74eae12f96b312d7cea39103a64b28700/config/crawler.yml.example#L187.\n",
                 hash_including(:status_code, :content_type, :request_time_msec))
         validator.validate_url_request
       end
@@ -109,8 +108,8 @@ RSpec.describe(Crawler::UrlValidator) do
           .to receive(:validation_fail)
           .with(:url_request,
                 "The web server at #{valid_url} is configured to require an HTTP proxy for access (HTTP 407).\n" \
-                "This may mean that you're trying to index an internal (intranet) server.\nRead more at: " \
-                "https://www.elastic.co/guide/en/enterprise-search/current/crawler-private-network-cloud.html.\n",
+                "This may mean that you're trying to index an internal (intranet) server.\n" \
+                "You can configure proxy settings in your configuration here: https://github.com/elastic/crawler/blob/0a5ab5b74eae12f96b312d7cea39103a64b28700/config/crawler.yml.example#L150.\n",
                 hash_including(:status_code, :content_type, :request_time_msec))
         validator.validate_url_request
       end
