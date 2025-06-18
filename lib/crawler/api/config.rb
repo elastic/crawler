@@ -351,7 +351,7 @@ module Crawler
         # Remove the path from top-level domains as they aren't used for seeding
         normalized_url.path = '' if remove_path
 
-        system_logger.info("Normalized URL #{url} as #{normalized_url}")
+        system_logger.debug("Normalized URL #{url} as #{normalized_url}")
         normalized_url.to_s
       end
 
