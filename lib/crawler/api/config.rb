@@ -346,7 +346,7 @@ module Crawler
         # Remove the path from top-level domains as they aren't used for seeding
         domain[:url] = normalize_url(domain[:url], remove_path: true)
         domain[:seed_urls].map! { |seed_url| normalize_url(seed_url) } if domain[:seed_urls]&.any?
-        domain[:sitemap_urls].map! { |sitemap_url| normalize_url(sitemap_url) } if domain[:sitemap_url]&.any?
+        domain[:sitemap_urls].map! { |sitemap_url| normalize_url(sitemap_url) } if domain[:sitemap_urls]&.any?
       end
 
       def normalize_url(url, remove_path: false)
