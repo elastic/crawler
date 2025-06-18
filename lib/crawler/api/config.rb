@@ -350,9 +350,10 @@ module Crawler
         normalized_url = Addressable::URI.parse(url).normalize
         # Remove the path from top-level domains as they aren't used for seeding
         normalized_url.path = '' if remove_path
+        normalized_url_str = normalized_url.to_s
 
-        system_logger.debug("Normalized URL #{url} as #{normalized_url}")
-        normalized_url.to_s
+        system_logger.info("Normalized URL #{url} as #{normalized_url_str}") if url != normalized_url_str
+        normalized_url_str
       end
 
       def configure_crawl_rules!
