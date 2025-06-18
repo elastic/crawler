@@ -28,7 +28,7 @@ module Crawler
         doc
       end
 
-      def self.traverse!(node, mode:) # rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+      def self.traverse!(node, mode:) # rubocop:disable Metrics/MethodLength, Metrics/PerceivedComplexity
         # The exclusion attribute is used to determine what to traverse next in the parent loop,
         # so we should remove the attribute while traversing to avoid an infinite loop.
         node.remove_attribute(EXCLUDE_ATTR) if node.has_attribute?(EXCLUDE_ATTR)

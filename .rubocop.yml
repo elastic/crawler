@@ -27,6 +27,9 @@ Metrics/ModuleLength:
 Metrics/AbcSize:
   Max: 20
 
+Metrics/CyclomaticComplexity:
+  Max: 8
+
 # Disable for specs
 Metrics/BlockLength:
   Exclude:

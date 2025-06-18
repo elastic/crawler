@@ -67,6 +67,28 @@ RSpec.describe(Crawler::API::Config) do
       expect(config.output_dir).to eq('./crawled_docs')
     end
 
+    context 'when a domain has an internationalized domain name' do
+      let(:domain2) do
+        {
+          url: 'https://ポケモン.com',
+          seed_urls: %w[https://ポケモン.com/問い合わせ]
+        }
+      end
+
+      let(:normalized_domain) { 'https://xn--rckteqa2e.com' }
+      let(:normalized_seed_url) { 'https://xn--rckteqa2e.com/%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B' }
+
+      let(:expected_allowlist) { %W[#{domain1[:url]}:443 #{normalized_domain}:443] }
+      let(:expected_seed_urls) { domain1[:seed_urls] + [normalized_seed_url] }
+
+      it 'should normalize the URL and any seed URLs' do
+        config = Crawler::API::Config.new(domains:)
+
+        expect(config.domain_allowlist.map(&:to_s)).to match_array(expected_allowlist)
+        expect(config.seed_urls.map(&:to_s).to_a).to match_array(expected_seed_urls)
+      end
+    end
+
     context 'when a domain is missing a main URL' do
       let(:domain2) { { foo: 'bar' } }
 
