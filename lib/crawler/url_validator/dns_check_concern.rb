@@ -27,7 +27,7 @@ module Crawler
                           ])
 
       # Check DNS
-      addresses = resolv.getaddresses(url.host)
+      addresses = resolv.getaddresses(url.normalized_host)
 
       if addresses.empty?
         validation_fail(:dns, 'DNS name resolution failed. No suitable addresses found!')
