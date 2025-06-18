@@ -341,9 +341,6 @@ module Crawler
 
       def normalize_domain!(domain)
         # Pre-emptively normalize all domain / seed URLs so we don't run into encoding issues later
-        raise ArgumentError, 'Each domain requires a url' unless domain[:url]
-
-        # Remove the path from top-level domains as they aren't used for seeding
         domain[:url] = normalize_url(domain[:url], remove_path: true)
         domain[:seed_urls].map! { |seed_url| normalize_url(seed_url) } if domain[:seed_urls]&.any?
         domain[:sitemap_urls].map! { |sitemap_url| normalize_url(sitemap_url) } if domain[:sitemap_urls]&.any?
@@ -351,6 +348,7 @@ module Crawler
 
       def normalize_url(url, remove_path: false)
         normalized_url = Addressable::URI.parse(url).normalize
+        # Remove the path from top-level domains as they aren't used for seeding
         normalized_url.path = '' if remove_path
 
         system_logger.info("Normalized URL #{url} as #{normalized_url}")
