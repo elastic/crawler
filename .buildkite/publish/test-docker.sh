@@ -80,7 +80,7 @@ commandTests:
     args: ["--version"]
     expectedOutput: ["jruby\\s9\\.4\\.*"]
   - name: "Crawler installation"
-    command: "/app/bin/crawler"
+    command: "/home/app/bin/crawler"
     args: ["--version"]
     expectedOutput: ["'"${ESCAPED_VERSION}"'*"]
 '
