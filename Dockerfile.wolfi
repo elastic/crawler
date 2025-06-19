@@ -5,15 +5,14 @@ USER root
 # ------------------------------------------------------------------------------
 # we need curl and make below, but then we remove them later
 # TODO maybe we can do multi-stage to reduce layers in the final image
-
-RUN apk update && apk add --no-cache curl make
+RUN apk update && apk add --no-cache libcurl-openssl4=~8.12.1 curl=~8.12.1 make
 
 # ------------------------------------------------------------------------------
 # jruby install steps below have been adapted from:
 # https://github.com/jruby/docker-jruby/blob/f325c86e2c2ca0bbe82f64c0aded0719372507fa/9.4/jdk21/Dockerfile
 
-ENV JRUBY_VERSION=9.4.8.0
-ENV JRUBY_SHA256=347b6692bd9c91c480a45af25ce88d77be8b6e4ac4a77bc94870f2c5b54bc929
+ENV JRUBY_VERSION=9.4.12.0
+ENV JRUBY_SHA256=05c5d203d6990c92671cc42f57d2fa1c1083bbfd16fa7023dc5848cdb8f0aa2e
 RUN mkdir /opt/jruby \
   && curl -fSL https://repo1.maven.org/maven2/org/jruby/jruby-dist/${JRUBY_VERSION}/jruby-dist-${JRUBY_VERSION}-bin.tar.gz -o /tmp/jruby.tar.gz \
   && echo "$JRUBY_SHA256 /tmp/jruby.tar.gz" | sha256sum -c - \
@@ -47,21 +46,25 @@ RUN mkdir -p "$GEM_HOME" && chmod 777 "$GEM_HOME"
 # the container image, since we are adding lots of stuff here that we do not need
 # and may not want (do we need vendor/ after the make install below, for instance?),
 # contributing to increased image size; for now at least we can remove `.git` (below)
-COPY . /app
 
-WORKDIR /app
+# java is the base image's default us
+COPY --chown=java:java --chmod=775 . /home/app
+WORKDIR /home/app
 
 # skip jenv/rbenv setup
 ENV IS_DOCKER=1
 
 RUN make clean install
 
+# Clean up build dependencies
+RUN rm -r /root/.m2
+
 # ------------------------------------------------------------------------------
 # remove now-unnecessary packages and directories
 
 RUN apk del curl make git \
     && apk --purge del apk-tools \
-    && rm -rf /app/.git
+    && rm -rf /home/app/.git
 
 # switch back to the base image's default user when running the application
 USER java

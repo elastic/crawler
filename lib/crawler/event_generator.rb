@@ -15,7 +15,7 @@ module Crawler
   class EventGenerator # rubocop:disable Metrics/ClassLength
     attr_reader :config
 
-    delegate :system_logger, to: :config
+    delegate :system_logger, :event_logger, to: :config
 
     def initialize(config)
       @config = config
@@ -24,7 +24,6 @@ module Crawler
       @last_stats_dump = Concurrent::AtomicReference.new(Time.at(0))
     end
 
-    #-----------------------------------------------------------------------------------------------
     # Returns the timestamp of the last crawl_status event
     def last_stats_dump
       @last_stats_dump.value
@@ -39,7 +38,6 @@ module Crawler
       crawl_status(crawl)
     end
 
-    #-----------------------------------------------------------------------------------------------
     def log_error(error, message)
       full_message = "#{message}: #{error.class}: #{error.message}"
       backtrace = error.backtrace&.join("\n")
@@ -51,9 +49,8 @@ module Crawler
       )
     end
 
-    #-----------------------------------------------------------------------------------------------
     # Crawl Lifecycle Events
-    #-----------------------------------------------------------------------------------------------
+
     def crawl_start(url_queue_items:, seen_urls:)
       resume = (url_queue_items + seen_urls).positive?
       action =
@@ -102,7 +99,6 @@ module Crawler
       )
     end
 
-    #-----------------------------------------------------------------------------------------------
     def crawl_status(crawl)
       status = crawl.status
       system_logger.info(crawl_status_for_system_log(status))
@@ -134,9 +130,8 @@ module Crawler
       "Crawl status: #{status.map { |kv| kv.join('=') }.join(', ')}"
     end
 
-    #-----------------------------------------------------------------------------------------------
     # URL Life-cycle Events
-    #-----------------------------------------------------------------------------------------------
+
     def url_seed(url:, source_url:, type:, crawl_depth:, source_type:)
       system_logger.debug(
         "Added a new URL to the crawl queue: '#{url}' (type: #{type}, source: #{source_type}, depth: #{crawl_depth})"
@@ -153,7 +148,6 @@ module Crawler
       )
     end
 
-    #-----------------------------------------------------------------------------------------------
     def url_fetch(url:, crawl_result:, auth_type: nil) # rubocop:disable Metrics/AbcSize
       status_code = crawl_result.status_code
       outcome = outcome_from_status_code(status_code)
@@ -191,7 +185,6 @@ module Crawler
       :unknown
     end
 
-    #-----------------------------------------------------------------------------------------------
     def url_discover(url:, source_url:, crawl_depth:, type:, deny_reason: nil, message: nil)
       log_url_event(
         url,
@@ -211,7 +204,6 @@ module Crawler
       url_discover(**args.merge(type: :denied))
     end
 
-    #-----------------------------------------------------------------------------------------------
     def url_extracted(url:, type:, outcome:, start_time:, end_time:, duration:, message: nil, deny_reason: nil)
       log_url_event(
         url,
@@ -227,7 +219,6 @@ module Crawler
       )
     end
 
-    #-----------------------------------------------------------------------------------------------
     def url_output(url:, sink_name:, outcome:, start_time:, end_time:, duration:, message:, output: nil)
       system_logger_severity = outcome.to_s == 'success' ? Logger::INFO : Logger::WARN
       system_logger.add(
@@ -254,7 +245,6 @@ module Crawler
       log_url_event(url, event)
     end
 
-    #-----------------------------------------------------------------------------------------------
     def url_reprocessed(url:, sink_name:, outcome:, message:, type:, output: nil)
       event = {
         'event.type' => type,
@@ -314,7 +304,6 @@ module Crawler
       }
     end
 
-    #-----------------------------------------------------------------------------------------------
     def log_url_event(url, fields)
       log_crawl_event(url_fields(url).merge(fields))
     end
@@ -329,7 +318,6 @@ module Crawler
 
     # TODO: log ingestion event
 
-    #-----------------------------------------------------------------------------------------------
     def log_event(event_info)
       log(event_info.merge('event.kind' => 'event'))
     end
@@ -338,7 +326,6 @@ module Crawler
       log(event_info.merge('event.kind' => 'metric'))
     end
 
-    #-----------------------------------------------------------------------------------------------
     def log(event_info) # rubocop:disable Metrics/AbcSize
       final_event = ecs_common_fields.merge(event_info).compact
 
@@ -352,10 +339,15 @@ module Crawler
         final_event['event.duration'] = duration_to_nanoseconds(final_event['event.duration'])
       end
 
-      config.output_event(final_event)
+      output_event(final_event)
     end
 
-    #-----------------------------------------------------------------------------------------------
+    def output_event(event)
+      event_logger << "#{event.to_json}\n"
+      # Count stats for the crawl
+      config.stats.update_from_event(event)
+    end
+
     # Receives a duration value and converts it into nanoseconds
     def duration_to_nanoseconds(duration)
       duration = duration.real if duration.is_a?(Benchmark::Tms)

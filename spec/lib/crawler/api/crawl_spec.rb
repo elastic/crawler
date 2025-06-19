@@ -14,7 +14,14 @@ RSpec.describe(Crawler::API::Crawl) do
     Crawler::API::Config.new(
       domains: [
         { url: }
-      ]
+      ],
+      output_sink: :elasticsearch,
+      output_index: 'some-index-name',
+      elasticsearch: {
+        host: 'http://localhost',
+        port: 1234,
+        api_key: 'key'
+      }
     )
   end
 
@@ -27,6 +34,23 @@ RSpec.describe(Crawler::API::Crawl) do
   end
   let(:executor) { Crawler::MockExecutor.new(url => mock_crawl_result) }
 
+  let(:es_client) { double }
+  let(:es_client_indices) { double(:es_client_indices, exists: double) }
+  let(:build_info) { { version: { number: '8.99.0', build_flavor: 'default' } }.deep_stringify_keys }
+
+  let(:ingest_stats) do
+    {
+      completed: {
+        docs_count: 9,
+        docs_volume: 14_597
+      },
+      failed: {
+        docs_count: 0,
+        docs_volume: 0
+      }
+    }
+  end
+
   subject do
     described_class.new(crawl_config).tap do |crawl|
       crawl.executor = executor
@@ -36,12 +60,17 @@ RSpec.describe(Crawler::API::Crawl) do
   before do
     # Replace the event logger with a fake one to capture logged events
     crawl_config.instance_variable_set(:@event_logger, Crawler::MockEventLogger.new)
+
+    allow(ES::Client).to receive(:new).and_return(es_client)
+    allow(es_client).to receive(:indices).and_return(es_client_indices)
+    allow(es_client).to receive(:info).and_return(build_info)
+
+    allow(subject.coordinator.sink).to receive(:close).and_return(ingest_stats)
   end
 
-  #-------------------------------------------------------------------------------------------------
   it 'has a config' do
     expect(subject.config.seed_urls.map(&:to_s).to_a).to eq(["#{url}/"])
-    expect(subject.config.output_sink).to eq(:console)
+    expect(subject.config.output_sink.to_s).to eq('elasticsearch')
   end
 
   it 'has a output sink' do
@@ -56,8 +85,17 @@ RSpec.describe(Crawler::API::Crawl) do
     )
   end
 
-  #-------------------------------------------------------------------------------------------------
   context 'after a successful crawl' do
+    it 'should print final crawl stats' do
+      expect(subject).to receive(:print_final_crawl_status)
+      subject.start!
+    end
+
+    it 'should print Elasticsearch ingestion stats' do
+      expect(subject).to receive(:print_crawl_ingestion_results).with(ingest_stats)
+      subject.start!
+    end
+
     it 'should release URL queue resources' do
       expect(subject.crawl_queue).to receive(:delete)
       subject.start!
@@ -80,7 +118,6 @@ RSpec.describe(Crawler::API::Crawl) do
     end
   end
 
-  #-------------------------------------------------------------------------------------------------
   context 'if the crawl is shut down prematurely' do
     let(:allow_resume) { false }
     before do
@@ -129,7 +166,6 @@ RSpec.describe(Crawler::API::Crawl) do
     end
   end
 
-  #-------------------------------------------------------------------------------------------------
   context 'when resuming a crawl' do
     let(:url) { Crawler::Data::URL.parse('http://example.com') }
     let(:crawl_task) do
@@ -149,7 +185,6 @@ RSpec.describe(Crawler::API::Crawl) do
     end
   end
 
-  #-------------------------------------------------------------------------------------------------
   describe '#status' do
     it 'should return status info for the crawl' do
       expect(subject.status).to include(
@@ -163,6 +198,24 @@ RSpec.describe(Crawler::API::Crawl) do
         :active_threads,
         :http_client,
         :status_codes
+      )
+    end
+  end
+
+  context 'when starting a url test crawl' do
+    let(:endpoint) { 'http://example.com/website' }
+    let(:crawl_task) do
+      Crawler::Data::CrawlTask.new(url:, depth: 1, type: :content)
+    end
+
+    it 'starts without error with a File output sink' do
+      expect { subject.start_url_test!(endpoint) }.to_not raise_error
+
+      expect(subject.sink).to be_a(Crawler::OutputSink::File)
+
+      expect(subject.config.event_logger.mock_events).to include(
+        hash_including('event.action' => 'crawl-start'),
+        hash_including('event.action' => 'crawl-end')
       )
     end
   end

@@ -47,7 +47,6 @@ module Crawler
       delegate :system_logger, :events, :stats, to: :config
       delegate :rule_engine, to: :sink
 
-      #---------------------------------------------------------------------------------------------
       def shutdown_started?
         @shutdown_started.true?
       end
@@ -65,7 +64,6 @@ module Crawler
         @shutdown_started.make_true
       end
 
-      #---------------------------------------------------------------------------------------------
       # Waits for a specified number of seconds, stopping earlier if we are in a shutdown mode
       def interruptible_sleep(period)
         start_time = Time.now
@@ -77,19 +75,17 @@ module Crawler
         end
       end
 
-      #---------------------------------------------------------------------------------------------
       def coordinator
         @coordinator ||= Crawler::Coordinator.new(self)
       end
 
-      #---------------------------------------------------------------------------------------------
       # Starts a new crawl described by the given config. The job is started immediately.
       def start! # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
         events.crawl_start(
           url_queue_items: crawl_queue.length,
           seen_urls: seen_urls.count
         )
-        coordinator.run_crawl!
+        ingestion_stats = coordinator.run_crawl!
 
         record_overall_outcome(coordinator.crawl_results)
       rescue StandardError => e
@@ -109,10 +105,33 @@ module Crawler
           system_logger.info('Releasing resources used by the crawl...')
           crawl_queue.delete
           seen_urls.clear
+          print_final_crawl_status
+          print_crawl_ingestion_results(ingestion_stats) if config.output_sink.to_s == 'elasticsearch'
         end
       end
 
-      #---------------------------------------------------------------------------------------------
+      # Starts a crawl of a single URL, specifically for the UrlTest CLI command
+      def start_url_test!(endpoint) # rubocop:disable Metrics/AbcSize
+        events.crawl_start(
+          url_queue_items: crawl_queue.length,
+          seen_urls: seen_urls.count
+        )
+        # Use the File sink regardless of what is set in the config
+        @sink = Crawler::OutputSink::File.new(config)
+        coordinator.run_urltest_crawl!(endpoint)
+        record_overall_outcome(coordinator.crawl_results)
+        print_url_test_results(coordinator.url_test_results)
+      rescue StandardError => e
+        log_exception(e, 'Unexpected error while running the crawl')
+        record_outcome(
+          outcome: :failure,
+          message: 'Unexpected error while running the crawl, check system logs for details'
+        )
+      ensure
+        crawl_queue.delete
+        seen_urls.clear
+      end
+
       # Returns a hash with crawl-specific status information
       # Note: This is used by the `EventGenerator` class for crawl-status events and by the Crawler Status API.
       #       Please update OpenAPI specs if you add any new fields here.
@@ -146,7 +165,11 @@ module Crawler
       end
 
       def combined_outcome(results)
-        results[:primary][:outcome] == :success && results[:purge][:outcome] == :success ? :success : :failure
+        if coordinator.url_test # ignore outcome of purge crawl if url test command
+          results[:primary][:outcome]
+        else
+          results[:primary][:outcome] == :success && results[:purge][:outcome] == :success ? :success : :failure
+        end
       end
 
       def record_outcome(outcome:, message:)
@@ -162,6 +185,65 @@ module Crawler
 
       def log_exception(exception, message, **_kwargs)
         events.log_error(exception, message)
+      end
+
+      def print_url_test_results(url_test_results)
+        puts "\n---- URL Test Results ----"
+        url_test_results.each do |result|
+          puts "- Attempted to crawl #{result.url}"
+          puts "- Status code: #{result.status_code}"
+          puts "- Content type: #{result.content_type}"
+          puts "- Crawl duration (seconds): #{result.duration}"
+
+          print_extracted_links(result)
+
+          next unless result.is_a?(Crawler::Data::CrawlResult::Error)
+
+          puts "  \nA helpful suggestion: #{result.suggestion_message}"
+        end
+        puts "\nYou can find the downloaded document under #{config.output_dir}"
+      end
+
+      def print_crawl_ingestion_results(ingestion_stats)
+        return if ingestion_stats.nil?
+
+        completed_stats = ingestion_stats.fetch(:completed, {})
+        failed_stats = ingestion_stats.fetch(:failed, {})
+
+        puts "\n---- Elasticsearch Ingestion Stats ----"
+        unless completed_stats.empty?
+          puts '- Completed'
+          puts "  - Documents upserted: #{completed_stats.fetch(:docs_count, 0)}"
+          puts "  - Volume (bytes): #{completed_stats.fetch(:docs_volume, 0)}"
+        end
+
+        return if failed_stats.empty?
+
+        puts '- Failed'
+        puts "  - Number of documents that failed to index: #{failed_stats.fetch(:docs_count, 0)}"
+        puts "  - Volume (bytes): #{failed_stats.fetch(:docs_volume, 0)}"
+      end
+
+      def print_final_crawl_status # rubocop:disable Metrics/AbcSize
+        crawl_status = status
+        puts "\n---- Crawl Stats ----"
+        puts "- Pages visited: #{crawl_status[:pages_visited]}"
+        puts "- URLs allowed: #{crawl_status[:urls_allowed]}"
+        puts '- URLs denied'
+        puts "  - Already seen: #{crawl_status[:urls_denied][:already_seen]}"
+        puts "  - Domain filter: #{crawl_status[:urls_denied][:domain_filter_denied]}"
+        puts "- Crawl duration (seconds): #{crawl_status[:crawl_duration_msec] / 1000}"
+        puts "- Crawling time (seconds): #{crawl_status[:crawling_time_msec] / 1000}"
+        puts "- Average response time (seconds): #{crawl_status[:avg_response_time_msec] / 1000}"
+      end
+
+      def print_extracted_links(result)
+        return unless result.is_a?(Crawler::Data::CrawlResult::HTML)
+
+        puts '- Extracted links:'
+        result.links.each do |link|
+          puts "  - #{link}"
+        end
       end
     end
   end

@@ -1,16 +1,16 @@
-## ================== Crawler Configuration - Elasticsearch ====================
+## ================== Open Crawler Configuration - Elasticsearch ====================
 #
-##  Crawler configuration settings. One configuration file can be used to
-##       define one crawler/crawl job
+##  Open Crawler configuration settings. One configuration file can be used to
+##       define one Open Crawler/crawl job
 #
-##  NOTE: Most Crawler configurations comes with reasonable defaults.
+##  NOTE: Most Open Crawler configurations comes with reasonable defaults.
 ##       Before adjusting the configuration, make sure you understand what you
 ##       are trying to accomplish and the consequences.
 #
-## ------------------------------- Crawler ------------------------------------
+## ------------------------------- Open Crawler ------------------------------------
 #
-## The domain(s) that Crawler will crawl. This is an array. All domains in this
-##   array will be crawled concurrently by the Crawler with a shared output.
+## The domain(s) that Open Crawler will crawl. This is an array. All domains in this
+##   array will be crawled concurrently by the Open Crawler with a shared output.
 ##   They are separated to allow for domain-specific configurations.
 #
 #domains:
@@ -48,15 +48,28 @@
 ## Elasticsearch index name to ingest crawl results into. Required if output_sink is elasticsearch
 #output_index: my-index
 #
-## Local directory to output crawl results. Required if output_sink is file
+## Local directory to output crawl results. The defult value is ./crawled_docs
+##   This will appear at the top level of your Open Crawler directory if running from source,
+##   and under the home/app/ directory inside your container if running via Docker.
 #output_dir: output/local-site
 #
-## The maximum depth that Crawler will follow links to.
+## The maximum depth that Open Crawler will follow links to.
 #max_crawl_depth: 2
+#
+## The maximum number of links Open Crawler can extract from each page.
+##   Default value is 1000.
+#max_extracted_links_count: 1000
+#
+## Whether or not the Open Crawler should purge outdated documents after completing a crawl. Defaults to true
+#purge_crawl_enabled: true
+#
+## Whether or not to include the full HTML in the crawl result Enabling full HTML extraction can
+##   dramatically increase the index size if the site being crawled is large. Defaults to false.
+#full_html_extraction_enabled: false
 #
 ## Scheduling using cron expressions
 #schedule:
-#  - pattern: "0 12 * * *"     # every day at noon
+#  pattern: "0 12 * * *"     # every day at noon
 #
 ## Crawl result field size limits
 #max_title_size: 1000
@@ -65,8 +78,74 @@
 #max_description_size: 512
 #max_indexed_links_count: 10
 #max_headings_count: 10
+#max_elastic_tag_size: 512
+#max_data_attribute_size: 512
+#max_response_size: 10_485_760 # 10 megabytes
+
+## ------------------------------- URL Limits ----------------------------------
+## The maximum amount of time, in seconds, to crawl a single web page.
+##   Default value is 24 hours.
+#max_duration: 86_400 # 24 hours
 #
-## ------------------------------- Crawler - Advanced --------------------------
+## The maximum number of unique URLs Open Crawler can process before stopping.
+##   Default is 100000.
+#max_unique_url_count: 100_000
+#
+## The maximum length a URL can be, in characters.
+##   Default value is 2048 characters.
+#max_url_length: 2048
+#
+## The maximum amount of segments a URL can contain.
+##   Default value is 16.
+#max_url_segments: 16
+#
+## The maximum amount of parameters a URL can contain.
+##   Default value is 10.
+#max_url_params: 10
+#
+## The maximum number of redirects the Open Crawler can follow before raising an error.
+#    Default value is 10.
+#max_redirects: 10
+#
+## ------------------------------- Connection Timeout --------------------------
+#
+## Timeout value, in seconds, for establishing connections.
+##   Default value is 10 seconds.
+#connect_timeout: 10
+#
+## The timeout value, in seconds, before a socket connection is timed out.
+#    Default value is 10 seconds.
+#socket_timeout: 10
+#
+## The per-request timeout value, in seconds.
+##   Default value is 60 seconds.
+#request_timeout: 60
+#
+## ------------------------------- Open Crawler - Advanced --------------------------
+#
+## The maximum amount of threads to utilize.
+#    Default value is 10.
+#threads_per_crawl: 10
+#
+## The maximum number of in-flight URLs the in-memory queue can hold.
+##   Default value is 10000.
+#url_queue_size_limit: 10_000
+#
+## The default encoding to use. Open Crawler uses ‘UTF-8’ as standard.
+#default_encoding: 'UTF-8'
+#
+## Enable HTTP content compression.
+##   Default value is true.
+#compression_enabled: true
+#
+## Allow performing HEAD requests before GET requests when crawling websites.
+##   Default is false
+#head_requests_enabled: false
+#
+## Set a custom User-agent name for the requests Open Crawler makes.
+##   Default is Elastic-Crawler (crawler-version-number-here).
+##   Ex:   Elastic-Crawler (0.3.0)
+#user_agent: custom-user-agent
 #
 ## Proxy configurations.
 #http_proxy_host: localhost
@@ -74,8 +153,36 @@
 #http_proxy_protocol: http
 #http_proxy_username: ent-search
 #http_proxy_password: changeme
+#
+## Whether authenticated crawling of non-HTTPS URLs is allowed.
+## Defaults to 'false'.
+#http_auth_allowed: false
+#
+## Allow Open Crawler to access localhost. 
+## Defaults to 'false'.
 #loopback_allowed: true
+#
+## Allow Open Crawler to access private IP space
+## Defaults to 'false'.
+#private_networks_allowed: false
+#
+## SSL configurations.
+## Whether to perform SSL Verification when crawling. Defaults to `true`
 #ssl_verification_mode: none
+#
+## When crawling, these custom certificate authorities are considered trusted
+##   CA Certificates can be provided in one of three ways
+##     1. CA Certificates can be read from a file:
+##     2. They can be provided as a single line with new lines replaced with `\n`
+##     3. Finally, they can be provided as a multi-line YAML String
+#ssl_ca_certificates:
+# - /path/to/ssl/certificate.pem
+# - "-----BEGIN CERTIFICATE-----\nMIID...\n...CERT DATA...\n-----END CERTIFICATE-----"
+# - |-
+#   -----BEGIN CERTIFICATE-----
+#   MIID...........
+#   ...CERT DATA...
+#   -----END CERTIFICATE-----
 #
 ## Authentication configurations.
 ##     Only required if a site has some form of authentication.
@@ -100,11 +207,33 @@
 ## The log level for system logs. Defaults to `info`
 #log_level: info
 #
-# Whether or not event logging is enabled for output to the shell running Crawler.
-#     Event logs are incredibly noisy but have a lot of granularity, these can
-#     be useful for debugging failing Crawlers.
-#     Defaults to `false`
-#event_logs: false
+## Whether or not event logging is enabled for output to file.
+##    Event logs are noisy but have a lot of granularity, these can
+##    be useful for debugging failing Crawlers.
+#     Defaults to false
+#event_logs_to_file: false
+#
+## Whether or not system logs are enabled for output to file.
+##    Defaults to false
+#system_logs_to_file: false
+#
+## The directory under which Open Crawler will save log files.
+##    By default, it will create a folder called 'logs/'
+##    at the top level of Open Crawler's working directory.
+#log_file_directory: "./logs"
+#
+## The rotation policy for log files. Defaults to 'weekly'.
+##    Choices are 'daily' | 'weekly' | 'monthly'
+#log_file_rotation_policy: 'weekly'
+#
+## How often Crawler will output stats in logging output during a crawl.
+##   Default is 10 seconds.
+#stats_dump_interval: 10
+#
+## Set a custom crawl ID for this crawler.
+##   Will appear in log messages as [crawl:unique-crawl_id]
+##   Default is a random hash value.
+#crawl_id: custom-crawl-id
 #
 ## ------------------------------- Elasticsearch -------------------------------
 #
@@ -126,3 +255,9 @@
 #  bulk_api:
 #    max_items: 10
 #    max_size_bytes: 1_048_576
+
+## The interval in seconds to wait before retrying to acquire the sink lock.
+#sink_lock_retry_interval: 1
+
+## The maximum number of times to retry acquiring the sink lock.
+#sink_lock_max_retries: 120

@@ -6,9 +6,10 @@
 
 # frozen_string_literal: true
 
+require 'fileutils'
 require 'active_support/core_ext/numeric/bytes'
+require 'addressable/uri'
 
-require_dependency(File.join(__dir__, '..', '..', 'statically_tagged_logger'))
 require_dependency(File.join(__dir__, '..', 'data', 'crawl_result', 'html'))
 require_dependency(File.join(__dir__, '..', 'data', 'extraction', 'ruleset'))
 require_dependency(File.join(__dir__, '..', 'document_mapper'))
@@ -34,7 +35,12 @@ module Crawler
 
       CONFIG_FIELDS = [
         :log_level,            # Log level set in config file, defaults to `info`
-        :event_logs,           # Whether event logs are output to the shell, defaults to `false`
+
+        :log_file_directory,   # Path to save log files, defaults to './logs'
+        :log_file_rotation_policy, # How often logs are rotated. daily | weekly | monthly, default is weekly
+
+        :system_logs_to_file,  # Whether system logs are written to file. Default is false
+        :event_logs_to_file,   # Whether event logs are written to file. Default is false
 
         :crawl_id,             # Unique identifier of the crawl (used in logs, etc)
         :crawl_stage,          # Stage name for multi-stage crawls
@@ -54,7 +60,8 @@ module Crawler
         :results_collection,   # An Enumerable collection for storing mock crawl results
         :user_agent,           # The User-Agent used for requests made from the crawler.
         :stats_dump_interval,  # How often should we output stats in the logs during a crawl
-        :purge_crawl_enabled, # Whether or not to purge ES docs after a crawl, only possible for elasticsearch sinks
+        :purge_crawl_enabled,  # Whether or not to purge ES docs after a crawl, only possible for elasticsearch sinks
+        :full_html_extraction_enabled, # Whether or not to include the full HTML in the crawl result JSON
 
         # Elasticsearch settings
         :elasticsearch, # Elasticsearch connection settings
@@ -105,6 +112,8 @@ module Crawler
         :max_body_size,          # HTML body length limit in bytes
         :max_keywords_size,      # HTML meta keywords length limit in bytes
         :max_description_size,   # HTML meta description length limit in bytes
+        :max_elastic_tag_size,   # HTML meta tag length limit in bytes
+        :max_data_attribute_size, # HTML body data attribute length limit in bytes
 
         :max_extracted_links_count, # Number of links to extract for crawling
         :max_indexed_links_count,   # Number of links to extract for indexing
@@ -118,7 +127,11 @@ module Crawler
         :default_encoding,            # Default encoding used for responses that do not specify a charset
         :compression_enabled,         # Enable/disable HTTP content compression
         :sitemap_discovery_disabled,  # Enable/disable crawling of sitemaps defined in robots.txt
-        :head_requests_enabled        # Fetching HEAD requests before GET requests enabled
+        :head_requests_enabled,       # Fetching HEAD requests before GET requests enabled
+
+        # Sink lock retry settings
+        :sink_lock_retry_interval,  # Interval in seconds to retry acquiring a sink lock
+        :sink_lock_max_retries      # Maximum number of retries to acquire a sink lock
 
       ].freeze
 
@@ -128,7 +141,12 @@ module Crawler
       # Make sure to check those before renaming or removing any defaults.
       DEFAULTS = {
         log_level: 'info',
-        event_logs: false,
+
+        log_file_directory: './logs',
+        log_file_rotation_policy: 'weekly',
+
+        system_logs_to_file: false,
+        event_logs_to_file: false,
 
         crawl_stage: :primary,
 
@@ -157,10 +175,14 @@ module Crawler
         socket_timeout: 10,
         request_timeout: 60,
 
+        private_networks_allowed: false,
+
         max_title_size: 1.kilobyte,
         max_body_size: 5.megabytes,
         max_keywords_size: 512.bytes,
         max_description_size: 1.kilobyte,
+        max_elastic_tag_size: 512.bytes,
+        max_data_attribute_size: 512.bytes,
 
         max_extracted_links_count: 1000,
         max_indexed_links_count: 25,
@@ -169,7 +191,8 @@ module Crawler
         binary_content_extraction_enabled: false,
         binary_content_extraction_mime_types: [],
 
-        output_sink: :console,
+        output_sink: :elasticsearch,
+        output_dir: './crawled_docs',
         url_queue: :memory_only,
         threads_per_crawl: 10,
 
@@ -180,7 +203,12 @@ module Crawler
 
         extraction_rules: {},
         crawl_rules: {},
-        purge_crawl_enabled: true
+        purge_crawl_enabled: true,
+        full_html_extraction_enabled: false,
+
+        # Sink lock retry settings
+        sink_lock_retry_interval: 1,
+        sink_lock_max_retries: 120
       }.freeze
 
       # Settings we are not allowed to log due to their sensitive nature
@@ -213,10 +241,10 @@ module Crawler
         configure_crawl_id!
 
         # Setup logging for free-text and structured events
-        configure_logging!(params[:log_level], params[:event_logs])
+        configure_logging!(params[:log_level], params[:event_logs_to_file], params[:system_logs_to_file])
 
         # Normalize and validate parameters
-        confugure_ssl_ca_certificates!
+        configure_ssl_ca_certificates!
         configure_domain_allowlist!
         configure_crawl_rules!
         configure_seed_urls!
@@ -250,8 +278,18 @@ module Crawler
         @crawl_id ||= BSON::ObjectId.new.to_s # rubocop:disable Naming/MemoizedInstanceVariableName
       end
 
-      def confugure_ssl_ca_certificates!
+      def configure_ssl_ca_certificates!
+        unless ssl_ca_certificates.is_a?(Array)
+          raise ArgumentError,
+                'ssl_ca_certificates must be a list of certificates or paths to certificates'
+        end
+
         ssl_ca_certificates.map! do |cert|
+          unless cert.is_a?(String)
+            raise ArgumentError,
+                  'each entry of ssl_ca_certificates must be a certificate or a path to a certificate'
+          end
+
           if /BEGIN CERTIFICATE/.match?(cert)
             parse_certificate_string(cert)
           else
@@ -285,6 +323,7 @@ module Crawler
           raise ArgumentError, 'Each domain requires a url' unless domain[:url]
 
           validate_domain!(domain[:url])
+          normalize_domain!(domain)
           allowlist << Crawler::Data::Domain.new(domain[:url])
           urls << domain[:url]
         end
@@ -293,10 +332,28 @@ module Crawler
       end
 
       def validate_domain!(domain)
-        url = URI.parse(domain)
-        raise ArgumentError, "Domain #{domain.inspect} does not have a URL scheme" unless url.scheme
-        raise ArgumentError, "Domain #{domain.inspect} is not an HTTP(S) site" unless url.is_a?(URI::HTTP)
+        url = Addressable::URI.parse(domain)
+        scheme = url.scheme
+        raise ArgumentError, "Domain #{domain.inspect} does not have a URL scheme" unless scheme
+        raise ArgumentError, "Domain #{domain.inspect} is not an HTTP(S) site" unless %w[http https].include?(scheme)
         raise ArgumentError, "Domain #{domain.inspect} cannot have a path" unless url.path == ''
+      end
+
+      def normalize_domain!(domain)
+        # Pre-emptively normalize all domain / seed URLs so we don't run into encoding issues later
+        domain[:url] = normalize_url(domain[:url], remove_path: true)
+        domain[:seed_urls].map! { |seed_url| normalize_url(seed_url) } if domain[:seed_urls]&.any?
+        domain[:sitemap_urls].map! { |sitemap_url| normalize_url(sitemap_url) } if domain[:sitemap_urls]&.any?
+      end
+
+      def normalize_url(url, remove_path: false)
+        normalized_url = Addressable::URI.parse(url).normalize
+        # Remove the path from top-level domains as they aren't used for seeding
+        normalized_url.path = '' if remove_path
+        normalized_url_str = normalized_url.to_s
+
+        system_logger.info("Normalized URL #{url} as #{normalized_url_str}") if url != normalized_url_str
+        normalized_url_str
       end
 
       def configure_crawl_rules!
@@ -382,15 +439,51 @@ module Crawler
         end
       end
 
-      def configure_logging!(log_level, event_logs_enabled)
-        @event_logger = Logger.new($stdout) if event_logs_enabled
+      def configure_logging!(log_level, event_logs_to_file_enabled, system_logs_to_file_enabled)
+        # set up log directory if it doesn't exist
+        if event_logs_to_file_enabled || system_logs_to_file_enabled
+          log_dir = log_file_directory.to_s
+          FileUtils.mkdir_p(log_dir) unless File.directory?(log_dir)
+        end
 
-        system_logger = Logger.new($stdout)
-        system_logger.level = LOG_LEVELS[log_level]
+        # set up system logger
+        @system_logger = setup_system_logger(log_level, system_logs_to_file_enabled, log_dir)
+        # set up event logger
+        @event_logger = setup_event_logger(log_level, event_logs_to_file_enabled, log_dir)
+      end
 
-        # Add crawl id and stage to all logging events produced by this crawl
-        tagged_system_logger = StaticallyTaggedLogger.new(system_logger)
-        @system_logger = tagged_system_logger.tagged("crawl:#{crawl_id}", crawl_stage)
+      def setup_system_logger(log_level, system_logs_to_file_enabled, log_directory)
+        system_logger = Crawler::Logging::CrawlLogger.new
+        # create and add stdout handler and optional file handler
+        system_logger.add_handler(
+          Crawler::Logging::Handler::StdoutHandler.new(log_level)
+        )
+        if system_logs_to_file_enabled
+          system_logger.add_handler(
+            Crawler::Logging::Handler::FileHandler.new(
+              log_level,
+              "#{log_directory}/crawler_system.log",
+              log_file_rotation_policy
+            )
+          )
+        end
+        # add tags to all handlers
+        system_logger.add_tags_to_log_handlers(%W[[crawl:#{crawl_id}] [#{crawl_stage}]])
+        system_logger
+      end
+
+      def setup_event_logger(log_level, event_logs_to_file_enabled, log_directory)
+        event_logger = Crawler::Logging::CrawlLogger.new
+        if event_logs_to_file_enabled
+          event_logger.add_handler(
+            Crawler::Logging::Handler::FileHandler.new(
+              log_level,
+              "#{log_directory}/crawler_event.log",
+              log_file_rotation_policy
+            )
+          )
+        end
+        event_logger
       end
 
       # Returns an event generator used to capture crawl life cycle events
@@ -405,15 +498,6 @@ module Crawler
 
       def document_mapper
         @document_mapper ||= ::Crawler::DocumentMapper.new(self)
-      end
-
-      # Receives a crawler event object and outputs it into relevant systems
-      def output_event(event)
-        # Log the event
-        event_logger << "#{event.to_json}\n" if event_logger
-
-        # Count stats for the crawl
-        stats.update_from_event(event)
       end
     end
   end

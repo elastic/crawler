@@ -80,14 +80,16 @@ RSpec.describe(Crawler::Coordinator) do
         _source: { url: 'https://example.com/outdated' }
       }.stringify_keys
     end
+    let(:build_info) { { version: { number: '8.99.0', build_flavor: 'default' } }.deep_stringify_keys }
 
     before do
       allow(ES::Client).to receive(:new).and_return(es_client)
       allow(es_client).to receive(:bulk)
+      allow(es_client).to receive(:info).and_return(build_info)
       allow(es_client).to receive(:delete_by_query).and_return({ deleted: 1 }.stringify_keys)
       allow(es_client)
         .to receive(:paginated_search).and_return([search_result])
-      allow(es_client).to receive(:indices).and_return(double(:indices, refresh: double))
+      allow(es_client).to receive(:indices).and_return(double(:indices, refresh: double, exists: double))
 
       allow(sink).to receive(:purge).and_call_original
       allow(crawl_result).to receive(:extract_links).and_return(double)
@@ -140,7 +142,7 @@ RSpec.describe(Crawler::Coordinator) do
         {
           domains:,
           results_collection:,
-          output_sink: 'console',
+          output_sink: :console,
           purge_crawl_enabled: true
         }
       end
@@ -240,21 +242,19 @@ RSpec.describe(Crawler::Coordinator) do
       end
 
       context 'when the output sink has a lock' do
-        before :each do
-          stub_const('Crawler::Coordinator::SINK_LOCK_MAX_RETRIES', 2)
+        let(:crawl_configuration) do
+          super().merge(
+            sink_lock_retry_interval: 0.1,
+            sink_lock_max_retries: 3
+          )
         end
 
-        it 'should wait for the lock' do
-          # Sink locked on first call but open on second
-          expect(crawl.sink).to receive(:write).twice.and_wrap_original do |method, *args|
-            unless @called_before
-              @called_before = true
-              raise Errors::SinkLockedError
-            end
-            method.call(*args)
-          end
+        it 'should wait for the lock and retry based on configuration' do
+          allow(crawl.sink).to receive(:write).and_raise(Errors::SinkLockedError)
+          allow(crawl.sink).to receive(:write).with(crawl_result).and_call_original.exactly(
+            crawl_config.sink_lock_max_retries + 1
+          ).times
 
-          expect(crawl).to receive(:interruptible_sleep).once
           expect(events).to receive(:url_extracted).with(
             hash_including(
               url: crawl_result.url,
@@ -269,12 +269,12 @@ RSpec.describe(Crawler::Coordinator) do
           coordinator.send(:process_crawl_result, crawl_task, crawl_result)
         end
 
-        it 'should fail if the lock acquisition times out' do
-          expect(crawl.sink).to receive(:write).twice.and_wrap_original do |_, *_|
-            raise Errors::SinkLockedError
-          end
+        it 'should fail if the lock acquisition times out based on configuration' do
+          allow(crawl.sink).to receive(:write).and_raise(Errors::SinkLockedError)
 
-          expect(crawl).to receive(:interruptible_sleep).once
+          expect(crawl).to receive(:interruptible_sleep).with(crawl_config.sink_lock_retry_interval).exactly(
+            crawl_config.sink_lock_max_retries
+          ).times
           expect(events).to receive(:url_extracted).with(
             hash_including(
               url: crawl_result.url,
@@ -283,7 +283,9 @@ RSpec.describe(Crawler::Coordinator) do
               end_time: kind_of(Time),
               duration: kind_of(Benchmark::Tms),
               outcome: :failure,
-              message: start_with("Sink lock couldn't be acquired after 2 attempts")
+              message: start_with(
+                "Sink lock couldn't be acquired after #{crawl_config.sink_lock_max_retries + 1} attempts"
+              )
             )
           )
           coordinator.send(:process_crawl_result, crawl_task, crawl_result)

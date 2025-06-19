@@ -17,9 +17,8 @@ module Crawler
       java_import org.apache.hc.core5.http.message.StatusLine
 
       DEFAULT_BUFFER_SIZE = 4_096
-      DEFAULT_MAX_RESPONSE_SIZE = 10_485_760 # 10 MB
 
-      attr_reader :url, :request_start_time, :request_end_time
+      attr_reader :url, :request_start_time, :request_end_time, :config
 
       def initialize(apache_response:, url:, request_start_time:, request_end_time:)
         raise ArgumentError, 'Need a Crawler URL object!' unless url.is_a?(Crawler::Data::URL)
@@ -38,9 +37,9 @@ module Crawler
       end
 
       def body(
-        max_response_size: DEFAULT_MAX_RESPONSE_SIZE,
+        max_response_size: config.max_response_size,
         request_timeout: nil,
-        default_encoding: Encoding.default_external
+        default_encoding: config.default_encoding
       )
         return @body if defined?(@body)
 
@@ -114,7 +113,7 @@ module Crawler
       end
 
       def redirect_location
-        url.join(headers['location'])
+        url.join(headers['location']) if headers.key?('location')
       end
 
       private

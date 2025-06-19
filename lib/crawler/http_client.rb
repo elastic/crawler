@@ -79,7 +79,6 @@ module Crawler
       finalize(client, :close)
     end
 
-    #-------------------------------------------------------------------------------------------------
     def head(url, headers: nil) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
       raise ArgumentError, 'Need a Crawler URL object!' unless url.is_a?(Crawler::Data::URL)
 
@@ -117,7 +116,6 @@ module Crawler
       raise BaseErrorFromJava, e
     end
 
-    #-------------------------------------------------------------------------------------------------
     def get(url, headers: nil) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
       raise ArgumentError, 'Need a Crawler URL object!' unless url.is_a?(Crawler::Data::URL)
 
@@ -141,10 +139,10 @@ module Crawler
       )
     rescue Java::JavaNet::SocketTimeoutException => e
       raise Crawler::HttpUtils::SocketTimeout, e
-    rescue Java::OrgApacheHttpConn::ConnectTimeoutException => e
-      raise Crawler::HttpUtils::ConnectTimeout, e
     rescue Java::JavaxNetSsl::SSLException => e
       raise Crawler::HttpUtils::SslException.for_java_error(e)
+    rescue Java::OrgApacheHcClient5Http::ConnectTimeoutException => e
+      raise Crawler::HttpUtils::ConnectTimeout, e
     rescue Java::OrgApacheHcCore5Http::NoHttpResponseException => e
       raise Crawler::HttpUtils::NoHttpResponseError.for_proxy_host(
         error: e,
@@ -154,12 +152,10 @@ module Crawler
       raise Crawler::HttpUtils::BaseErrorFromJava, e
     end
 
-    #-------------------------------------------------------------------------------------------------
     def connection_pool_stats
       connection_manager.total_stats
     end
 
-    #-------------------------------------------------------------------------------------------------
     def self.shutdown_on_finalize(client, objs)
       ObjectSpace.define_finalizer(
         client,
@@ -191,12 +187,10 @@ module Crawler
       builder.build
     end
 
-    #-------------------------------------------------------------------------------------------------
     def content_decoders
       CONTENT_DECODERS
     end
 
-    #-------------------------------------------------------------------------------------------------
     def new_connection_manager
       builder = PoolingHttpClientConnectionManagerBuilder.create
       builder.set_ssl_socket_factory(https_socket_factory)
@@ -208,7 +202,6 @@ module Crawler
       builder.build
     end
 
-    #-------------------------------------------------------------------------------------------------
     def https_socket_factory
       # Initialize an SSL context using a relevant st of trust managers
       ssl_context = SSLContext.get_instance('TLS')
@@ -218,7 +211,6 @@ module Crawler
       SSLConnectionSocketFactory.new(ssl_context, ssl_hostname_verifier)
     end
 
-    #-------------------------------------------------------------------------------------------------
     def ssl_trust_managers
       if config.ssl_verification_mode == 'none'
         [Crawler::HttpUtils::AllTrustingTrustManager.new]
@@ -242,7 +234,6 @@ module Crawler
       end
     end
 
-    #-------------------------------------------------------------------------------------------------
     # Adds all configured custom CA certificates to the given keystore
     # Certificates could be specified as file names or as PEM-formatted strings
     def add_custom_ca_certificates(keystore)
@@ -251,7 +242,6 @@ module Crawler
       end
     end
 
-    #-------------------------------------------------------------------------------------------------
     # Loads default Root CA certificates into the given keystore
     # Generally, the certs are loaded from JAVA_HOME/lib/cacerts
     def add_default_root_certificates(keystore)
@@ -271,7 +261,6 @@ module Crawler
       end
     end
 
-    #-------------------------------------------------------------------------------------------------
     # Returns an SSL hostname verifier instance based on our configuration
     def ssl_hostname_verifier
       case config.ssl_verification_mode
@@ -284,7 +273,6 @@ module Crawler
       end
     end
 
-    #-------------------------------------------------------------------------------------------------
     # Returns our custom DNS resolver to be used for all connections
     def dns_resolver
       Crawler::HttpUtils::FilteringDnsResolver.new(
@@ -294,7 +282,6 @@ module Crawler
       )
     end
 
-    #-------------------------------------------------------------------------------------------------
     # Returns a socket config to be used for all connections
     def default_socket_config
       builder = SocketConfig.custom
@@ -302,7 +289,6 @@ module Crawler
       builder.build
     end
 
-    #-------------------------------------------------------------------------------------------------
     # Returns a request config to be used for all connections
     def default_request_config
       builder = RequestConfig.custom
@@ -313,7 +299,6 @@ module Crawler
       builder.build
     end
 
-    #-------------------------------------------------------------------------------------------------
     # Returns a proxy host object to be used for all connections
     def proxy_host
       return nil unless config.http_proxy_host
@@ -332,7 +317,6 @@ module Crawler
       )
     end
 
-    #-------------------------------------------------------------------------------------------------
     # Returns a credentials provider to be used for all requests
     # By default, it will be empty and not have any credentials in it
     def credentials_provider
@@ -345,7 +329,6 @@ module Crawler
       end
     end
 
-    #-------------------------------------------------------------------------------------------------
     # Returns HTTP credentials to be used for proxy requests
     def proxy_credentials
       return unless config.http_proxy_username && config.http_proxy_password
@@ -356,7 +339,6 @@ module Crawler
       )
     end
 
-    #-------------------------------------------------------------------------------------------------
     # Checks the status of the connection pool and logs information about it
     def check_connection_pool_stats!
       stats = connection_pool_stats
@@ -380,7 +362,6 @@ module Crawler
       end
     end
 
-    #-------------------------------------------------------------------------------------------------
     def finalize(object, args)
       finalizers << [WeakRef.new(object), Array(args)]
     end

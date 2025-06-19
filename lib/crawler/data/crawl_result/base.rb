@@ -36,7 +36,6 @@ module Crawler
         # Hide the constructor from the base class
         private_class_method :new
 
-        #---------------------------------------------------------------------------------------------
         def url_hash
           url.normalized_hash
         end
@@ -67,7 +66,6 @@ module Crawler
           to_s
         end
 
-        #---------------------------------------------------------------------------------------------
         def error?
           is_a?(Error)
         end

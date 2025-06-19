@@ -90,6 +90,7 @@ RSpec.describe(Crawler::EventGenerator) do
 
     before do
       allow(events).to receive(:system_logger).and_return(Logger.new(system_logger_io))
+      allow(events).to receive(:output_event)
     end
 
     it 'should write helpful message to system logger' do
@@ -149,7 +150,7 @@ RSpec.describe(Crawler::EventGenerator) do
     let(:crawl) { double(:crawl, status: crawl_status) }
 
     it 'should emit a crawl-status event' do
-      expect(config).to receive(:output_event).with(
+      expect(events).to receive(:output_event).with(
         hash_including('event.action' => 'crawl-status')
       )
       events.crawl_status(crawl)
@@ -167,7 +168,7 @@ RSpec.describe(Crawler::EventGenerator) do
     it 'should properly format the stats to be ECS-compatible' do
       client_status = crawl_status[:http_client]
       http_codes = crawl_status[:status_codes]
-      expect(config).to receive(:output_event).with(
+      expect(events).to receive(:output_event).with(
         hash_including(
           'crawler.status.queue_size' => crawl_status[:queue_size],
           'crawler.status.crawl_duration_msec' => crawl_status[:crawl_duration_msec],
