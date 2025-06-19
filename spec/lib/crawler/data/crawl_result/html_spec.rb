@@ -473,25 +473,25 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
   context 'with HTML5-specific elements' do
     let(:html) do
       <<~HTML
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>HTML5 test</title>
-        </head>
-        <body>
-          <header><h1>Welcome</h1></header>
-          <nav><a href="/home">Home</a></nav>
-          <main>
-            <article>
-              <section>
-                <p>This is a test of HTML5 parsing.</p>
-              </section>
-            </article>
-          </main>
-          <footer>Contact info here</footer>
-        </body>
-      </html>
-    HTML
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>HTML5 test</title>
+          </head>
+          <body>
+            <header><h1>Welcome</h1></header>
+            <nav><a href="/home">Home</a></nav>
+            <main>
+              <article>
+                <section>
+                  <p>This is a test of HTML5 parsing.</p>
+                </section>
+              </article>
+            </main>
+            <footer>Contact info here</footer>
+          </body>
+        </html>
+      HTML
     end
 
     it 'should parse and extract content from HTML5 elements' do
