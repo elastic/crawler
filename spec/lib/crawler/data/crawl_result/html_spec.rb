@@ -464,7 +464,7 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
     it 'should return the full HTML as a string if enabled is true' do
       full_html = crawl_result.full_html(enabled: true)
       expect(full_html).to be_a(String)
-      expect(full_html).to eq(Jsoup.parse(html).body.html)
+      expect(full_html).to eq(Jsoup.parse(html).html)
       expect(full_html).to match(/script/)
       expect(full_html).to match(/svg/)
     end
