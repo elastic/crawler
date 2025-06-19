@@ -149,8 +149,10 @@ module Crawler
               data.text.to_s.squish,
               limit
             )
-            extractions[data.attr(data_elastic_name)] =
-              truncated_content if valid_field_name?(data.attr(data_elastic_name))
+            if valid_field_name?(data.attr(data_elastic_name))
+              extractions[data.attr(data_elastic_name)] =
+                truncated_content
+            end
           end
           extractions
         end
