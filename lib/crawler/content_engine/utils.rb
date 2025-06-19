@@ -69,6 +69,13 @@ module Crawler
             next
           end
 
+          # Extract the text from data nodes (script, style, etc.)
+          if node.is_a?(Java::OrgJsoupNodes::DataNode)
+            content = node.wholeData
+            text << content.squish if content
+            next
+          end
+
           # Add spaces before all tags
           to_process_stack << ' '
 

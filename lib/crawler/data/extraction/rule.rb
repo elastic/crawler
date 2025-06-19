@@ -8,12 +8,13 @@
 
 require_dependency(File.join(__dir__, '..', '..', '..', 'constants'))
 
+java_import org.jsoup.Jsoup
+java_import org.jsoup.nodes.TextNode
+
 module Crawler
   module Data
     module Extraction
       class Rule
-        java_import org.jsoup.Jsoup
-
         ACTION_TYPE_EXTRACT = 'extract'
         ACTION_TYPE_SET = 'set'
         ACTIONS = [ACTION_TYPE_EXTRACT, ACTION_TYPE_SET].freeze
@@ -148,7 +149,7 @@ module Crawler
         def validate_xpath_selector
           # If valid XPath selector, @type will be set to 'xpath', otherwise we return the error
 
-          Jsoup.parseBodyFragment('<a></a>').selectXpath(@selector)
+          Jsoup.parseBodyFragment('<a></a>').selectXpath(@selector, TextNode.java_class)
           @type = SELECTOR_TYPE_XPATH
           nil
         rescue Java::OrgJsoupSelect::Selector::SelectorParseException => e

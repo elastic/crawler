@@ -9,13 +9,13 @@
 require 'bson'
 require 'digest'
 
+java_import org.jsoup.Jsoup
+
 module Crawler
   module Data
     # A CrawlResult contains the fetched and extracted content for some CrawlTask.
     module CrawlResult
       class Base
-        java_import org.jsoup.Jsoup
-
         attr_reader :id, :url, :status_code, :content_type, :start_time, :end_time, :duration
 
         delegate :normalized_url, :normalized_hash, to: :url

@@ -57,7 +57,7 @@ module Crawler
       # Raises an Addressable::URI::InvalidURIError exception if the link is invalid or empty
       # You can call +valid?+ before converting a link to a URL if you need to make sure it is valid
       def to_url
-        unless link
+        if link.empty?
           error = "Link has no href attribute#{node && ": #{node}"}"
           raise Addressable::URI::InvalidURIError, error
         end

@@ -9,6 +9,8 @@
 require_dependency(File.join(__dir__, 'success'))
 require_dependency(File.join(__dir__, '..', '..', '..', 'constants'))
 
+java_import org.jsoup.nodes.TextNode
+
 module Crawler
   module Data
     module CrawlResult
@@ -95,8 +97,10 @@ module Crawler
 
         # Returns the canonical URL of the document as a link object
         def canonical_link
-          canonical_url = extract_attribute_value('link[rel=canonical]', 'href')
-          Link.new(base_url: url, link: canonical_url) if canonical_url
+          link_href = extract_attribute_value('link[rel=canonical]', 'href')
+          return if link_href.blank?
+
+          Link.new(base_url: url, link: link_href)
         end
 
         # Returns +true+ if the page contains a robots nofollow meta tag
@@ -127,13 +131,10 @@ module Crawler
 
           # filter by the meta_tag_selector first to only get meta tags with class='elastic'
           extractions = {}
-          parsed_content.css(meta_tag_selector).css('meta[name][content]').each do |meta|
+          parsed_content.select(meta_tag_selector).select('meta[name][content]').each do |meta|
             # truncate the content field of each tag we extract
-            truncated_content = Crawler::ContentEngine::Utils.limit_bytesize(
-              meta['content'],
-              limit
-            )
-            extractions[meta['name']] = truncated_content if valid_field_name?(meta['name'])
+            truncated_content = Crawler::ContentEngine::Utils.limit_bytesize(meta.attr('content'), limit)
+            extractions[meta.attr('name')] = truncated_content if valid_field_name?(meta.attr('name'))
           end
           extractions
         end
@@ -143,12 +144,13 @@ module Crawler
           body_embedded_tag_selector = "[#{data_elastic_name}]"
 
           extractions = {}
-          parsed_content.css('body').css(body_embedded_tag_selector).each do |data|
+          parsed_content.body.select(body_embedded_tag_selector).each do |data|
             truncated_content = Crawler::ContentEngine::Utils.limit_bytesize(
               data.text.to_s.squish,
               limit
             )
-            extractions[data[data_elastic_name]] = truncated_content if valid_field_name?(data[data_elastic_name])
+            extractions[data.attr(data_elastic_name)] =
+              truncated_content if valid_field_name?(data.attr(data_elastic_name))
           end
           extractions
         end
@@ -219,7 +221,10 @@ module Crawler
         # @param [String] selector - XPath selector
         # @return [Array<String>]
         def extract_by_xpath_selector(selector, ignore_tags)
-          parsed_content.selectXpath(selector).map do |node|
+          # jsoup xpath selector requires the target node to be included as a second argument
+          # here we assume that users are only interested in text nodes, which is the actual
+          # raw text inside an HTML element.
+          parsed_content.selectXpath(selector, TextNode.java_class).map do |node|
             Crawler::ContentEngine::Utils.node_descendant_text(node, ignore_tags)
           end
         end
@@ -227,7 +232,7 @@ module Crawler
         def full_html(enabled: false)
           return unless enabled
 
-          parsed_content.inner_html
+          parsed_content.body.html
         end
       end
     end

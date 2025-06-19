@@ -6,6 +6,8 @@
 
 # frozen_string_literal: true
 
+java_import org.jsoup.Jsoup
+
 RSpec.describe(Crawler::Data::Link) do
   let(:base) { 'https://example.org' }
   let(:base_url) { Crawler::Data::URL.parse(base) }
@@ -16,7 +18,7 @@ RSpec.describe(Crawler::Data::Link) do
   let(:valid_link_string) { '/foo' }
   let(:valid_link) { Crawler::Data::Link.new(base_url:, link: valid_link_string) }
 
-  let(:xml_link) { Nokogiri::HTML.parse('<a href="http://google.com">').css('a').first }
+  let(:xml_link) { Jsoup.parse('<a href="http://google.com">').selectFirst('a') }
 
   #-------------------------------------------------------------------------------------------------
   describe 'constructor' do
@@ -48,7 +50,7 @@ RSpec.describe(Crawler::Data::Link) do
 
     it 'should initialize the link value using a href attribute when given an HTML link' do
       link = Crawler::Data::Link.new(base_url:, node: xml_link)
-      expect(link.link).to eq(xml_link['href'])
+      expect(link.link).to eq(xml_link.attr('href'))
     end
   end
 
@@ -93,21 +95,21 @@ RSpec.describe(Crawler::Data::Link) do
       end
 
       it 'should consider links different if the html link value differs' do
-        another_xml_link = Nokogiri::HTML.parse('<a href="http://amazon.com">').css('a').first
+        another_xml_link = Jsoup.parse('<a href="http://amazon.com">').selectFirst('a')
         another_link = Crawler::Data::Link.new(base_url:, node: another_xml_link)
         expect(link1).to_not eq(another_link)
       end
 
       it 'should consider links equal even when they come from different tags' do
-        html = Nokogiri::HTML.parse('<a href="http://google.com"><a href="http://google.com">')
-        links = html.css('a')
+        html = Jsoup.parse('<a href="http://google.com"><a href="http://google.com">')
+        links = html.select('a')
         link1 = Crawler::Data::Link.new(base_url:, node: links[0])
         link2 = Crawler::Data::Link.new(base_url:, node: links[1])
         expect(link1).to eq(link2)
       end
 
       it 'should consider links different if they have different HTML attributes' do
-        nofollow_link = Nokogiri::HTML.parse('<a href="http://google.com" rel="nofollow">').css('a').first
+        nofollow_link = Jsoup.parse('<a href="http://google.com" rel="nofollow">').selectFirst('a')
         another_link = Crawler::Data::Link.new(base_url:, node: nofollow_link)
         expect(link1).to_not eq(another_link)
       end
@@ -122,7 +124,7 @@ RSpec.describe(Crawler::Data::Link) do
 
     it 'should return false for a link without href' do
       node_html = '<a :href="url" class="Product__details  t-small" v-cloak="" v-if="bundle">View product details</a>'
-      node = Nokogiri::HTML.parse(node_html).css('a').first
+      node = Jsoup.parse(node_html).selectFirst('a')
       link = Crawler::Data::Link.new(base_url:, node:)
       expect(link).to_not be_valid
       expect(link.error).to eq("Link has no href attribute: #{node_html}")
