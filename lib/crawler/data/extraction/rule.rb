@@ -90,36 +90,16 @@ module Crawler
                 "Extraction rule source `#{@source}` is invalid; value must be one of #{SOURCES.join(', ')}"
         end
 
-        def validate_css(sample)
-          css_error = nil
-          begin
-            sample.css(@selector)
-          rescue Nokogiri::CSS::SyntaxError, Nokogiri::XML::XPath::SyntaxError => e
-            css_error = "CSS Selector is not valid: #{e.message}"
-          end
-          css_error
-        end
-
-        def validate_xpath(sample)
-          xpath_error = nil
-          begin
-            sample.xpath(@selector)
-          rescue Nokogiri::XML::XPath::SyntaxError, Nokogiri::CSS::SyntaxError => e
-            xpath_error = "XPath Selector is not valid: #{e.message}"
-          end
-          xpath_error
-        end
-
         def validate_selector
           raise ArgumentError, "Extraction rule selector can't be blank" if @selector.blank?
 
           if @source == SOURCES_HTML
             # For HTML we need to infer the selector type (xpath or css) based on the provided selector value,
             # because jsoup has different parsing methods for each case.
-            css_error = validate_css_selector
+            css_error = validate_css
             return if css_error.nil?
 
-            xpath_error = validate_xpath_selector
+            xpath_error = validate_xpath
             return if xpath_error.nil?
 
             # Only raise if neither were valid
@@ -136,7 +116,7 @@ module Crawler
           end
         end
 
-        def validate_css_selector
+        def validate_css
           # If valid CSS selector, @type will be set to 'css', otherwise we return the error
 
           Jsoup.parseBodyFragment('<a></a>').select(@selector)
@@ -146,7 +126,7 @@ module Crawler
           "Extraction rule selector `#{@selector}` is not a valid CSS selector: #{e.message}"
         end
 
-        def validate_xpath_selector
+        def validate_xpath
           # If valid XPath selector, @type will be set to 'xpath', otherwise we return the error
 
           Jsoup.parseBodyFragment('<a></a>').selectXpath(@selector, TextNode.java_class)

@@ -234,7 +234,7 @@ module Crawler
         def full_html(enabled: false)
           return unless enabled
 
-          parsed_content.body.html
+          parsed_content.html
         end
       end
     end

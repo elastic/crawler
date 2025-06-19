@@ -30,7 +30,7 @@ module Crawler
       # The character used to signal that a string has been truncated
       OMISSION = '…'
 
-      # Expects a Nokogiri HTML node, returns textual content from the node and all of its children
+      # Expects a Jsoup HTML node, returns textual content from the node and all of its children
       def self.node_descendant_text(node, ignore_tags = NON_CONTENT_TAGS) # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity
         return '' unless node&.present?
 

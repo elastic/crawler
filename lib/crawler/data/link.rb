@@ -28,7 +28,7 @@ module Crawler
 
         @base_url = base_url
         @node = node
-        @link = node ? node.attr('abs:href') : link
+        @link = node ? node.attr('href') : link
         @error = nil
       end
 

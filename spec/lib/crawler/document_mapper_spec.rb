@@ -153,7 +153,7 @@ RSpec.describe(Crawler::DocumentMapper) do
         end
         let(:expected_result_extracted) do
           expected_result.merge(
-            full_html: Nokogiri::HTML(content).inner_html
+            full_html: Jsoup.parse(content).html
           )
         end
 
