@@ -61,7 +61,7 @@ module Crawler
     }.freeze
 
     def initialize(auth: nil)
-      JSON::Validator.validate!(AUTH_SCHEMA, auth, validate_schema: true)
+      JSON::Validator.validate!(AUTH_SCHEMA, auth, validate_schema: true) if auth
 
       @auth = auth
     end
