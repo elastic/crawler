@@ -8,6 +8,7 @@
 
 require 'fileutils'
 require 'active_support/core_ext/numeric/bytes'
+require 'addressable/uri'
 
 require_dependency(File.join(__dir__, '..', 'data', 'crawl_result', 'html'))
 require_dependency(File.join(__dir__, '..', 'data', 'extraction', 'ruleset'))
@@ -322,6 +323,7 @@ module Crawler
           raise ArgumentError, 'Each domain requires a url' unless domain[:url]
 
           validate_domain!(domain[:url])
+          normalize_domain!(domain)
           allowlist << Crawler::Data::Domain.new(domain[:url])
           urls << domain[:url]
         end
@@ -330,10 +332,28 @@ module Crawler
       end
 
       def validate_domain!(domain)
-        url = URI.parse(domain)
-        raise ArgumentError, "Domain #{domain.inspect} does not have a URL scheme" unless url.scheme
-        raise ArgumentError, "Domain #{domain.inspect} is not an HTTP(S) site" unless url.is_a?(URI::HTTP)
+        url = Addressable::URI.parse(domain)
+        scheme = url.scheme
+        raise ArgumentError, "Domain #{domain.inspect} does not have a URL scheme" unless scheme
+        raise ArgumentError, "Domain #{domain.inspect} is not an HTTP(S) site" unless %w[http https].include?(scheme)
         raise ArgumentError, "Domain #{domain.inspect} cannot have a path" unless url.path == ''
+      end
+
+      def normalize_domain!(domain)
+        # Pre-emptively normalize all domain / seed URLs so we don't run into encoding issues later
+        domain[:url] = normalize_url(domain[:url], remove_path: true)
+        domain[:seed_urls].map! { |seed_url| normalize_url(seed_url) } if domain[:seed_urls]&.any?
+        domain[:sitemap_urls].map! { |sitemap_url| normalize_url(sitemap_url) } if domain[:sitemap_urls]&.any?
+      end
+
+      def normalize_url(url, remove_path: false)
+        normalized_url = Addressable::URI.parse(url).normalize
+        # Remove the path from top-level domains as they aren't used for seeding
+        normalized_url.path = '' if remove_path
+        normalized_url_str = normalized_url.to_s
+
+        system_logger.info("Normalized URL #{url} as #{normalized_url_str}") if url != normalized_url_str
+        normalized_url_str
       end
 
       def configure_crawl_rules!
