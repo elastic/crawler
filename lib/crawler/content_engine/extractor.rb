@@ -49,7 +49,15 @@ module Crawler
 
         return [] unless crawl_result.is_a?(Crawler::Data::CrawlResult::HTML)
 
-        crawl_result.extract_by_selector(rule.selector, [])
+        case rule.type
+        when Crawler::Data::Extraction::Rule::SELECTOR_TYPE_CSS
+          crawl_result.extract_by_css_selector(rule.selector, [])
+        when Crawler::Data::Extraction::Rule::SELECTOR_TYPE_XPATH
+          crawl_result.extract_by_xpath_selector(rule.selector, [])
+        else
+          raise ArgumentError,
+                "Unexpected extraction rule selector type '#{rule.type}' for selector '#{rule.selector}'"
+        end
       end
 
       def self.cast_result(rule, occurrences)

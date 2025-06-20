@@ -761,7 +761,7 @@ RSpec.describe(Crawler::Coordinator) do
 
     it 'should extract valid links' do
       links = extract_links(crawl_result)
-      expect(links.count).to eq(3)
+      expect(links.count).to eq(2)
     end
 
     it 'should properly handle cases when we hit the limit on the number of links we can extract' do

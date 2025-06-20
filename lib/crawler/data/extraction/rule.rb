@@ -8,6 +8,9 @@
 
 require_dependency(File.join(__dir__, '..', '..', '..', 'constants'))
 
+java_import org.jsoup.Jsoup
+java_import org.jsoup.nodes.TextNode
+
 module Crawler
   module Data
     module Extraction
@@ -24,7 +27,11 @@ module Crawler
         SOURCES_HTML = 'html'
         SOURCES = [SOURCES_URL, SOURCES_HTML].freeze
 
-        attr_reader :action, :field_name, :selector, :join_as, :source, :value
+        SELECTOR_TYPE_CSS = 'css'
+        SELECTOR_TYPE_XPATH = 'xpath'
+        SELECTOR_TYPE_REGEXP = 'regexp'
+
+        attr_reader :action, :field_name, :selector, :join_as, :source, :value, :type
 
         def initialize(rule)
           @action = rule[:action]
@@ -33,6 +40,7 @@ module Crawler
           @join_as = rule[:join_as]
           @source = rule[:source]
           @value = rule[:value]
+          @type = nil
           validate_rule
         end
 
@@ -82,45 +90,50 @@ module Crawler
                 "Extraction rule source `#{@source}` is invalid; value must be one of #{SOURCES.join(', ')}"
         end
 
-        def validate_css(sample)
-          css_error = nil
-          begin
-            sample.css(@selector)
-          rescue Nokogiri::CSS::SyntaxError, Nokogiri::XML::XPath::SyntaxError => e
-            css_error = "CSS Selector is not valid: #{e.message}"
-          end
-          css_error
-        end
-
-        def validate_xpath(sample)
-          xpath_error = nil
-          begin
-            sample.xpath(@selector)
-          rescue Nokogiri::XML::XPath::SyntaxError, Nokogiri::CSS::SyntaxError => e
-            xpath_error = "XPath Selector is not valid: #{e.message}"
-          end
-          xpath_error
-        end
-
         def validate_selector
           raise ArgumentError, "Extraction rule selector can't be blank" if @selector.blank?
 
           if @source == SOURCES_HTML
-            sample = Nokogiri::HTML::DocumentFragment.parse('<a></a>')
-            css_error = validate_css(sample)
-            xpath_error = validate_xpath(sample)
-            if css_error && xpath_error
-              raise ArgumentError,
-                    "Extraction rule selector '#{@selector}' is an invalid HTML selector: #{css_error} & #{xpath_error}"
-            end
+            # For HTML we need to infer the selector type (xpath or css) based on the provided selector value,
+            # because jsoup has different parsing methods for each case.
+            css_error = validate_css
+            return if css_error.nil?
+
+            xpath_error = validate_xpath
+            return if xpath_error.nil?
+
+            # Only raise if neither were valid
+            raise ArgumentError, "#{css_error}; #{xpath_error}"
           else
             begin
               Regexp.new(@selector)
+              # At this point in time, URL selectors are always of type 'regexp'
+              @type = SELECTOR_TYPE_REGEXP
             rescue RegexpError => e
               raise ArgumentError,
                     "Extraction rule selector `#{@selector}` is not a valid regular expression: #{e.message}"
             end
           end
+        end
+
+        def validate_css
+          # If valid CSS selector, @type will be set to 'css', otherwise we return the error
+
+          Jsoup.parseBodyFragment('<a></a>').select(@selector)
+          @type = SELECTOR_TYPE_CSS
+          nil
+        rescue Java::OrgJsoupSelect::Selector::SelectorParseException => e
+          "Extraction rule selector `#{@selector}` is not a valid CSS selector: #{e.message}"
+        end
+
+        def validate_xpath
+          # If valid XPath selector, @type will be set to 'xpath', otherwise we return the error
+
+          Jsoup.parseBodyFragment('<a></a>').selectXpath(@selector, TextNode.java_class)
+          @type = SELECTOR_TYPE_XPATH
+          nil
+        rescue Java::OrgJsoupSelect::Selector::SelectorParseException => e
+          "Extraction rule selector `#{@selector}` is not a valid XPath selector: #{e.message}"
         end
       end
     end

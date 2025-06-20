@@ -8,7 +8,8 @@
 
 require 'bson'
 require 'digest'
-require 'nokogiri'
+
+java_import org.jsoup.Jsoup
 
 module Crawler
   module Data

@@ -9,6 +9,8 @@
 require_dependency(File.join(__dir__, 'success'))
 require_dependency(File.join(__dir__, '..', '..', '..', 'constants'))
 
+java_import org.jsoup.nodes.TextNode
+
 module Crawler
   module Data
     module CrawlResult
@@ -21,7 +23,7 @@ module Crawler
         end
 
         def parsed_content
-          @parsed_content ||= Nokogiri::HTML(content)
+          @parsed_content ||= Jsoup.parse(content)
         end
 
         def to_s
@@ -60,7 +62,7 @@ module Crawler
           links = Set.new
           limit_reached = false
 
-          parsed_content.css('a[href]').each do |a|
+          parsed_content.select('a[href]').each do |a|
             # Parse the link
             link = Link.new(base_url:, node: a)
 
@@ -95,18 +97,20 @@ module Crawler
 
         # Returns the canonical URL of the document as a link object
         def canonical_link
-          canonical_url = extract_attribute_value('link[rel=canonical]', 'href')
-          Link.new(base_url: url, link: canonical_url) if canonical_url
+          link_href = extract_attribute_value('link[rel=canonical]', 'href')
+          return if link_href.blank?
+
+          Link.new(base_url: url, link: link_href)
         end
 
         # Returns +true+ if the page contains a robots nofollow meta tag
         def meta_nofollow?
-          !!parsed_content.at_css('meta[name=robots][content*=nofollow]')
+          !!parsed_content.selectFirst('meta[name=robots][content*=nofollow]')
         end
 
         # Returns +true+ if the page contains a robots noindex meta tag
         def meta_noindex?
-          !!parsed_content.at_css('meta[name=robots][content*=noindex]')
+          !!parsed_content.selectFirst('meta[name=robots][content*=noindex]')
         end
 
         # Returns the meta tag value for keywords
@@ -127,13 +131,10 @@ module Crawler
 
           # filter by the meta_tag_selector first to only get meta tags with class='elastic'
           extractions = {}
-          parsed_content.css(meta_tag_selector).css('meta[name][content]').each do |meta|
+          parsed_content.select(meta_tag_selector).select('meta[name][content]').each do |meta|
             # truncate the content field of each tag we extract
-            truncated_content = Crawler::ContentEngine::Utils.limit_bytesize(
-              meta['content'],
-              limit
-            )
-            extractions[meta['name']] = truncated_content if valid_field_name?(meta['name'])
+            truncated_content = Crawler::ContentEngine::Utils.limit_bytesize(meta.attr('content'), limit)
+            extractions[meta.attr('name')] = truncated_content if valid_field_name?(meta.attr('name'))
           end
           extractions
         end
@@ -143,12 +144,15 @@ module Crawler
           body_embedded_tag_selector = "[#{data_elastic_name}]"
 
           extractions = {}
-          parsed_content.css('body').css(body_embedded_tag_selector).each do |data|
+          parsed_content.body.select(body_embedded_tag_selector).each do |data|
             truncated_content = Crawler::ContentEngine::Utils.limit_bytesize(
               data.text.to_s.squish,
               limit
             )
-            extractions[data[data_elastic_name]] = truncated_content if valid_field_name?(data[data_elastic_name])
+            if valid_field_name?(data.attr(data_elastic_name))
+              extractions[data.attr(data_elastic_name)] =
+                truncated_content
+            end
           end
           extractions
         end
@@ -169,14 +173,14 @@ module Crawler
 
         # Returns the title of the document, cleaned up for indexing
         def document_title(limit: 1000)
-          title_tag = parsed_content.css('title').first
+          title_tag = parsed_content.selectFirst('title')
           title = Crawler::ContentEngine::Utils.node_descendant_text(title_tag)
           Crawler::ContentEngine::Utils.limit_bytesize(title, limit)
         end
 
         # Returns the body of the document, cleaned up for indexing
         def document_body(limit: 5.megabytes)
-          body_tag = parsed_content.at_css('body')
+          body_tag = parsed_content.body
           return '' unless body_tag
 
           body_tag = Crawler::ContentEngine::Transformer.transform(body_tag)
@@ -186,11 +190,11 @@ module Crawler
 
         # Returns an array of section headings from the page (using h1-h6 tags to find those)
         def headings(limit: 10)
-          body_tag = parsed_content.css('body').first
+          body_tag = parsed_content.body
           return [] unless body_tag
 
           Set.new.tap do |headings|
-            body_tag.css('h1, h2, h3, h4, h5, h6').each do |heading|
+            body_tag.select('h1, h2, h3, h4, h5, h6').each do |heading|
               heading = heading.text.to_s.squish
               next if heading.empty?
 
@@ -201,20 +205,28 @@ module Crawler
         end
 
         def extract_attribute_value(tag_name, attribute_name)
-          parsed_content.css(tag_name)&.attr(attribute_name)&.content
+          parsed_content.select(tag_name)&.attr(attribute_name)
         end
 
         # Lookup for content using CSS selector
         #
-        # @param [String] CSS selector or XPath expression
+        # @param [String] selector - CSS selector
         # @return [Array<String>]
-        def extract_by_selector(selector, ignore_tags)
-          begin
-            selected = parsed_content.search(selector)
-          rescue Nokogiri::CSS::SyntaxError
-            selected = parsed_content.xpath(selector)
+        def extract_by_css_selector(selector, ignore_tags)
+          parsed_content.select(selector).map do |node|
+            Crawler::ContentEngine::Utils.node_descendant_text(node, ignore_tags)
           end
-          selected.map do |node|
+        end
+
+        # Lookup for content using XPath selector
+        #
+        # @param [String] selector - XPath selector
+        # @return [Array<String>]
+        def extract_by_xpath_selector(selector, ignore_tags)
+          # jsoup xpath selector requires the target node to be included as a second argument
+          # here we assume that users are only interested in text nodes, which is the actual
+          # raw text inside an HTML element.
+          parsed_content.selectXpath(selector, TextNode.java_class).map do |node|
             Crawler::ContentEngine::Utils.node_descendant_text(node, ignore_tags)
           end
         end
@@ -222,7 +234,7 @@ module Crawler
         def full_html(enabled: false)
           return unless enabled
 
-          parsed_content.inner_html
+          parsed_content.html
         end
       end
     end

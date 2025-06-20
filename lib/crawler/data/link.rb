@@ -14,21 +14,21 @@ module Crawler
 
       # There are two ways to pass a link in:
       # - `link` - a string representation of a link
-      # - `node` - a Nokogiri::XML::Element object
+      # - `node` - a Java::OrgJsoupNodes::Element object
       def initialize(base_url:, node: nil, link: nil) # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
         raise ArgumentError, 'Base URL needs to be a URL object' unless base_url.is_a?(URL)
         raise ArgumentError, 'Needs an node or a string link argument' unless node || link
         raise ArgumentError, 'The :link argument needs to be a String' if link && !link.is_a?(String)
 
-        if node && !node.is_a?(Nokogiri::XML::Element)
+        if node && !node.is_a?(Java::OrgJsoupNodes::Element)
           raise ArgumentError,
-                'The :node argument needs to be a Nokogiri::XML::Element'
+                'The :node argument needs to be a Java::OrgJsoupNodes::Element'
         end
         raise ArgumentError, 'Needs only one link argument' if node && link
 
         @base_url = base_url
         @node = node
-        @link = node ? node['href'] : link
+        @link = node ? node.attr('href') : link
         @error = nil
       end
 
@@ -57,7 +57,7 @@ module Crawler
       # Raises an Addressable::URI::InvalidURIError exception if the link is invalid or empty
       # You can call +valid?+ before converting a link to a URL if you need to make sure it is valid
       def to_url
-        unless link
+        if link.empty?
           error = "Link has no href attribute#{node && ": #{node}"}"
           raise Addressable::URI::InvalidURIError, error
         end
@@ -85,7 +85,7 @@ module Crawler
       # Returns an array with all the values of the rel attribute for the link
       # See https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel for details
       def rel
-        node ? node['rel'].to_s.squish.downcase.split : []
+        node ? node.attr('rel').squish.downcase.split : []
       end
 
       # Returns +true+ if the link contains a rel=nofollow attribute
