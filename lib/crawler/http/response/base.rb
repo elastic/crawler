@@ -11,9 +11,8 @@ module Crawler
     module Response
       class Base
         DEFAULT_BUFFER_SIZE = 4_096
-        DEFAULT_MAX_RESPONSE_SIZE = 10_485_760 # 10 MB
 
-        attr_reader :url, :request_start_time, :request_end_time
+        attr_reader :url, :request_start_time, :request_end_time, :config
 
         def initialize(url:, request_start_time:, request_end_time:)
           raise ArgumentError, 'Need a Crawler URL object!' unless url.is_a?(Crawler::Data::URL)

@@ -34,9 +34,9 @@ module Crawler
         end
 
         def body(
-          max_response_size: DEFAULT_MAX_RESPONSE_SIZE,
+          max_response_size: config.max_response_size,
           request_timeout: nil,
-          default_encoding: Encoding.default_external
+          default_encoding: config.default_encoding
         )
           return @body if defined?(@body)
 
