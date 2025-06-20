@@ -15,7 +15,7 @@ jar 'org.apache.httpcomponents.client5:httpclient5', '5.1'
 
 #---------------------------------------------------------------------------------------------------
 # Text extraction and other utilities
-jar 'org.apache.tika:tika-parsers', '1.27'
+jar 'org.apache.tika:tika-parsers', '1.28.1'
 jar 'org.slf4j:slf4j-nop', '1.7.26'
 jar 'org.apache.commons:commons-lang3', '3.10'
 
@@ -36,6 +36,5 @@ jar 'com.google.code.gson:gson', '2.8.9'
 jar 'com.fasterxml.jackson.core:jackson-databind', '2.14.2'
 jar 'com.fasterxml.woodstox:woodstox-core', '6.5.1'
 jar 'com.google.guava:guava', '32.1.3-jre'
-jar 'org.bouncycastle:bcprov-jdk18on', '1.76'
 jar 'org.apache.uima:uimaj-core', '3.3.1'
 jar 'com.fasterxml.jackson.core:jackson-core', '2.13.0'

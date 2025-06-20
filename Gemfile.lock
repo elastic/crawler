@@ -155,6 +155,7 @@ PLATFORMS
   universal-java-17
   universal-java-21
   universal-java-22
+  universal-java-23
 
 DEPENDENCIES
   activesupport (= 6.1.7.7)
