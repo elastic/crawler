@@ -9,7 +9,7 @@
 require_dependency File.join(__dir__, '..', 'api', 'config')
 
 module Crawler
-  module HttpUtils
+  module Http
     class Config < SimpleDelegator
       DEFAULT_MAX_POOL_SIZE = 50
       DEFAULT_CONNECTION_REQUEST_TIMEOUT = 60
@@ -101,7 +101,7 @@ module Crawler
       end
 
       def socket_timeout
-        fetch(:socket_timeout, crawler_default(:socket_timeout))
+        fetch(:socket_timeout, crawler_defHttpAuthDisallowedErrorault(:socket_timeout))
       end
 
       def connection_request_timeout
@@ -110,6 +110,11 @@ module Crawler
 
       def connect_timeout
         fetch(:connect_timeout, crawler_default(:connect_timeout))
+      end
+
+      def timeout_in_milliseconds
+        # HtmlUnit doesn't offer granular timeouts, so we are just combining everything
+        (connect_timeout + connection_request_timeout + socket_timeout) * 1000
       end
 
       def check_connection_timeout
