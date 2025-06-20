@@ -20,6 +20,17 @@
 #      - http://localhost:8000/bar
 #    sitemap_urls:                      # The location(s) of sitemap files
 #      - http://localhost:8000/sitemap.xml
+#    auth:
+#      type: basic                      # One of two types: raw | basic
+#      # Basic authentication
+#      #   Requires a username and password
+#      username: local
+#      password: your-password-here
+#      # Raw authentication
+#      #   Requires the raw header string you wish to provide to each URL request.
+#      #   For example, when providing a JWT token, you must provide it with the 'Bearer:' prefix:
+#      # "Bearer: eyJhb.eyJzd.KMUFs"
+#      header: your-auth-header
 #
 #    # An array of crawl rules
 #    # See docs/features/CRAWL_RULES.md for more details on this feature
@@ -196,26 +207,6 @@
 #  - application/vnd.ms-powerpoint
 #  - application/vnd.openxmlformats-officedocument.presentationml.presentation
 #
-
-## ------------------------------- Authentication ------------------------------
-## Only required if your domains have some form of authentication.
-##   This is an array, one entry for each configured domain.
-##   Below is an example that shows all supported authentication types.
-#
-# auth:
-#   - domain: "http://localhost:8000"  # This should match a domain configured under the "domains" field
-#     type: jwt                        # One of three types: raw | basic | jwt
-#     jwt_token: your-jwt-token-here   # The JWT token you wish to use
-#
-#   - domain: "http://localhost:9200"  # This should match another domain under the "domains" field
-#     type: basic
-#     username: local                  # Basic authentication requires a username and password
-#     password: your-password-here
-#
-#   - domain: "http://localhost:443"   # This should match another domain under the "domains" field
-#     type: raw
-#     header: your-auth-header         # Raw authentication requires the authentication header to add to each request
-
 ## ------------------------------- Logging -------------------------------------
 #
 ## The log level for system logs. Defaults to `info`

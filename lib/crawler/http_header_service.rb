@@ -6,9 +6,6 @@
 
 # frozen_string_literal: true
 
-# rubocop:disable Metrics/CyclomaticComplexity
-# rubocop:disable Metrics/MethodLength
-
 require 'base64'
 require 'json-schema'
 
@@ -17,7 +14,6 @@ module Crawler
     module AuthTypes
       BASIC = 'basic'
       RAW = 'raw'
-      JWT = 'jwt'
     end
 
     BASIC_AUTH_SCHEMA = {
@@ -35,23 +31,6 @@ module Crawler
           'type' => 'string'
         },
         'password' => {
-          'type' => 'string'
-        }
-      }
-    }.freeze
-
-    JWT_AUTH_SCHEMA = {
-      'type' => 'object',
-      'required' => %w[domain type token],
-      'additionalProperties' => false,
-      'properties' => {
-        'domain' => {
-          'type' => 'string'
-        },
-        'type' => {
-          'const' => AuthTypes::JWT
-        },
-        'token' => {
           'type' => 'string'
         }
       }
@@ -75,18 +54,21 @@ module Crawler
     }.freeze
 
     AUTH_SCHEMA = {
-      'type' => 'object',
+      'type' => 'array',
       'items' => {
-        'oneOf' => [BASIC_AUTH_SCHEMA, RAW_HEADER_SCHEMA, JWT_AUTH_SCHEMA]
+        'oneOf' => [BASIC_AUTH_SCHEMA, RAW_HEADER_SCHEMA]
       }
     }.freeze
 
     def initialize(auth: nil)
-      auth&.each do |auth_hashmap|
-        JSON::Validator.validate!(AUTH_SCHEMA, auth_hashmap, validate_schema: true)
-      end
+      JSON::Validator.validate!(AUTH_SCHEMA, auth, validate_schema: true)
 
       @auth = auth
+    end
+
+    def number_of_auth_headers
+      # returns the number of configured auth headers, as we should keep the @auth attribute private
+      @auth.nil? ? 0 : @auth.length
     end
 
     def authorization_header_for_url(url)
@@ -104,8 +86,6 @@ module Crawler
             "Basic #{Base64.strict_encode64("#{auth_hashmap.fetch(:username)}:#{auth_hashmap.fetch(:password)}")}"
           when AuthTypes::RAW
             auth_hashmap.fetch(:header)
-          when AuthTypes::JWT
-            "Bearer #{auth_hashmap.fetch(:jwt_token)}"
           end
 
         complete_auth_header = {
@@ -115,8 +95,6 @@ module Crawler
       end
       complete_auth_header
     end
-    # rubocop:enable Metrics/CyclomaticComplexity
-    # rubocop:enable Metrics/MethodLength
 
     private
 
