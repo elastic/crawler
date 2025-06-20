@@ -66,25 +66,34 @@ module Crawler
       @auth = auth
     end
 
+    def number_of_auth_headers
+      # returns the number of configured auth headers, as we should keep the @auth attribute private
+      @auth.nil? ? 0 : @auth.length
+    end
+
     def authorization_header_for_url(url)
       raise ArgumentError, 'Need a Crawler URL object!' unless url.is_a?(Crawler::Data::URL)
 
-      match = auth&.find { |item| item.fetch('domain') == url.site }
+      return if @auth.nil?
 
-      value =
-        case match&.fetch('type')
-        when AuthTypes::BASIC
-          "Basic #{Base64.strict_encode64("#{match.fetch('username')}:#{match.fetch('password')}")}"
-        when AuthTypes::RAW
-          match.fetch('header')
-        end
+      complete_auth_header = nil
+      @auth&.each do |auth_hashmap|
+        next unless auth_hashmap.fetch(:domain) == url.site
 
-      return unless value
+        value =
+          case auth_hashmap.fetch(:type)
+          when AuthTypes::BASIC
+            "Basic #{Base64.strict_encode64("#{auth_hashmap.fetch(:username)}:#{auth_hashmap.fetch(:password)}")}"
+          when AuthTypes::RAW
+            auth_hashmap.fetch(:header)
+          end
 
-      {
-        type: match&.fetch('type'),
-        value:
-      }
+        complete_auth_header = {
+          type: auth_hashmap.fetch(:type),
+          value:
+        }
+      end
+      complete_auth_header
     end
 
     private

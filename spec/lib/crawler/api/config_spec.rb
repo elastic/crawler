@@ -305,5 +305,44 @@ RSpec.describe(Crawler::API::Config) do
         end
       end
     end
+
+    describe '#configure_http_header_service!' do
+      context 'when no auth configuration is provided' do
+        let(:domains) { [{ url: 'https://example1.com' }, { url: 'https://example2.com' }] }
+
+        it 'initializes the http_header_service without authentication headers' do
+          config = Crawler::API::Config.new(domains:)
+          expect(config.http_header_service.number_of_auth_headers).to eq(0)
+        end
+      end
+
+      context 'when auth configuration is provided' do
+        let(:domains) do
+          [
+            { url: 'https://example1.com', auth: { type: 'basic', username: 'user1', password: 'pass1' } },
+            { url: 'https://example2.com', auth: { type: 'raw', header: 'AuthorizationHeader' } }
+          ]
+        end
+
+        it 'initializes the http_header_service with the correct authentication headers' do
+          config = Crawler::API::Config.new(domains:)
+          expect(config.http_header_service.number_of_auth_headers).to eq(2)
+        end
+      end
+
+      context 'when a domain is missing auth configuration' do
+        let(:domains) do
+          [
+            { url: 'https://example1.com', auth: { type: 'basic', username: 'user1', password: 'pass1' } },
+            { url: 'https://example2.com' }
+          ]
+        end
+
+        it 'skips domains without auth configuration' do
+          config = Crawler::API::Config.new(domains:)
+          expect(config.http_header_service.number_of_auth_headers).to eq(1)
+        end
+      end
+    end
   end
 end
