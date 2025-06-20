@@ -13,34 +13,34 @@ module Crawler
       EXCLUDE_ATTR = 'data-elastic-exclude'
       EXCLUDE_ATTR_SELECTOR = "[#{EXCLUDE_ATTR}]".freeze
 
-      def self.transform(doc)
-        transform!(doc.dup)
+      def self.transform(tag)
+        transform!(tag.dup)
       end
 
-      def self.transform!(doc)
+      def self.transform!(tag)
         loop do
-          node = doc.has_attribute?(EXCLUDE_ATTR) ? doc : doc.at_css(EXCLUDE_ATTR_SELECTOR)
-          break unless node
+          node = tag.hasAttr(EXCLUDE_ATTR) ? tag : tag.selectFirst(EXCLUDE_ATTR_SELECTOR)
+          break if node.nil?
 
           traverse!(node, mode: :exclude)
         end
 
-        doc
+        tag
       end
 
       def self.traverse!(node, mode:) # rubocop:disable Metrics/MethodLength, Metrics/PerceivedComplexity
         # The exclusion attribute is used to determine what to traverse next in the parent loop,
         # so we should remove the attribute while traversing to avoid an infinite loop.
-        node.remove_attribute(EXCLUDE_ATTR) if node.has_attribute?(EXCLUDE_ATTR)
+        node.removeAttr(EXCLUDE_ATTR) if node.hasAttr(EXCLUDE_ATTR)
 
-        node.children.each do |child_node|
-          if child_node.text? && mode == :exclude
-            child_node.unlink
-          elsif child_node.element?
+        node.childNodes.each do |child_node|
+          if child_node.is_a?(Java::OrgJsoupNodes::TextNode) && mode == :exclude
+            child_node.remove
+          elsif child_node.is_a?(Java::OrgJsoupNodes::Element)
             new_mode =
-              if child_node.has_attribute?(INCLUDE_ATTR)
+              if child_node.hasAttr(INCLUDE_ATTR)
                 :include
-              elsif child_node.has_attribute?(EXCLUDE_ATTR)
+              elsif child_node.hasAttr(EXCLUDE_ATTR)
                 :exclude
               else
                 mode # mode is unchanged

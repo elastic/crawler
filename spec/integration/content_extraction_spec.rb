@@ -41,10 +41,7 @@ RSpec.describe 'Content extractable file support' do
       site,
       content_extraction: {
         enabled: true,
-        mime_types: [
-          'application/pdf',
-          'application/vnd.ms-powerpoint'
-        ]
+        mime_types: %w[application/pdf application/vnd.ms-powerpoint]
       }
     )
 

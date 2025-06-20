@@ -6,6 +6,8 @@
 
 # frozen_string_literal: true
 
+java_import 'org.jsoup.Jsoup'
+
 RSpec.describe(Crawler::ContentEngine::Utils) do
   describe '.node_descendant_text' do
     it 'should raise an error unless given a node object' do
@@ -15,13 +17,13 @@ RSpec.describe(Crawler::ContentEngine::Utils) do
     end
 
     it 'should replace break tags with spaces' do
-      node = Nokogiri::HTML('<body>Hello,<br>World!')
+      node = Jsoup.parse('<body>Hello,<br>World!')
       expect(Crawler::ContentEngine::Utils.node_descendant_text(node)).to eq('Hello, World!')
     end
 
     context 'with uncrate.com pages' do
       let(:content) { read_fixture('uncrate.com.html') }
-      let(:html) { Nokogiri::HTML(content) }
+      let(:html) { Jsoup.parse(content) }
 
       it 'should have a reasonable performance' do
         duration = Benchmark.measure do
@@ -35,14 +37,14 @@ RSpec.describe(Crawler::ContentEngine::Utils) do
 
     context 'with ignore_tags' do
       it 'ignores <script> tags' do
-        node = Nokogiri::HTML('<div><script>Script body</script><p>P body</p></div>')
+        node = Jsoup.parse('<div><script>Script body</script><p>P body</p></div>')
         expect(Crawler::ContentEngine::Utils.node_descendant_text(node)).to eq('P body')
       end
     end
 
     context 'without ignore_tags' do
       it 'does not ignores <script> tags' do
-        node = Nokogiri::HTML('<div><script>Script body</script><p>P body</p></div>')
+        node = Jsoup.parse('<div><script>Script body</script><p>P body</p></div>')
         expect(Crawler::ContentEngine::Utils.node_descendant_text(node, [])).to eq('Script body P body')
       end
     end

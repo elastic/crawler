@@ -30,11 +30,11 @@ module Crawler
       # The character used to signal that a string has been truncated
       OMISSION = '…'
 
-      # Expects a Nokogiri HTML node, returns textual content from the node and all of its children
+      # Expects a Jsoup HTML node, returns textual content from the node and all of its children
       def self.node_descendant_text(node, ignore_tags = NON_CONTENT_TAGS) # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity
         return '' unless node&.present?
 
-        unless node.respond_to?(:children) && node.respond_to?(:name) && node.respond_to?(:text?)
+        unless node.respond_to?(:childNodes) && node.respond_to?(:nodeName)
           raise ArgumentError, "Expecting something node-like but got a #{node.class}"
         end
 
@@ -54,7 +54,7 @@ module Crawler
 
           # Remove tags that do not contain any text
           # (and which sometimes are treated as CDATA, generating garbage text in jruby)
-          next if ignore_tags.include?(node.name)
+          next if ignore_tags.include?(node.nodeName)
 
           # Tags, that need to be replaced by spaces according to the standards
           if replace_with_whitespace?(node)
@@ -62,9 +62,16 @@ module Crawler
             next
           end
 
-          # Extract the text from all text nodes
-          if node.text?
-            content = node.content
+          # Extract the text from text nodes
+          if node.is_a?(Java::OrgJsoupNodes::TextNode)
+            content = node.text
+            text << content.squish if content
+            next
+          end
+
+          # Extract the text from data nodes (script, style, etc.)
+          if node.is_a?(Java::OrgJsoupNodes::DataNode)
+            content = node.wholeData
             text << content.squish if content
             next
           end
@@ -73,7 +80,7 @@ module Crawler
           to_process_stack << ' '
 
           # Recursion by adding the node's children to the stack and looping
-          node.children.reverse_each { |child| to_process_stack << child }
+          node.childNodes.reverse_each { |child| to_process_stack << child }
 
           # Add spaces after all tags
           to_process_stack << ' '
@@ -85,7 +92,7 @@ module Crawler
 
       # Returns true, if the node should be replaced with a space when extracting text from a document
       def self.replace_with_whitespace?(node)
-        BREAK_ELEMENTS.include?(node.name)
+        BREAK_ELEMENTS.include?(node.nodeName)
       end
 
       # Limits the size of a given string value down to a given limit (in bytes)

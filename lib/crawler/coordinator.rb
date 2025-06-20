@@ -543,6 +543,7 @@ module Crawler
       rescue StandardError => e
         log = "Unexpected exception while sending crawl results to the output sink: #{e}"
         system_logger.fatal(log)
+        system_logger.fatal(e.backtrace.join("\n"))
         sink.failure(log)
       end
     end

@@ -6,10 +6,12 @@
 
 # frozen_string_literal: true
 
+java_import 'org.jsoup.Jsoup'
+
 RSpec.describe(Crawler::ContentEngine::Transformer) do
   describe '.transform!' do
-    let(:doc) { Nokogiri::HTML(html) }
-    let(:body_tag) { doc.at_css('body') }
+    let(:doc) { Jsoup.parse(html) }
+    let(:body_tag) { doc.body }
 
     def document_body
       transformed_body_tag = described_class.transform(body_tag)
@@ -221,7 +223,7 @@ RSpec.describe(Crawler::ContentEngine::Transformer) do
   end
 
   describe '.transform' do
-    let(:doc) { Nokogiri::HTML(html) }
+    let(:doc) { Jsoup.parse(html) }
     let(:html) do
       <<-HTML
         <body>
@@ -235,12 +237,12 @@ RSpec.describe(Crawler::ContentEngine::Transformer) do
     end
 
     it 'does not modify doc' do
-      body = doc.at_css('body')
+      body = doc.body
       transformed_body = described_class.transform(body)
       body_text = Crawler::ContentEngine::Utils.node_descendant_text(transformed_body)
       expect(body_text).to eq('test1 test3')
 
-      link = doc.at_css('a')
+      link = doc.selectFirst('a')
       expect(link).to_not be_nil
       expect(link.text).to eq('Elastic')
     end

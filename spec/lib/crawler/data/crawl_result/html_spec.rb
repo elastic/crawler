@@ -6,6 +6,8 @@
 
 # frozen_string_literal: true
 
+java_import org.jsoup.Jsoup
+
 RSpec.describe(Crawler::Data::CrawlResult::HTML) do
   let(:url) { Crawler::Data::URL.parse('https://example.com/') }
 
@@ -168,7 +170,7 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
 
     it 'should return a set of links from the document' do
       expect(links).to be_kind_of(Set)
-      expect(links.count).to eq(7)
+      expect(links.count).to eq(6)
       expect(links.count(&:valid?)).to eq(6)
       expect(links).to all(be_kind_of(Crawler::Data::Link))
     end
@@ -411,9 +413,9 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
   end
 
   #-------------------------------------------------------------------------------------------------
-  describe '#extract_by_selector' do
+  describe '#extract_by_css_selector' do
     let(:selector) { nil }
-    subject { crawl_result.extract_by_selector(selector, []) }
+    subject { crawl_result.extract_by_css_selector(selector, []) }
 
     context 'when selector finds single HTML node' do
       let(:selector) { 'title' }
@@ -436,6 +438,11 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
       it { is_expected.to be_kind_of(Array) }
       it { is_expected.to be_empty }
     end
+  end
+
+  describe '#extract_by_xpath_selector' do
+    let(:selector) { nil }
+    subject { crawl_result.extract_by_xpath_selector(selector, []) }
 
     context 'when selector is an XPath expression' do
       let(:selector) { '//a/text()' }
@@ -448,7 +455,6 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
     end
   end
 
-  #-------------------------------------------------------------------------------------------------
   describe '#full_html' do
     it 'should return nil if enabled is false' do
       expect(crawl_result.full_html).to be_nil
@@ -458,9 +464,41 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
     it 'should return the full HTML as a string if enabled is true' do
       full_html = crawl_result.full_html(enabled: true)
       expect(full_html).to be_a(String)
-      expect(full_html).to eq(Nokogiri::HTML.parse(html).inner_html)
+      expect(full_html).to eq(Jsoup.parse(html).html)
       expect(full_html).to match(/script/)
       expect(full_html).to match(/svg/)
+    end
+  end
+
+  context 'with HTML5-specific elements' do
+    let(:html) do
+      <<~HTML
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>HTML5 test</title>
+          </head>
+          <body>
+            <header><h1>Welcome</h1></header>
+            <nav><a href="/home">Home</a></nav>
+            <main>
+              <article>
+                <section>
+                  <p>This is a test of HTML5 parsing.</p>
+                </section>
+              </article>
+            </main>
+            <footer>Contact info here</footer>
+          </body>
+        </html>
+      HTML
+    end
+
+    it 'should parse and extract content from HTML5 elements' do
+      expect(crawl_result.document_body).to include('Welcome')
+      expect(crawl_result.document_body).to include('Home')
+      expect(crawl_result.document_body).to include('This is a test of HTML5 parsing.')
+      expect(crawl_result.document_body).to include('Contact info here')
     end
   end
 end

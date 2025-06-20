@@ -153,7 +153,7 @@ RSpec.describe(Crawler::Data::Extraction::Rule) do
           described_class.new(rule_input)
         end.to raise_error(
           ArgumentError,
-          /^Extraction rule selector '.#class-or-id' is an invalid HTML selector:.*/
+          /^Extraction rule selector `.#class-or-id` is not a valid CSS selector:.*/
         )
       end
     end
@@ -167,7 +167,7 @@ RSpec.describe(Crawler::Data::Extraction::Rule) do
     end
 
     context 'when CSS selector is valid' do
-      let(:selector) { 'a:nth-child(pattern)' }
+      let(:selector) { 'a:nth-child(1)' }
       it 'passes validation' do
         expect(described_class.new(rule_input)).to be_truthy
       end
