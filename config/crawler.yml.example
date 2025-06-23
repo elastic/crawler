@@ -20,6 +20,17 @@
 #      - http://localhost:8000/bar
 #    sitemap_urls:                      # The location(s) of sitemap files
 #      - http://localhost:8000/sitemap.xml
+#    auth:
+#      type: basic                      # One of two types: raw | basic
+#      # Basic authentication
+#      #   Requires a username and password
+#      username: local
+#      password: your-password-here
+#      # Raw authentication
+#      #   Requires the raw header string you wish to provide to each URL request.
+#      #   For example, when providing a JWT token, you must provide it with the 'Bearer:' prefix:
+#      # "Bearer: eyJhb.eyJzd.KMUFs"
+#      header: your-auth-header
 #
 #    # An array of crawl rules
 #    # See docs/features/CRAWL_RULES.md for more details on this feature
@@ -184,13 +195,7 @@
 #   ...CERT DATA...
 #   -----END CERTIFICATE-----
 #
-## Authentication configurations.
-##     Only required if a site has some form of authentication.
-#auth.domain: https://my-auth-domain.com
-#auth.type: basic
-#auth.username: user
-#auth.password: pass
-#
+
 ## Whether document metadata from certain content types will be indexed or not.
 ##     This does not allow binary content to be indexed from these files, only metadata.
 ##     See docs/features/BINARY_CONTENT_EXTRACTION.md for more details.

@@ -153,13 +153,13 @@ class FauxCrawl # rubocop:disable Metrics/ClassLength
     # Prepare crawl config
     config = {
       crawl_id: crawl_id,
-      auth: auth,
       user_agent: user_agent,
       domains: [
         {
           url: url,
           seed_urls: seed_urls,
-          sitemap_urls: sitemap_urls
+          sitemap_urls: sitemap_urls,
+          auth: auth,
         }
       ],
       binary_content_extraction_enabled: content_extraction.fetch(:enabled),

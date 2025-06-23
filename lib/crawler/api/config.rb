@@ -406,7 +406,21 @@ module Crawler
       end
 
       def configure_http_header_service!
-        @http_header_service ||= Crawler::HttpHeaderService.new(auth:) # rubocop:disable Naming/MemoizedInstanceVariableName
+        @http_header_service ||= Crawler::HttpHeaderService.new(auth: all_auth_headers) # rubocop:disable Naming/MemoizedInstanceVariableName
+      end
+
+      def all_auth_headers
+        all_auth_headers = []
+
+        @domains.each do |domain|
+          next unless domain[:auth]
+
+          domain_auth_config = domain[:auth].clone # avoid modifying the original config hashmap
+          domain_auth_config[:domain] = domain[:url]
+
+          all_auth_headers.append(domain_auth_config)
+        end
+        all_auth_headers
       end
 
       def configure_sitemap_urls!
