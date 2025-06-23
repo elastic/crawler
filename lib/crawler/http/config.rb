@@ -101,7 +101,7 @@ module Crawler
       end
 
       def socket_timeout
-        fetch(:socket_timeout, crawler_defHttpAuthDisallowedErrorault(:socket_timeout))
+        fetch(:socket_timeout, crawler_default(:socket_timeout))
       end
 
       def connection_request_timeout

@@ -7,6 +7,7 @@
 # frozen_string_literal: true
 
 require 'active_support/core_ext/string/filters'
+
 require_dependency(File.join(__dir__, 'base'))
 
 module Crawler
@@ -34,9 +35,9 @@ module Crawler
         end
 
         def body(
-          max_response_size: config.max_response_size,
-          request_timeout: nil,
-          default_encoding: config.default_encoding
+          max_response_size:,
+          request_timeout:,
+          default_encoding:
         )
           return @body if defined?(@body)
 

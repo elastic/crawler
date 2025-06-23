@@ -12,7 +12,7 @@ module Crawler
       class Base
         DEFAULT_BUFFER_SIZE = 4_096
 
-        attr_reader :url, :request_start_time, :request_end_time, :config
+        attr_reader :url, :request_start_time, :request_end_time
 
         def initialize(url:, request_start_time:, request_end_time:)
           raise ArgumentError, 'Need a Crawler URL object!' unless url.is_a?(Crawler::Data::URL)
@@ -51,7 +51,7 @@ module Crawler
         end
 
         def redirect_location
-          url.join(headers['location'])
+          url.join(headers['location']) if headers.key?('location')
         end
 
         private
