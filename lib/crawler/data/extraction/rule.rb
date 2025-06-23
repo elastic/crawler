@@ -17,7 +17,8 @@ module Crawler
       class Rule
         ACTION_TYPE_EXTRACT = 'extract'
         ACTION_TYPE_SET = 'set'
-        ACTIONS = [ACTION_TYPE_EXTRACT, ACTION_TYPE_SET].freeze
+        ACTION_TYPE_IGNORE = 'ignore'
+        ACTIONS = [ACTION_TYPE_EXTRACT, ACTION_TYPE_SET, ACTION_TYPE_IGNORE].freeze
 
         JOINS_ARRAY = 'array'
         JOINS_STRING = 'string'

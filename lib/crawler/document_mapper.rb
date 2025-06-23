@@ -10,10 +10,12 @@ module Crawler
   class DocumentMapper
     class UnsupportedCrawlResultError < StandardError; end
 
-    attr_reader :config
+    # TODO: confirm we can remove this attr_reader
+    # attr_reader :config
 
     def initialize(config)
       @config = config
+      @extraction_rulesets = config.extraction_rulesets[crawl_result.site_url.to_s] || []
     end
 
     def create_doc(crawl_result)
@@ -68,7 +70,7 @@ module Crawler
     def html_fields(crawl_result) # rubocop:disable Metrics/AbcSize
       remove_empty_values(
         title: crawl_result.document_title(limit: config.max_title_size),
-        body: crawl_result.document_body(limit: config.max_body_size),
+        body: crawl_result.document_body(limit: config.max_body_size, rulesets: @rulesets),
         meta_keywords: crawl_result.meta_keywords(limit: config.max_keywords_size),
         meta_description: crawl_result.meta_description(limit: config.max_description_size),
         links: crawl_result.links(limit: config.max_indexed_links_count),
@@ -102,8 +104,7 @@ module Crawler
     end
 
     def extraction_rule_fields(crawl_result)
-      rulesets = @config.extraction_rules[crawl_result.site_url.to_s] || []
-      Crawler::ContentEngine::Extractor.extract(rulesets, crawl_result).symbolize_keys
+      Crawler::ContentEngine::Extractor.extract(@extraction_rulesets, crawl_result).symbolize_keys
     end
 
     # Accepts a hash and removes empty values from it

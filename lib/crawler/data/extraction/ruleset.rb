@@ -20,14 +20,30 @@ module Crawler
           validate_ruleset
 
           # initialize these after validating they are arrays
-          rules
+          extraction_rules
+          ignore_rules
           url_filters
         end
 
-        def rules
-          @rules ||=
+        def extraction_rules
+          @extraction_rules ||=
             if @ruleset[:rules]&.any?
-              @ruleset[:rules].map do |rule|
+              @ruleset[:rules].filter_map do |rule|
+                next if rule[:action] == Crawler::Data::Extraction::Rule::ACTION_TYPE_IGNORE
+
+                Crawler::Data::Extraction::Rule.new(rule)
+              end
+            else
+              []
+            end
+        end
+
+        def ignore_rules
+          @ignore_rules ||=
+            if @ruleset[:rules]&.any?
+              @ruleset[:rules].filter_map do |rule|
+                next unless rule[:action] == Crawler::Data::Extraction::Rule::ACTION_TYPE_IGNORE
+
                 Crawler::Data::Extraction::Rule.new(rule)
               end
             else

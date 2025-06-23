@@ -13,8 +13,16 @@ module Crawler
       EXCLUDE_ATTR = 'data-elastic-exclude'
       EXCLUDE_ATTR_SELECTOR = "[#{EXCLUDE_ATTR}]".freeze
 
-      def self.transform(tag)
-        transform!(tag.dup)
+      def self.transform(tag, ignore_selectors)
+        # Pre-emptively remove any elements found in the ignore rulesets
+        # We can't do this during the traverse loop because there are selectors
+        # that can only be executed on the full DOM
+        duped_tag = tag.dup
+        ignore_selectors.each do |selector|
+          duped_tag.select(selector).forEach(&:remove)
+        end
+
+        transform!(duped_tag.dup)
       end
 
       def self.transform!(tag)

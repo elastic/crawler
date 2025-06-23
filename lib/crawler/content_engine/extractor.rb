@@ -26,7 +26,7 @@ module Crawler
       def self.execute_rule(ruleset, crawl_result)
         fields = {}
 
-        ruleset.rules.each do |rule|
+        ruleset.extraction_rules.each do |rule|
           field_name = rule.field_name
 
           case rule.action

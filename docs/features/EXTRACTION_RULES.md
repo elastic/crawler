@@ -65,6 +65,11 @@ Possible values:
   - The crawler will see if the HTML element configured in `selector` exists or not
   - If one or multiple elements exist, the crawler will add the configured `value` to the document using `field_name` as the doc's field name
   - If it does not exist, the crawler will not add anything to the document
+- `ignore`
+  - Removes HTML element nodes found using the `selector` _as well as any associated child nodes_.
+  - If multiple elements match the `selector` pattern, they will all be removed.
+  - The text from inside the ignored element will subsequently not be included in the document field `body`.
+  - If full HTML extraction is enabled, the removed element will still be found in the document field `full_html`.
 
 ### `domains[].extraction_rulesets[].rules[].field_name`
 
