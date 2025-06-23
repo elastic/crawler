@@ -1,13 +1,13 @@
 {
   "targetBranchChoices": [
     { "name": "main", "checked": true },
-    "0.2",
-    "0.1"
+    "0.3",
+    "0.2"
   ],
   "fork": false,
   "targetPRLabels": ["backport"],
   "branchLabelMapping": {
-    "^v0.3.0(.0)?$": "main",
+    "^v0.4.0(.0)?$": "main",
     "^v(\\d+).(\\d+)(.\\d+)+$": "$1.$2"
   },
   "upstream": "elastic/crawler"
