@@ -12,7 +12,7 @@ module Crawler
   module UrlValidator::DnsCheckConcern # rubocop:disable Style/ClassAndModuleChildren
     extend ActiveSupport::Concern
 
-    def validate_dns
+    def validate_dns(_config)
       if proxy_configured?
         warning = 'DNS resolution check could not be performed via an HTTP proxy.'
         return validation_warn(:dns, warning)
