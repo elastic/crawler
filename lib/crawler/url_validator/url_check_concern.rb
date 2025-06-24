@@ -10,7 +10,7 @@ module Crawler
   module UrlValidator::UrlCheckConcern # rubocop:disable Style/ClassAndModuleChildren
     extend ActiveSupport::Concern
 
-    def validate_url # rubocop:disable Metrics/AbcSize
+    def validate_url(_config) # rubocop:disable Metrics/AbcSize
       if url.scheme.blank?
         validation_fail(:url, 'URL scheme is missing. Domain URLs must start with https:// or http://')
       elsif !url.supported_scheme?

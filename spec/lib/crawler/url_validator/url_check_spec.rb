@@ -42,7 +42,7 @@ RSpec.describe(Crawler::UrlValidator) do
       let(:scheme) { '' }
 
       it 'calls validation_fail with the correct parameters' do
-        validator.validate_url
+        validator.validate_url(crawl_config)
         expect(validator)
           .to have_received(:validation_fail)
           .with(:url, 'URL scheme is missing. Domain URLs must start with https:// or http://')
@@ -53,7 +53,7 @@ RSpec.describe(Crawler::UrlValidator) do
       let(:supported_scheme) { false }
 
       it 'calls validation_fail with the correct parameters' do
-        validator.validate_url
+        validator.validate_url(crawl_config)
         expect(validator)
           .to have_received(:validation_fail)
           .with(:url, "Unsupported URL scheme: #{scheme}", scheme:)
@@ -65,7 +65,7 @@ RSpec.describe(Crawler::UrlValidator) do
       let(:configuration) { false }
 
       it 'calls validation_fail with the correct parameters' do
-        validator.validate_url
+        validator.validate_url(crawl_config)
         expect(validator)
           .to have_received(:validation_fail)
           .with(:url, 'Domain URLs cannot contain a path')
@@ -74,7 +74,7 @@ RSpec.describe(Crawler::UrlValidator) do
 
     context 'when URL structure is valid' do
       it 'calls validation_ok with the correct parameters' do
-        validator.validate_url
+        validator.validate_url(crawl_config)
         expect(validator)
           .to have_received(:validation_ok)
           .with(:url, 'URL structure looks valid')
@@ -87,7 +87,7 @@ RSpec.describe(Crawler::UrlValidator) do
       end
 
       it 'calls validation_fail with the correct parameters' do
-        validator.validate_url
+        validator.validate_url(crawl_config)
         expect(validator)
           .to have_received(:validation_fail)
           .with(:url, 'Error parsing domain name: invalid URI')

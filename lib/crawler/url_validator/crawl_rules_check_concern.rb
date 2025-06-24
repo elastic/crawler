@@ -10,7 +10,7 @@ module Crawler
   module UrlValidator::CrawlRulesCheckConcern # rubocop:disable Style/ClassAndModuleChildren
     extend ActiveSupport::Concern
 
-    def validate_crawl_rules
+    def validate_crawl_rules(_config)
       rule_engine = Crawler::RuleEngine::Elasticsearch.new(crawler_api_config)
       outcome = rule_engine.crawl_rules_outcome(normalized_url)
       rule = outcome.details[:rule]

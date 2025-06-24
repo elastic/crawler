@@ -24,7 +24,7 @@ RSpec.describe(Crawler::UrlValidator) do
       end
 
       it 'calls validation_warn with the correct parameters' do
-        validator.validate_dns
+        validator.validate_dns(crawl_config)
         expect(validator)
           .to have_received(:validation_warn)
           .with(:dns, 'DNS resolution check could not be performed via an HTTP proxy.')
@@ -45,7 +45,7 @@ RSpec.describe(Crawler::UrlValidator) do
 
       context 'when DNS resolution is successful' do
         it 'calls validation_ok with the correct parameters' do
-          validator.validate_dns
+          validator.validate_dns(crawl_config)
           expect(validator)
             .to have_received(:validation_ok)
             .with(:dns, 'Domain name resolution successful: 1 addresses found', addresses:)
@@ -56,7 +56,7 @@ RSpec.describe(Crawler::UrlValidator) do
         let(:addresses) { [] }
 
         it 'calls validation_fail with the correct parameters' do
-          validator.validate_dns
+          validator.validate_dns(crawl_config)
           expect(validator)
             .to have_received(:validation_fail)
             .with(:dns, 'DNS name resolution failed. No suitable addresses found!')
@@ -69,7 +69,7 @@ RSpec.describe(Crawler::UrlValidator) do
         end
 
         it 'calls validation_fail with the correct parameters' do
-          validator.validate_dns
+          validator.validate_dns(crawl_config)
           expect(validator)
             .to have_received(:validation_fail)
             .with(:dns, /DNS resolution failure: DNS error. Please check the spelling of your domain/)

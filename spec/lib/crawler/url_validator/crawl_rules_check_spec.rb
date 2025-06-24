@@ -36,7 +36,7 @@ RSpec.describe(Crawler::UrlValidator) do
       let(:allowed) { true }
 
       it 'calls validation_ok' do
-        validator.validate_crawl_rules
+        validator.validate_crawl_rules(crawl_config)
         expect(validator)
           .to have_received(:validation_ok)
       end
@@ -46,7 +46,7 @@ RSpec.describe(Crawler::UrlValidator) do
       let(:allowed) { false }
 
       it 'calls validation_fail' do
-        validator.validate_crawl_rules
+        validator.validate_crawl_rules(crawl_config)
         expect(validator)
           .to have_received(:validation_fail)
       end
@@ -57,7 +57,7 @@ RSpec.describe(Crawler::UrlValidator) do
       let(:rule) { nil }
 
       it 'calls validation_fail' do
-        validator.validate_crawl_rules
+        validator.validate_crawl_rules(crawl_config)
         expect(validator)
           .to have_received(:validation_fail)
       end

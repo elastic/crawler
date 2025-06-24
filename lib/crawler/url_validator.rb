@@ -154,7 +154,7 @@ module Crawler
       check_method = :"validate_#{check_name}"
       raise ArgumentError, "Invalid check name: #{check_name.inspect}" unless respond_to?(check_method, true)
 
-      send(check_method)
+      send(check_method, @crawl_config)
     end
 
     def http_executor

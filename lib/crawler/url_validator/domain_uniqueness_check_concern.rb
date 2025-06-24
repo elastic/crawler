@@ -10,7 +10,7 @@ module Crawler
   module UrlValidator::DomainUniquenessCheckConcern # rubocop:disable Style/ClassAndModuleChildren
     extend ActiveSupport::Concern
 
-    def validate_domain_uniqueness
+    def validate_domain_uniqueness(_config)
       if crawler_api_config.domain_allowlist.include?(url.domain)
         validation_fail(:domain_uniqueness, 'Domain name already exists')
       else
