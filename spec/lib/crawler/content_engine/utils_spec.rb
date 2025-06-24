@@ -48,5 +48,12 @@ RSpec.describe(Crawler::ContentEngine::Utils) do
         expect(Crawler::ContentEngine::Utils.node_descendant_text(node, [])).to eq('Script body P body')
       end
     end
+
+    context 'with meta tags' do
+      it 'should extract the meta tag content attribute' do
+        node = Jsoup.parse('<meta name="tag name" content="This is the content">')
+        expect(Crawler::ContentEngine::Utils.node_descendant_text(node)).to eq('This is the content')
+      end
+    end
   end
 end
