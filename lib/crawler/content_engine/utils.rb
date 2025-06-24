@@ -41,7 +41,7 @@ module Crawler
         to_process_stack = [node]
         text = []
 
-        loop do
+        loop do # rubocop:disable Metrics/BlockLength
           # Get the next node to process
           node = to_process_stack.pop
           break unless node
@@ -67,6 +67,12 @@ module Crawler
             content = node.text
             text << content.squish if content
             next
+          end
+
+          # Extract the text from Element nodes (Ex. meta tags)
+          if node.is_a?(Java::OrgJsoupNOdes::Element)
+            content = node.attributes.get('content')
+            text << content.squish if content
           end
 
           # Extract the text from data nodes (script, style, etc.)
