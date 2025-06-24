@@ -24,7 +24,7 @@ RSpec.describe(Crawler::UrlValidator) do
 
     context 'when the URL matches one of the configured domains' do
       it 'calls validation_ok with the correct parameters' do
-        validator.validate_domain_access
+        validator.validate_domain_access(crawl_config)
         expect(validator)
           .to have_received(:validation_ok)
           .with(:domain_access, 'The URL matches one of the configured domains', domain: 'example.com')
@@ -35,7 +35,7 @@ RSpec.describe(Crawler::UrlValidator) do
       let(:url) { instance_double('Crawler::Data::URL', domain: 'notexample.com', domain_name: 'notexample.com') }
 
       it 'calls validation_fail with the correct parameters' do
-        validator.validate_domain_access
+        validator.validate_domain_access(crawl_config)
         expect(validator)
           .to have_received(:validation_fail)
           .with(:domain_access, 'The URL does not match any configured domains')
