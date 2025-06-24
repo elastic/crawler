@@ -134,7 +134,7 @@ RSpec.describe(Crawler::UrlValidator) do
       Crawler::UrlValidator.class_eval do
         private
 
-        def validate_test_check
+        def validate_test_check(_config)
           validation_ok('test_check', 'Test check passed')
         end
       end

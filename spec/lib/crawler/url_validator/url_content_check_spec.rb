@@ -68,7 +68,7 @@ RSpec.describe(Crawler::UrlValidator) do
       end
 
       it 'calls validation_warn with the correct parameters' do
-        validator.validate_url_content
+        validator.validate_url_content(crawl_config)
         expect(validator)
           .to have_received(:validation_warn)
           .with(:url_content, "The web page at #{validator.url} did not return enough content to index.")
@@ -81,7 +81,7 @@ RSpec.describe(Crawler::UrlValidator) do
       end
 
       it 'calls validation_ok with follow' do
-        validator.validate_url_content
+        validator.validate_url_content(crawl_config)
         expect(validator).to have_received(:validation_ok).twice
       end
     end
@@ -92,7 +92,7 @@ RSpec.describe(Crawler::UrlValidator) do
       end
 
       it 'calls validation_ok with the correct parameters for links' do
-        validator.validate_url_content
+        validator.validate_url_content(crawl_config)
         expect(validator).to have_received(:validation_ok).with(
           :url_content,
           "Successfully extracted some links from #{validator.url}.",
@@ -109,7 +109,7 @@ RSpec.describe(Crawler::UrlValidator) do
       end
 
       it 'calls validation_warn with the correct parameters for no links' do
-        validator.validate_url_content
+        validator.validate_url_content(crawl_config)
         expect(validator).to have_received(:validation_warn).with(
           :url_content,
           /The web page at #{validator.url} has no links in it at all/
@@ -124,11 +124,11 @@ RSpec.describe(Crawler::UrlValidator) do
 
       it 'calls validation_warn_from_crawl_redirect' do
         expect(validator).to receive(:validation_warn_from_crawl_redirect)
-        validator.validate_url_content
+        validator.validate_url_content(crawl_config)
       end
 
       it 'calls validation_warn with the correct parameters' do
-        validator.validate_url_content
+        validator.validate_url_content(crawl_config)
         expect(validator).to have_received(:validation_warn).with(
           :url_content,
           "The web page at #{validator.url} redirected us to http://redirected.com,\nplease make sure the " \
@@ -144,7 +144,7 @@ RSpec.describe(Crawler::UrlValidator) do
         end
 
         it 'calls validation_fail_from_crawl_error with redirect error result' do
-          validator.validate_url_content
+          validator.validate_url_content(crawl_config)
           expect(validator).to have_received(:validation_fail).with(
             :url_content,
             "When we fetched the web page at #{validator.url}, the server returned data that was not HTML.\n" \
@@ -161,7 +161,7 @@ RSpec.describe(Crawler::UrlValidator) do
       end
 
       it 'calls validation_fail_from_crawl_error with crawl error' do
-        validator.validate_url_content
+        validator.validate_url_content(crawl_config)
         expect(validator).to have_received(:validation_fail).with(
           :url_content,
           "When we fetched the web page at #{validator.url}, an unexpected error occurred: error.\n" \
