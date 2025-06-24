@@ -37,7 +37,7 @@ RSpec.describe(Crawler::UrlValidator) do
 
       it 'returns a validation warning' do
         expect(validator).to receive(:validation_warn).with(:robots_txt, /redirect error/)
-        validator.validate_robots_txt
+        validator.validate_robots_txt(crawl_config)
       end
     end
 
@@ -48,7 +48,7 @@ RSpec.describe(Crawler::UrlValidator) do
 
       it 'returns validation ok' do
         expect(validator).to receive(:validation_ok).with(:robots_txt, /No robots.txt found/)
-        validator.validate_robots_txt
+        validator.validate_robots_txt(crawl_config)
       end
     end
 
@@ -61,7 +61,7 @@ RSpec.describe(Crawler::UrlValidator) do
 
       it 'returns a validation failure' do
         expect(validator).to receive(:validation_fail).with(:robots_txt, /Failed to fetch robots.txt/)
-        validator.validate_robots_txt
+        validator.validate_robots_txt(crawl_config)
       end
     end
 
@@ -72,7 +72,7 @@ RSpec.describe(Crawler::UrlValidator) do
 
       it 'returns a validation failure' do
         expect(validator).to receive(:validation_fail).with(:robots_txt, /Transient error fetching robots.txt/)
-        validator.validate_robots_txt
+        validator.validate_robots_txt(crawl_config)
       end
     end
 
@@ -97,7 +97,7 @@ RSpec.describe(Crawler::UrlValidator) do
 
         it 'returns validation ok' do
           expect(validator).to receive(:validation_ok).with(:robots_txt, /allows us full access/)
-          validator.validate_robots_txt
+          validator.validate_robots_txt(crawl_config)
         end
       end
 
@@ -109,7 +109,7 @@ RSpec.describe(Crawler::UrlValidator) do
         it 'returns a validation warning' do
           expect(validator).to receive(:validation_warn).with(:robots_txt,
                                                               /allows us access to the domain with some restrictions/)
-          validator.validate_robots_txt
+          validator.validate_robots_txt(crawl_config)
         end
       end
 
@@ -121,7 +121,7 @@ RSpec.describe(Crawler::UrlValidator) do
 
         it 'returns a validation failure' do
           expect(validator).to receive(:validation_fail).with(:robots_txt, /disallows us access/)
-          validator.validate_robots_txt
+          validator.validate_robots_txt(crawl_config)
         end
       end
     end

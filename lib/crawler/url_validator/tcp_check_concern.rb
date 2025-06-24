@@ -10,7 +10,7 @@ module Crawler
   module UrlValidator::TcpCheckConcern # rubocop:disable Style/ClassAndModuleChildren
     extend ActiveSupport::Concern
 
-    def validate_tcp
+    def validate_tcp(_config)
       if proxy_configured?
         warning = 'TCP connection check could not be performed via an HTTP proxy.'
         return validation_warn(:tcp, warning)
