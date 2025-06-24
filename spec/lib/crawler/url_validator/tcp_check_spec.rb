@@ -30,7 +30,7 @@ RSpec.describe(Crawler::UrlValidator) do
       let(:proxy_configured) { true }
 
       it 'calls validation_warn with the correct parameters' do
-        validator.validate_tcp
+        validator.validate_tcp(crawl_config)
         expect(validator)
           .to have_received(:validation_warn)
           .with(:tcp, 'TCP connection check could not be performed via an HTTP proxy.')
@@ -48,7 +48,7 @@ RSpec.describe(Crawler::UrlValidator) do
         end
 
         it 'calls validation_ok with the correct parameters' do
-          validator.validate_tcp
+          validator.validate_tcp(crawl_config)
           expect(validator)
             .to have_received(:validation_ok)
             .with(:tcp, 'TCP connection successful', details)
@@ -63,7 +63,7 @@ RSpec.describe(Crawler::UrlValidator) do
         end
 
         it 'calls validation_fail with the correct parameters' do
-          validator.validate_tcp
+          validator.validate_tcp(crawl_config)
           expect(validator)
             .to have_received(:validation_fail)
             .with(:tcp, /TCP connection to #{host}:#{port} timed out/, details)
@@ -79,7 +79,7 @@ RSpec.describe(Crawler::UrlValidator) do
         end
 
         it 'calls validation_fail with the correct parameters' do
-          validator.validate_tcp
+          validator.validate_tcp(crawl_config)
           expect(validator)
             .to have_received(:validation_fail)
             .with(:tcp, /TCP connection to #{host}:#{port} failed: socket error/, details)
@@ -95,7 +95,7 @@ RSpec.describe(Crawler::UrlValidator) do
         end
 
         it 'calls validation_fail with the correct parameters' do
-          validator.validate_tcp
+          validator.validate_tcp(crawl_config)
           expect(validator)
             .to have_received(:validation_fail)
             .with(:tcp, /TCP connection to #{host}:#{port} failed:/, details)

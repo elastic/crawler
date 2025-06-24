@@ -10,15 +10,15 @@ module Crawler
   module UrlValidator::UrlRequestCheckConcern # rubocop:disable Style/ClassAndModuleChildren
     extend ActiveSupport::Concern
 
-    def validate_url_request # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength
+    def validate_url_request(config) # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength
       # Fetch home page using the standard Crawler HTTP executor
-      @url_crawl_result = http_executor.run(
-        Crawler::Data::CrawlTask.new(
-          url:,
-          type: :content,
-          depth: 1
-        )
+      crawl_task = Crawler::Data::CrawlTask.new(
+        url:,
+        type: :content,
+        depth: 1
       )
+      crawl_task.authorization_header = config.http_header_service.authorization_header_for_url(crawl_task.url)
+      @url_crawl_result = http_executor.run(crawl_task)
 
       # Common context for all results
       details = {
@@ -150,19 +150,12 @@ module Crawler
     def unauthorized_validation_result(details)
       shared_message = "The web server at #{url} requires a user name and password for access (HTTP 401)"
 
-      if ::SharedTogo::Crawler2.license_allows_authenticated_crawls?
-        validation_warn(:url_request, <<~MESSAGE, details)
-          #{shared_message};
-          Remember to configure auth for the associated domain.
-          You can configure authentication setting in your configuration here: https://github.com/elastic/crawler/blob/0a5ab5b74eae12f96b312d7cea39103a64b28700/config/crawler.yml.example#L187.
-        MESSAGE
-      else
-        validation_fail(:url_request, <<~MESSAGE, details)
-          #{shared_message}.
-          #{::Crawler::AUTHENTICATED_CRAWL_LICENSE_ERROR}.
-          You can configure authentication setting in your configuration here: https://github.com/elastic/crawler/blob/0a5ab5b74eae12f96b312d7cea39103a64b28700/config/crawler.yml.example#L187.
-        MESSAGE
-      end
+      validation_warn(:url_request, <<~MESSAGE, details)
+        #{shared_message};
+        Remember to configure auth for the associated domain.
+        You can configure authentication setting in your configuration.
+        Examples can be found here: https://github.com/elastic/crawler/blob/main/config/crawler.yml.example.
+      MESSAGE
     end
   end
 end

@@ -10,7 +10,7 @@ module Crawler
   module UrlValidator::RobotsTxtCheckConcern # rubocop:disable Style/ClassAndModuleChildren
     extend ActiveSupport::Concern
 
-    def validate_robots_txt # rubocop:disable Metrics/AbcSize, Metrics/MethodLength, Metrics/PerceivedComplexity
+    def validate_robots_txt(_config) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength, Metrics/PerceivedComplexity
       # Fetch robots.txt using the standard Crawler HTTP executor
       crawl_result = http_executor.run(
         Crawler::Data::CrawlTask.new(

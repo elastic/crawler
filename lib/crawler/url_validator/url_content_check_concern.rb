@@ -10,7 +10,7 @@ module Crawler
   module UrlValidator::UrlContentCheckConcern # rubocop:disable Style/ClassAndModuleChildren
     extend ActiveSupport::Concern
 
-    def validate_url_content # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+    def validate_url_content(_config) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
       # Fetch the seen URL unless it has already been fetched
       validate_url_request unless url_crawl_result
 
