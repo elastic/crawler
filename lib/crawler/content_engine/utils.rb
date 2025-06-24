@@ -70,7 +70,7 @@ module Crawler
           end
 
           # Extract the text from Element nodes (Ex. meta tags)
-          if node.is_a?(Java::OrgJsoupNOdes::Element)
+          if node.is_a?(Java::OrgJsoupNodes::Element)
             content = node.attributes.get('content')
             text << content.squish if content
           end
