@@ -58,8 +58,9 @@ module Crawler
         system_logger.info(
           "Connected to ES at #{es_host} - version: #{version}; build flavor: #{build_flavor}"
         )
-      rescue Elastic::Transport::Transport::Error # rescue bc client.info crashes ungracefully when ES is unreachable
-        system_logger.info("Failed to reach ES at #{es_host}")
+      rescue Elastic::Transport::Transport::Error => e
+        # rescue bc client.info crashes ungracefully when ES is unreachable
+        system_logger.info("Failed to reach ES at #{es_host}: #{e}")
         raise Errors::ExitIfESConnectionError
       end
 
