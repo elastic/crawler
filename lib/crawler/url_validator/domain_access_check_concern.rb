@@ -10,7 +10,7 @@ module Crawler
   module UrlValidator::DomainAccessCheckConcern # rubocop:disable Style/ClassAndModuleChildren
     extend ActiveSupport::Concern
 
-    def validate_domain_access
+    def validate_domain_access(_config)
       if crawler_api_config.domain_allowlist.include?(url.domain)
         validation_ok(:domain_access, 'The URL matches one of the configured domains', domain: url.domain_name)
       else
