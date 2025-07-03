@@ -102,7 +102,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
       it 'should raise an ESConnectionError' do
         expect { subject }.to raise_error(Errors::ExitIfESConnectionError)
         expect(system_logger).to have_received(:info).with(
-          "Failed to reach ES at #{config.elasticsearch[:host]}:#{config.elasticsearch[:port]}"
+          "Failed to reach ES at #{config.elasticsearch[:host]}:#{config.elasticsearch[:port]}: Elastic::Transport::Transport::Error"
         )
       end
     end
