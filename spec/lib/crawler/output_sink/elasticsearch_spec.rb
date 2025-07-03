@@ -95,6 +95,8 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
     end
 
     context 'when connection to Elasticsearch cannot be established' do
+      let(:expected_host) { "#{config.elasticsearch[:host]}:#{config.elasticsearch[:port]}" }
+
       before(:each) do
         allow(es_client).to receive(:info).and_raise(Elastic::Transport::Transport::Error)
       end
