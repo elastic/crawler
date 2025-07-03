@@ -112,26 +112,56 @@ RSpec.describe(ES::Client) do
   end
 
   describe '#connection_config' do
-    context 'when configuring Elasticsearch client' do
+    context 'when host, scheme, and port are all provided' do
+      let(:expected) do
+        [
+          {
+            scheme: 'https',
+            host: 'localhost',
+            port: 9201
+          }
+        ]
+      end
+
       it 'handles full URL with scheme, host and port' do
         new_config = {
           host: 'https://localhost:9201'
         }
 
         result = subject.connection_config(new_config, '0.0.0-foo')
-        expect(result[:scheme]).to eq('https')
-        expect(result[:host]).to eq('localhost')
-        expect(result[:port]).to eq(9201)
+        expect(result[:hosts]).to match_array(expected)
+      end
+    end
+
+    context 'when only host and scheme are provided' do
+      let(:expected) do
+        [
+          {
+            scheme: 'https',
+            host: 'localhost',
+            port: 443
+          }
+        ]
       end
 
-      it 'handles URL with scheme and host' do
+      it 'handles URL with scheme and host, and gets port from URI object' do
         new_config = {
           host: 'https://localhost'
         }
 
         result = subject.connection_config(new_config, '0.0.0-foo')
-        expect(result[:scheme]).to eq('https')
-        expect(result[:host]).to eq('localhost')
+        expect(result[:hosts]).to match_array(expected)
+      end
+    end
+
+    context 'when only host and port are provided' do
+      let(:expected) do
+        [
+          {
+            host: 'localhost',
+            port: 9201
+          }
+        ]
       end
 
       it 'handles host with port' do
@@ -141,9 +171,17 @@ RSpec.describe(ES::Client) do
         }
 
         result = subject.connection_config(new_config, '0.0.0-foo')
-        expect(result[:scheme]).to be_nil
-        expect(result[:host]).to eq('localhost')
-        expect(result[:port]).to eq(9201)
+        expect(result[:hosts]).to match_array(expected)
+      end
+    end
+
+    context 'when only host and scheme are provided' do
+      let(:expected) do
+        [
+          {
+            host: 'localhost'
+          }
+        ]
       end
 
       it 'handles host only' do
@@ -152,9 +190,19 @@ RSpec.describe(ES::Client) do
         }
 
         result = subject.connection_config(new_config, '0.0.0-foo')
-        expect(result[:scheme]).to be_nil
-        expect(result[:host]).to eq('localhost')
-        expect(result[:port]).to be_nil
+        expect(result[:hosts]).to match_array(expected)
+      end
+    end
+
+    context 'when host and port are both provided, but host also includes a port' do
+      let(:expected) do
+        [
+          {
+            scheme: 'https',
+            host: 'localhost',
+            port: 9300
+          }
+        ]
       end
 
       it 'gives precedence to separate port over port in host' do
@@ -164,7 +212,7 @@ RSpec.describe(ES::Client) do
         }
 
         result = subject.connection_config(new_config, '0.0.0-foo')
-        expect(result[:port]).to eq(9300)
+        expect(result[:hosts]).to match_array(expected)
       end
     end
 
@@ -239,8 +287,8 @@ RSpec.describe(ES::Client) do
       it 'overrides username and password' do
         result = subject.connection_config(config[:elasticsearch], '0.0.0-bar')
 
-        expect(result[:host]).to eq('notreallyaserver')
-        expect(result[:port]).to eq('9200')
+        expect(result[:hosts].first[:host]).to eq('notreallyaserver')
+        expect(result[:hosts].first[:port]).to eq('9200')
         expect(result[:api_key]).to eq('key')
 
         expect(result[:username]).to be_nil

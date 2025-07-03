@@ -106,10 +106,14 @@ module ES
       port ||= uri.port
 
       {
-        scheme:,
-        host:,
-        port:
-      }.compact
+        hosts: [
+          {
+            scheme:,
+            host:,
+            port:
+          }.compact
+        ]
+      }
     end
 
     def get_retry_configuration(es_config)
