@@ -1,10 +1,10 @@
-FROM docker.elastic.co/wolfi/jdk:openjdk-21.35-r1-dev@sha256:d7ca36452a68f28e4c4683062241e817b548844820a0ffd087451214e61eb188
+# Build stage
+FROM docker.elastic.co/wolfi/jdk:openjdk-21.35-r1@sha256:d7ca36452a68f28e4c4683062241e817b548844820a0ffd087451214e61eb188 AS builder
 
 USER root
 
 # ------------------------------------------------------------------------------
-# we need curl and make below, but then we remove them later
-# TODO maybe we can do multi-stage to reduce layers in the final image
+# we need curl and make for building
 RUN apk update && apk add --no-cache libcurl-openssl4=~8.12.1 curl=~8.12.1 make
 
 # ------------------------------------------------------------------------------
@@ -42,12 +42,7 @@ RUN mkdir -p "$GEM_HOME" && chmod 777 "$GEM_HOME"
 # ------------------------------------------------------------------------------
 # install the application
 
-# TODO we should look at finding a better way to get the application artifact into
-# the container image, since we are adding lots of stuff here that we do not need
-# and may not want (do we need vendor/ after the make install below, for instance?),
-# contributing to increased image size; for now at least we can remove `.git` (below)
-
-# java is the base image's default us
+# java is the base image's default user
 COPY --chown=java:java --chmod=775 . /home/app
 WORKDIR /home/app
 
@@ -56,17 +51,43 @@ ENV IS_DOCKER=1
 
 RUN make clean install
 
-# Clean up build dependencies
-RUN rm -r /root/.m2
-
 # ------------------------------------------------------------------------------
-# remove now-unnecessary packages and directories
+# Runtime stage - using the same base image
+FROM docker.elastic.co/wolfi/jdk:openjdk-21.35-r1@sha256:d7ca36452a68f28e4c4683062241e817b548844820a0ffd087451214e61eb188
 
-RUN apk del curl make git \
-    && apk --purge del apk-tools \
-    && rm -rf /home/app/.git
+USER root
 
-# switch back to the base image's default user when running the application
+# Install runtime dependencies
+RUN apk update && apk add --no-cache libcurl-openssl4=~8.12.1
+
+# Set Java environment
+ENV JAVA_HOME=/usr/lib/jvm/default-jvm
+# ENV PATH=$JAVA_HOME/bin:$PATH
+
+# Copy JRuby from builder
+COPY --from=builder /opt/jruby /opt/jruby
+RUN mkdir -p /usr/local/bin && ln -s /opt/jruby/bin/jruby /usr/local/bin/ruby
+ENV PATH=/opt/jruby/bin:$PATH
+ENV JRUBY_VERSION=9.4.12.0
+ENV JRUBY_SHA256=05c5d203d6990c92671cc42f57d2fa1c1083bbfd16fa7023dc5848cdb8f0aa2e
+
+# Copy gem environment
+COPY --from=builder /usr/local/bundle /usr/local/bundle
+ENV GEM_HOME=/usr/local/bundle
+ENV BUNDLE_SILENCE_ROOT_WARNING=1 \
+    BUNDLE_APP_CONFIG="$GEM_HOME"
+ENV PATH=$GEM_HOME/bin:$PATH
+
+# Copy the entire application directory
+COPY --from=builder --chown=java:java /home/app /home/app
+
+WORKDIR /home/app
+
+# skip jenv/rbenv setup
+ENV IS_DOCKER=1
+
+# switch to the base image's default user when running the application
 USER java
 
+# Set the entrypoint to bash and default command to run the crawler
 ENTRYPOINT [ "/bin/bash" ]
