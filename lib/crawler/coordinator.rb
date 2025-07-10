@@ -371,7 +371,7 @@ module Crawler
     def process_crawl_result(crawl_task, crawl_result)
       crawl_task_progress(crawl_task, 'processing result')
 
-      # Extract and enqueue all links from the crawl result unless we are running a url test command
+      # Extract and enqueue all links from the crawl result
       start_time = Time.now
       duration = Benchmark.measure { extract_and_enqueue_links(crawl_task, crawl_result) }
       end_time = Time.now
@@ -724,6 +724,7 @@ module Crawler
     end
 
     def should_extract_links?
+      # We don't extract links from purge crawls, or urltest commands
       return false if @is_url_test || @crawl_stage == CRAWL_STAGE_PURGE
 
       true
