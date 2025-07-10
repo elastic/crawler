@@ -28,6 +28,11 @@ module Crawler
         tag
       end
 
+      # Recursively traverse an HTML node and its child nodes.
+      # While traversing, each node is checked for include/exclude attributes to
+      # determine what sections of the DOM to include/exclude from the final crawl result.
+      # We traverse even the children of excluded nodes in case those children have
+      # attributes signifying that the node should be included in the final crawl result.
       def self.traverse!(node, mode:) # rubocop:disable Metrics/MethodLength, Metrics/PerceivedComplexity
         # The exclusion attribute is used to determine what to traverse next in the parent loop,
         # so we should remove the attribute while traversing to avoid an infinite loop.
