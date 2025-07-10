@@ -409,8 +409,7 @@ module Crawler
 
     # Extracts links from a given crawl result and pushes them into the crawl queue for processing
     def extract_and_enqueue_links(crawl_task, crawl_result)
-      return unless should_extract_links?
-      return if crawl_result.error?
+      return unless should_extract_links? && !crawl_result.error?
 
       crawl_task_progress(crawl_task, 'extracting links')
       return enqueue_redirect_link(crawl_task, crawl_result) if crawl_result.redirect?
