@@ -50,6 +50,8 @@ WORKDIR /home/app
 ENV IS_DOCKER=1
 
 RUN make clean install
+# add more directories and files not to be copied to the runtime image from /home/app
+RUN rm -rf .git .github .idea .devcontainer .buildkite
 
 # ------------------------------------------------------------------------------
 # Runtime stage - using the same base image
@@ -62,7 +64,6 @@ RUN apk update && apk add --no-cache libcurl-openssl4=~8.12.1
 
 # Set Java environment
 ENV JAVA_HOME=/usr/lib/jvm/default-jvm
-# ENV PATH=$JAVA_HOME/bin:$PATH
 
 # Copy JRuby from builder
 COPY --from=builder /opt/jruby /opt/jruby
