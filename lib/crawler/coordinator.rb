@@ -50,7 +50,7 @@ module Crawler
         CRAWL_STAGE_PRIMARY => { outcome: nil, message: nil },
         CRAWL_STAGE_PURGE => { outcome: nil, message: nil }
       }
-      @url_test = false
+      @is_url_test = false
       @url_test_results = []
       @started_at = Time.now
     end
@@ -114,9 +114,10 @@ module Crawler
       sink.purge(started_at)
     end
 
+    # Crawls a single URL for the urltest CLI command
     def run_urltest_crawl!(endpoint)
       @crawl_stage = CRAWL_STAGE_PRIMARY
-      @url_test = true
+      @is_url_test = true
       url_obj = Crawler::Data::URL.parse(endpoint)
       add_url_to_backlog(
         url: url_obj,
@@ -205,6 +206,7 @@ module Crawler
 
     # Seed the crawler with pre-configured sitemaps
     def enqueue_sitemaps
+      # Always crawl sitemaps the user defined in the YAML config file, even if sitemap discovery is disabled
       if config.sitemap_urls.any?
         system_logger.debug("Seeding the crawl with #{config.sitemap_urls.count} Sitemap URLs...")
         add_urls_to_backlog(
@@ -299,6 +301,8 @@ module Crawler
       false
     end
 
+    # Run a loop that checks for any available executors (threads)
+    # If any are available, fires off an asynchronous crawl task, then returns to looping
     def run_crawl_loop
       until crawl_finished?
         if executors_available?
@@ -315,7 +319,7 @@ module Crawler
       log_crawl_end_event
     end
 
-    # Performs a single iteration of the crawl loop
+    # Prepares all settings needed to execute the asynchronous crawl
     def prepare_crawl_task
       return if shutdown_started?
 
@@ -337,6 +341,7 @@ module Crawler
       end
     end
 
+    # Performs the actual asynchronous execution of crawling a single URL and generating its result
     def execute_crawl_task(crawl_task)
       # Fetch the page.
       crawl_result = execute_task(crawl_task)
@@ -355,20 +360,20 @@ module Crawler
       executor.run(crawl_task, follow_redirects:).tap do |crawl_result|
         events.url_fetch(url: crawl_task.url, crawl_result:, auth_type: crawl_task.auth_type)
         # get result of specific crawl if we are doing a url test command run
-        @url_test_results.push(crawl_result) if @url_test
+        @url_test_results.push(crawl_result) if @is_url_test
       end
     end
 
     # Process a crawl_result:
-    # - Extract canonical_url and add it to the backlog
-    # - Extract links contained in the page and add them to the backlog
+    # - Extract canonical_url and add it to the backlog (if applicable)
+    # - Extract links contained in the page and add them to the backlog (if applicable)
     # - Output the crawl_result to the sink
     def process_crawl_result(crawl_task, crawl_result)
       crawl_task_progress(crawl_task, 'processing result')
 
-      # Extract and enqueue all links from the crawl result unless we are running a url test command
+      # Extract and enqueue all links from the crawl result
       start_time = Time.now
-      duration = Benchmark.measure { extract_and_enqueue_links(crawl_task, crawl_result) } unless @url_test
+      duration = Benchmark.measure { extract_and_enqueue_links(crawl_task, crawl_result) }
       end_time = Time.now
 
       # Check page against rule engine before sending to an output sink
@@ -404,7 +409,7 @@ module Crawler
 
     # Extracts links from a given crawl result and pushes them into the crawl queue for processing
     def extract_and_enqueue_links(crawl_task, crawl_result)
-      return if crawl_result.error? || @crawl_stage == CRAWL_STAGE_PURGE
+      return unless should_extract_links? && !crawl_result.error?
 
       crawl_task_progress(crawl_task, 'extracting links')
       return enqueue_redirect_link(crawl_task, crawl_result) if crawl_result.redirect?
@@ -487,6 +492,12 @@ module Crawler
       end
     end
 
+    # Extracts set of links from a crawl result, as long as:
+    # - link is a valid URL
+    # - no other meta tags or such prevent following the link
+    #
+    # There is a configurable link limit to avoid extracting millions of links from some pages.
+    # This limit applies independently to each crawl result.
     def extract_links(crawl_result, crawl_depth:)
       extracted_links = crawl_result.extract_links(limit: config.max_extracted_links_count)
       links, limit_reached = extracted_links.values_at(:links, :limit_reached)
@@ -710,6 +721,13 @@ module Crawler
       events.url_discover(**discover_event.merge(type: :allowed))
 
       :allow
+    end
+
+    def should_extract_links?
+      # We don't extract links from purge crawls, or urltest commands
+      return false if @is_url_test || @crawl_stage == CRAWL_STAGE_PURGE
+
+      true
     end
 
     def log_crawl_end_event

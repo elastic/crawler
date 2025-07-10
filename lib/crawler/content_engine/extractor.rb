@@ -11,19 +11,22 @@ module Crawler
     module Extractor
       REGEX_TIMEOUT = 0.5 # seconds
 
+      # Extract content from a crawl result based on configured content extraction rules
+      # If a ruleset's URL filter matches the crawl result's URL, we execute every rule in that ruleset.
       def self.extract(rulesets, crawl_result)
         fields = {}
 
         rulesets.each do |ruleset|
           next unless match_url_filters?(ruleset, crawl_result)
 
-          fields.merge!(execute_rule(ruleset, crawl_result))
+          fields.merge!(execute_rules(ruleset, crawl_result))
         end
 
         fields
       end
 
-      def self.execute_rule(ruleset, crawl_result)
+      # Execute every rule from a content extraction ruleset
+      def self.execute_rules(ruleset, crawl_result)
         fields = {}
 
         ruleset.rules.each do |rule|
@@ -40,6 +43,8 @@ module Crawler
         fields
       end
 
+      # Using the provided rule, extract content from the crawl result
+      # Supports extraction from the URL string, and extraction from the HTML result
       def self.extract_from_crawl_result(rule, crawl_result)
         if rule.source == Crawler::Data::Extraction::Rule::SOURCES_URL
           Timeout.timeout(REGEX_TIMEOUT) do
@@ -66,6 +71,8 @@ module Crawler
         occurrences.join(' ')
       end
 
+      # Checks the configured URL filter against the crawl result's URL
+      # Returns all associated rules for each match
       def self.match_url_filters?(ruleset, crawl_result)
         filtering_rules = ruleset.url_filtering_rules
 
