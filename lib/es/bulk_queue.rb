@@ -43,8 +43,9 @@ module ES
     def add(operation, payload = nil)
       unless will_fit?(operation, payload)
         log = <<~LOG.squish
-          Operation failed to add to bulk queue. Current operation count is #{@current_op_count}.
-          Operation payload was #{bytesize(payload)} bytes, current buffer size is #{@current_buffer_size} bytes.
+          Crawl result could not be added to the Elasticsearch bulk queue.
+          This can happen if a single crawl response is too large for the configured bulk queue limit.
+          Payload size: #{bytesize(payload)} bytes, maximum queue size: #{@size_threshold} bytes.
         LOG
         @system_logger.error(log)
         raise Errors::BulkQueueOverflowError
