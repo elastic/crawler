@@ -248,6 +248,7 @@ GET /web-crawl-test/_search
 - [Scheduling](docs/features/SCHEDULING.md) - Automate crawls with cron scheduling
 - [Ingest pipelines](docs/features/INGEST_PIPELINES.md) - Elasticsearch ingest pipeline integration
 - [Logging](docs/features/LOGGING.md) - Monitor and troubleshoot crawler activity
+- [Running on Windows](https://www.elastic.co/search-labs/blog/elastic-open-crawler-in-windows-with-docker) - Learn how to run Open Crawler in Windows with Docker
 
 ---
 
