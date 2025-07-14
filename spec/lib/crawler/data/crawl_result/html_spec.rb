@@ -86,15 +86,13 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
       expect(crawl_result.content).to be_a(String)
     end
 
-    context 'when the html is malformed' do 
+    context 'when the html is malformed' do
       let(:html) { read_fixture('malformed.com.html') }
 
       it 'should not raise an error' do
-        expect{crawl_result.parsed_content}.not_to raise_error
+        expect { crawl_result.parsed_content }.not_to raise_error
       end
-    
     end
-
   end
 
   #-------------------------------------------------------------------------------------------------
