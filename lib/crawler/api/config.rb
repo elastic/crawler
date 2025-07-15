@@ -252,6 +252,7 @@ module Crawler
         configure_http_header_service!
         configure_sitemap_urls!
         configure_extraction_rules!
+        configure_exclude_tags!
       end
 
       def to_s
@@ -354,6 +355,19 @@ module Crawler
 
         system_logger.info("Normalized URL #{url} as #{normalized_url_str}") if url != normalized_url_str
         normalized_url_str
+      end
+
+      def configure_exclude_tags!
+        @exclude_tags = domains.each_with_object({}) do |domain, exclude_tags|
+          url = domain[:url]
+
+          if domain[:exclude_tags].nil?
+            exclude_tags[url] = {}
+            next
+          end
+
+          exclude_tags[url] = domain[:exclude_tags]
+        end
       end
 
       def configure_crawl_rules!
