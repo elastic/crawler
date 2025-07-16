@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Set up an IRB console with Crawler classes fully imported
+# Require enviment.rb which pulls in the full Crawler codebase + dependencies
+require_relative File.expand_path('../../lib/environment', __FILE__)
+require 'irb'
+IRB.start(__FILE__)
