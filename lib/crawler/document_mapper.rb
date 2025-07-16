@@ -38,7 +38,8 @@ module Crawler
         html_fields(crawl_result),
         url_components(crawl_result.url),
         extraction_rule_fields(crawl_result),
-        meta_tags_and_data_attributes(crawl_result)
+        meta_tags_and_data_attributes(crawl_result),
+        remove_excluded_tags(crawl_result)
       )
     end
 
@@ -104,6 +105,14 @@ module Crawler
     def extraction_rule_fields(crawl_result)
       rulesets = @config.extraction_rules[crawl_result.site_url.to_s] || []
       Crawler::ContentEngine::Extractor.extract(rulesets, crawl_result).symbolize_keys
+    end
+
+    def remove_excluded_tags(crawl_result)
+      excluded_tags = @config.exclude_tags[crawl_result.site_url.to_s] || []
+      return unless excluded_tags.present?
+
+      content_copy = crawl_result.parsed_content.clone
+      content_copy.select(excluded_tags).symbolize_keys.remove
     end
 
     # Accepts a hash and removes empty values from it
