@@ -17,7 +17,7 @@ Elastic plans to promote this feature to GA in a future release.
 
 | Elasticsearch | Open Crawler       | Operating System |
 |---------------|--------------------|------------------|
-| `8.x`         | `v0.2.x`           | Linux, OSX       |
+| `8.x`         | `v0.2.0` and above | Linux, OSX       |
 | `9.x`         | `v0.2.1` and above | Linux, OSX       |
 
 ## Quick links
