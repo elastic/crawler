@@ -179,11 +179,12 @@ module Crawler
         end
 
         # Returns the body of the document, cleaned up for indexing
-        def document_body(limit: 5.megabytes)
+        def document_body(limit: 5.megabytes, exclude_tags: nil)
           body_tag = parsed_content.body
           return '' unless body_tag
 
-          body_tag = Crawler::ContentEngine::Transformer.transform(body_tag)
+          exclude_tags ||= []
+          body_tag = Crawler::ContentEngine::Transformer.transform(body_tag, exclude_tags:)
           body_content = Crawler::ContentEngine::Utils.node_descendant_text(body_tag)
           Crawler::ContentEngine::Utils.limit_bytesize(body_content, limit)
         end
