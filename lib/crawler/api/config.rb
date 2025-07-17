@@ -363,7 +363,7 @@ module Crawler
           url = domain[:url]
 
           if domain[:exclude_tags].nil?
-            exclude_tags[url] = {}
+            exclude_tags[url] = []
             next
           end
 
