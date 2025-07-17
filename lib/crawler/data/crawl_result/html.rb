@@ -218,12 +218,13 @@ module Crawler
         end
 
         def get_body_tag(exclude_tags)
-          exclude_tags ||= []
+          exclude_tags ||= {}
+          tags_to_exclude_for_domain = exclude_tags.fetch(url, [])
 
-          if exclude_tags.empty?
+          if tags_to_exclude_for_domain.empty?
             parsed_content.body
           else
-            parsed_content_excluding_tags(exclude_tags).body
+            parsed_content_excluding_tags(tags_to_exclude_for_domain).body
           end
         end
 
