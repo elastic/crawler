@@ -367,7 +367,7 @@ module Crawler
             next
           end
 
-          exclude_tags[url] = domain[:exclude_tags]
+          exclude_tags[url] = domain[:exclude_tags].map(&:downcase)
         end
       end
 

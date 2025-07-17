@@ -38,8 +38,7 @@ module Crawler
         html_fields(crawl_result),
         url_components(crawl_result.url),
         extraction_rule_fields(crawl_result),
-        meta_tags_and_data_attributes(crawl_result),
-        remove_excluded_tags(crawl_result)
+        meta_tags_and_data_attributes(crawl_result)
       )
     end
 
@@ -69,11 +68,11 @@ module Crawler
     def html_fields(crawl_result) # rubocop:disable Metrics/AbcSize
       remove_empty_values(
         title: crawl_result.document_title(limit: config.max_title_size),
-        body: crawl_result.document_body(limit: config.max_body_size),
+        body: crawl_result.document_body(limit: config.max_body_size, exclude_tags: config.exclude_tags),
         meta_keywords: crawl_result.meta_keywords(limit: config.max_keywords_size),
         meta_description: crawl_result.meta_description(limit: config.max_description_size),
         links: crawl_result.links(limit: config.max_indexed_links_count),
-        headings: crawl_result.headings(limit: config.max_headings_count),
+        headings: crawl_result.headings(limit: config.max_headings_count, exclude_tags: config.exclude_tags),
         full_html: crawl_result.full_html(enabled: config.full_html_extraction_enabled)
       )
     end
@@ -105,14 +104,6 @@ module Crawler
     def extraction_rule_fields(crawl_result)
       rulesets = @config.extraction_rules[crawl_result.site_url.to_s] || []
       Crawler::ContentEngine::Extractor.extract(rulesets, crawl_result).symbolize_keys
-    end
-
-    def remove_excluded_tags(crawl_result)
-      excluded_tags = @config.exclude_tags[crawl_result.site_url.to_s] || []
-      return unless excluded_tags.present?
-
-      content_copy = crawl_result.parsed_content.clone
-      content_copy.select(excluded_tags).symbolize_keys.remove
     end
 
     # Accepts a hash and removes empty values from it

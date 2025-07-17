@@ -13,15 +13,12 @@ module Crawler
       EXCLUDE_ATTR = 'data-elastic-exclude'
       EXCLUDE_ATTR_SELECTOR = "[#{EXCLUDE_ATTR}]".freeze
 
-      def self.transform(tag, exclude_tags: nil)
-        transform!(tag.dup, exclude_tags:)
+      def self.transform(tag)
+        transform!(tag.dup)
       end
 
-      def self.transform!(tag, exclude_tags: nil)
-        exclude_tags ||= []
+      def self.transform!(tag)
         loop do
-          break if !exclude_tags.empty? && exclude_tags.include?(tag)
-
           node = tag.hasAttr(EXCLUDE_ATTR) ? tag : tag.selectFirst(EXCLUDE_ATTR_SELECTOR)
           break if node.nil?
 

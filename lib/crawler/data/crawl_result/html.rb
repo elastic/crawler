@@ -26,6 +26,19 @@ module Crawler
           @parsed_content ||= Jsoup.parse(content)
         end
 
+        def parsed_content_excluding_tags(exclude_tags)
+          # we don't cache per different exclude_tags list because we use
+          # the same exclude_tags per CrawlResult, i.e. for every call
+          @parsed_content_excluding_tags ||= begin
+            # parsing a fresh copy rather than using parsed_content, as it's a mutable object
+            # and .clone only does a shallow copy
+            doc = Jsoup.parse(content)
+            selector = exclude_tags.join(', ')
+            doc.select(selector).remove
+            doc
+          end
+        end
+
         def to_s
           "<CrawlResult::HTML: id=#{id}, status_code=#{status_code}, url=#{url}, content=#{content.bytesize} bytes>"
         end
@@ -180,18 +193,17 @@ module Crawler
 
         # Returns the body of the document, cleaned up for indexing
         def document_body(limit: 5.megabytes, exclude_tags: nil)
-          body_tag = parsed_content.body
+          body_tag = get_body_tag(exclude_tags)
           return '' unless body_tag
 
-          exclude_tags ||= []
-          body_tag = Crawler::ContentEngine::Transformer.transform(body_tag, exclude_tags:)
+          body_tag = Crawler::ContentEngine::Transformer.transform(body_tag)
           body_content = Crawler::ContentEngine::Utils.node_descendant_text(body_tag)
           Crawler::ContentEngine::Utils.limit_bytesize(body_content, limit)
         end
 
         # Returns an array of section headings from the page (using h1-h6 tags to find those)
-        def headings(limit: 10)
-          body_tag = parsed_content.body
+        def headings(limit: 10, exclude_tags: nil)
+          body_tag = get_body_tag(exclude_tags)
           return [] unless body_tag
 
           Set.new.tap do |headings|
@@ -203,6 +215,16 @@ module Crawler
               break if headings.count >= limit
             end
           end.to_a
+        end
+
+        def get_body_tag(exclude_tags)
+          exclude_tags ||= []
+
+          if exclude_tags.empty?
+            parsed_content.body
+          else
+            parsed_content_excluding_tags(exclude_tags).body
+          end
         end
 
         def extract_attribute_value(tag_name, attribute_name)
