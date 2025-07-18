@@ -202,8 +202,8 @@ module Crawler
         end
 
         # Returns an array of section headings from the page (using h1-h6 tags to find those)
-        def headings(limit: 10, exclude_tags: nil)
-          body_tag = get_body_tag(exclude_tags)
+        def headings(limit: 10)
+          body_tag = parsed_content.body
           return [] unless body_tag
 
           Set.new.tap do |headings|
