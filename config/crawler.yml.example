@@ -32,6 +32,11 @@
 #      # "Bearer: eyJhb.eyJzd.KMUFs"
 #      header: your-auth-header
 #
+#   # An array of HTML5 tags to exclude from the crawl
+#    exclude_tags:
+#      - header
+#      - footer
+#
 #    # An array of crawl rules
 #    # See docs/features/CRAWL_RULES.md for more details on this feature
 #    crawl_rules:

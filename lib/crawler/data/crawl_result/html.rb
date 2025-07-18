@@ -26,6 +26,19 @@ module Crawler
           @parsed_content ||= Jsoup.parse(content)
         end
 
+        def parsed_content_excluding_tags(exclude_tags)
+          # we don't cache per different exclude_tags list because we use
+          # the same exclude_tags per CrawlResult, i.e. for every call
+          @parsed_content_excluding_tags ||= begin
+            # parsing a fresh copy rather than using parsed_content, as it's a mutable object
+            # and .clone only does a shallow copy
+            doc = Jsoup.parse(content)
+            selector = exclude_tags.join(', ')
+            doc.select(selector).remove
+            doc
+          end
+        end
+
         def to_s
           "<CrawlResult::HTML: id=#{id}, status_code=#{status_code}, url=#{url}, content=#{content.bytesize} bytes>"
         end
@@ -179,8 +192,8 @@ module Crawler
         end
 
         # Returns the body of the document, cleaned up for indexing
-        def document_body(limit: 5.megabytes)
-          body_tag = parsed_content.body
+        def document_body(limit: 5.megabytes, exclude_tags: nil)
+          body_tag = get_body_tag(exclude_tags)
           return '' unless body_tag
 
           body_tag = Crawler::ContentEngine::Transformer.transform(body_tag)
@@ -202,6 +215,17 @@ module Crawler
               break if headings.count >= limit
             end
           end.to_a
+        end
+
+        def get_body_tag(exclude_tags)
+          exclude_tags ||= {}
+          tags_to_exclude_for_domain = exclude_tags.fetch(url, [])
+
+          if tags_to_exclude_for_domain.empty?
+            parsed_content.body
+          else
+            parsed_content_excluding_tags(tags_to_exclude_for_domain).body
+          end
         end
 
         def extract_attribute_value(tag_name, attribute_name)

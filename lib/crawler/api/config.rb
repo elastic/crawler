@@ -51,6 +51,7 @@ module Crawler
         :sitemap_urls,         # Array of sitemap URLs to be used for content discovery
         :crawl_rules,          # Array of allow/deny-listed URL patterns
         :extraction_rules,     # Contains domains extraction rules
+        :exclude_tags,         # Contains tags (per domain) that need to be excluded from indexing
         :schedule,             # For scheduled jobs; not used outside of CLI
 
         :robots_txt_service,   # Service to fetch robots.txt
@@ -252,6 +253,7 @@ module Crawler
         configure_http_header_service!
         configure_sitemap_urls!
         configure_extraction_rules!
+        configure_exclude_tags!
       end
 
       def to_s
@@ -354,6 +356,40 @@ module Crawler
 
         system_logger.info("Normalized URL #{url} as #{normalized_url_str}") if url != normalized_url_str
         normalized_url_str
+      end
+
+      def validate_html5_tags(tags)
+        valid_html_tags = %w[
+          a abbr address area article aside audio b base bdi bdo blockquote body br button canvas caption
+          cite code col colgroup data datalist dd del details dfn dialog div dl dt em embed fieldset figcaption
+          figure footer form h1 h2 h3 h4 h5 h6 head header hr html i iframe img input ins kbd label legend li
+          link main map mark meta meter nav noscript object ol optgroup option output p param picture pre
+          progress q rp rt ruby s samp script section select small source span strong style sub summary sup
+          table tbody td template textarea tfoot th thead time title tr track u ul var video wbr
+        ]
+
+        invalid = tags.reject { |tag| valid_html_tags.include?(tag) }
+        raise ArgumentError, "Invalid HTML5 tags: #{invalid.join(', ')}" if invalid.any?
+
+        true
+      end
+
+      def configure_exclude_tags!
+        @exclude_tags = domains.each_with_object({}) do |domain, exclude_tags|
+          url = domain[:url]
+          tags = domain[:exclude_tags]
+
+          if tags.nil?
+            exclude_tags[url] = []
+            next
+          end
+
+          raise ArgumentError, "Exclude tags for #{url} is not an array" unless tags.is_a?(Array)
+
+          tags = tags.map(&:downcase)
+          validate_html5_tags(tags)
+          exclude_tags[url] = tags
+        end
       end
 
       def configure_crawl_rules!
