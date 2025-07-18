@@ -33,7 +33,7 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
         <meta class="elastic" name="_Does Not Meet Field Name Rules" content="invalid_should_not_appear">
       </head>
       <body>
-        <h1>Page header</h1>
+        <h1><span data-elastic-include>Page</span> header</h1>
         Something
         something   else
         <div data-elastic-exclude>
@@ -331,7 +331,7 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
     context 'when given a list of tags to exclude' do
       let(:body_text) { crawl_result.document_body(exclude_tags: { url => ['h1'] }) }
 
-      it 'should remove content associated with those tags' do
+      it 'should remove content associated with those tags, even if there is a data-elastic-include' do
         expect(body_text).to_not match('Page header')
       end
     end
