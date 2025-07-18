@@ -89,7 +89,7 @@ These attributes work as follows:
 
 #### Examples
 
-Here's a simple content exclusion rule example:
+1. Here's a simple content exclusion rule example:
 
 ```html
 <body>
@@ -98,7 +98,7 @@ Here's a simple content exclusion rule example:
 </body>
 ```
 
-In this more complex example with nested exclusion and inclusion rules, the web crawler will only extract "test1 test3 test5 test7" from the page.
+2. In this more complex example with nested exclusion and inclusion rules, the web crawler will only extract "test1 test3 test5 test7" from the page.
 
 ```html
 <body>
@@ -117,6 +117,39 @@ In this more complex example with nested exclusion and inclusion rules, the web 
   test7
 </body>
 ```
+
+3. For the case where there's a mix of inclusion/exclusion rules  
+
+```html
+<body>
+  test1
+  <div data-elastic-exclude>
+    test2
+    <p data-elastic-include>
+      test3
+      <span data-elastic-exclude>
+        test4
+        <span data-elastic-include>test5</span>
+      </span>
+    </p>
+    test6
+  </div>
+  test7
+</body>
+```
+
+**and** the config contains tags to be excluded, like so
+
+```yaml
+domains:
+  - url: ...
+    exclude_tags:
+      - p
+      - header
+```
+
+the crawler will only include "test1 test7", as the whole `<p>` element will be ignored regardless of the attributes. 
+
 
 ### Nofollow links
 
