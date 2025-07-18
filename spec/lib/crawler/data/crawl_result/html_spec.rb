@@ -328,6 +328,14 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
       end
     end
 
+    context 'when given a list of tags to exclude' do
+      let(:body_text) { crawl_result.document_body(exclude_tags: { url => ['h1'] }) }
+
+      it 'should remove content associated with those tags' do
+        expect(body_text).to_not match('Page header')
+      end
+    end
+
     it 'should remove empty spaces from the content' do
       expect(body_text).to match('Something something else')
     end

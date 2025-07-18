@@ -219,7 +219,6 @@ RSpec.describe(Crawler::API::Config) do
         expect(exclude_tags_d1).to eq([])
 
         exclude_tags_d2 = config.exclude_tags['https://domain2.com']
-        expect(exclude_tags_d2.size).to eq(2)
         expect(exclude_tags_d2).to eq(domain2[:exclude_tags])
       end
     end
