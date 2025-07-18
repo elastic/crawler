@@ -223,6 +223,40 @@ RSpec.describe(Crawler::API::Config) do
       end
     end
 
+    context 'when exclude tags is not an array' do
+      let(:domain2) do
+        {
+          url: 'https://domain2.com',
+          exclude_tags: 'header'
+        }
+      end
+
+      it 'should raise an argument error' do
+        expect do
+          Crawler::API::Config.new(
+            domains:
+          )
+        end.to raise_error(ArgumentError, 'Exclude tags for https://domain2.com is not an array')
+      end
+    end
+
+    context 'when exclude tags contains invalid tags' do
+      let(:domain2) do
+        {
+          url: 'https://domain2.com',
+          exclude_tags: %w[header footer foo bar]
+        }
+      end
+
+      it 'should raise an argument error' do
+        expect do
+          Crawler::API::Config.new(
+            domains:
+          )
+        end.to raise_error(ArgumentError, 'Invalid HTML5 tags: foo, bar')
+      end
+    end
+
     context 'when configuring SSL CA certificates' do
       def expect_x509_certificates(certs)
         expect(certs).to all(be_a(Java::JavaSecurityCert::X509Certificate))
