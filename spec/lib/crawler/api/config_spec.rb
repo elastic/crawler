@@ -208,7 +208,7 @@ RSpec.describe(Crawler::API::Config) do
       let(:domain2) do
         {
           url: 'https://domain2.com',
-          exclude_tags: ['header', 'footer']
+          exclude_tags: %w[header footer]
         }
       end
 
