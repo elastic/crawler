@@ -1,4 +1,4 @@
-### Closes https://github.com/elastic/crawler/issues/ ###
+### Closes https://github.com/elastic/crawler/issues/###
 
 <!--Provide a general description of the code changes in your pull request.
 If the change relates to a specific issue, include the link at the top.
