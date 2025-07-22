@@ -21,3 +21,8 @@ steps:
     commands:
       - ".buildkite/scripts/run_command.sh docker"
       - ".buildkite/scripts/run_command.sh test"
+  - label: ":wolfi: Test Wolfi Image"
+    commands:
+      - ".buildkite/scripts/run_command.sh wolfi"
+      - "chmod +x .buildkite/scripts/test-wolfi-image.sh"
+      - ".buildkite/scripts/test-wolfi-image.sh"
