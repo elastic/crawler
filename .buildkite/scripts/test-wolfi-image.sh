@@ -7,6 +7,6 @@ echo "Testing JRuby installation..."
 docker run --rm crawler-ci-wolfi ruby --version | grep -E "jruby\s9\.4\..*"
 
 echo "Testing crawler installation..."
-docker run --rm crawler-ci-wolfi /home/app/bin/crawler --version
+docker run --rm crawler-ci-wolfi /home/app/bin/crawler version
 
 echo "Wolfi image tests passed!"
