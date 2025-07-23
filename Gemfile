@@ -69,7 +69,7 @@ group :test do
   gem 'webrick', '~> 1.8.2'
 
   # Faux is a local gem for testing fake sites, requires nokogiri
-  gem 'nokogiri', '~> 1.18.8', require: false, platform: :jruby
+  gem 'nokogiri', '~> 1.18.9', require: false, platform: :jruby
   gem 'faux', path: 'vendor/faux', require: false
 end
 
