@@ -68,7 +68,7 @@ ENV JAVA_HOME=/usr/lib/jvm/default-jvm \
     IS_DOCKER=1
 
 # Install runtime dependencies
-RUN apk update && apk add --no-cache libcurl-openssl4=~8.12.1
+RUN apk update && apk add --no-cache libcurl-openssl4=~8.12.1 git=~2.45.0
 
 
 # Copy JRuby, gem environment, and application from builder
