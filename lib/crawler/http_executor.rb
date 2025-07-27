@@ -15,7 +15,7 @@ module Crawler
 
     SUPPORTED_MIME_TYPES = {
       html: 'text/html',
-      xml: %w[text/xml application/xml]
+      xml: %w[text/xml application/xml application/rss+xml]
     }.freeze
 
     attr_reader :config, :logger
