@@ -34,7 +34,7 @@ module Crawler
       }.stringify_keys.freeze
 
       CONFIG_FIELDS = [
-        :log_level,            # Log level set in config file, defaults to `info`
+        :log_level,            # Log level set in config file, defaults to `debug`
 
         :log_file_directory,   # Path to save log files, defaults to './logs'
         :log_file_rotation_policy, # How often logs are rotated. daily | weekly | monthly, default is weekly
@@ -140,7 +140,7 @@ module Crawler
       # Please note: These defaults are used the `Crawler::HttpUtils::Config` class.
       # Make sure to check those before renaming or removing any defaults.
       DEFAULTS = {
-        log_level: 'info',
+        log_level: 'debug',
 
         log_file_directory: './logs',
         log_file_rotation_policy: 'weekly',
