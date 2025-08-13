@@ -1,6 +1,5 @@
 # Build stage
-FROM docker.elastic.co/wolfi/jdk:openjdk-21.35-r1@sha256:d7ca36452a68f28e4c4683062241e817b548844820a0ffd087451214e61eb188 AS builder
-
+FROM docker.elastic.co/wolfi/jdk:openjdk-21.0.8-r1-dev@sha256:935bb066f36b48abf8e7dce4533cec6a0d62c24d4ec4073a5c95d282840028f9 AS builder
 USER root
 
 # ------------------------------------------------------------------------------
@@ -53,25 +52,35 @@ RUN make clean install
 # add more directories and files not to be copied to the runtime image from /home/app
 RUN rm -rf .git .github .idea .devcontainer .buildkite
 
+# Create custom JDK using jlink
+RUN jlink \
+    --add-modules java.base,jdk.crypto.ec,java.logging,java.management,java.naming,java.net.http,java.scripting,java.security.jgss,java.security.sasl,java.sql,jdk.unsupported \
+    --strip-debug \
+    --no-man-pages \
+    --no-header-files \
+    --compress=zip-6 \
+    --output /opt/jdk-crawler
+
 # ------------------------------------------------------------------------------
-# Runtime stage - using the same base image
-FROM docker.elastic.co/wolfi/jdk:openjdk-21.35-r1@sha256:d7ca36452a68f28e4c4683062241e817b548844820a0ffd087451214e61eb188
+# Runtime stage - using wolfi-base
+FROM docker.elastic.co/wolfi/chainguard-base@sha256:a35a19cc4a9a603624ec6c49e1321c9043548f5762e5dd640d22c80f92c2c6e3
 
 USER root
 
+# Create java user and install runtime dependencies
+RUN addgroup -g 1000 java && adduser -u 1000 -G java -s /bin/bash -D java && \
+    apk update && apk add --no-cache libcurl-openssl4=~8.12.1 git=~2.50.1-r1 bash=~5.3.0
+
 # Set environment variables
-ENV JAVA_HOME=/usr/lib/jvm/default-jvm \
-    PATH=/opt/jruby/bin:/usr/local/bundle/bin:$PATH \
+ENV JAVA_HOME=/opt/jdk-crawler \
+    PATH=/opt/jdk-crawler/bin:/opt/jruby/bin:/usr/local/bundle/bin:$PATH \
     GEM_HOME=/usr/local/bundle \
     BUNDLE_SILENCE_ROOT_WARNING=1 \
     BUNDLE_APP_CONFIG=/usr/local/bundle \
     IS_DOCKER=1
 
-# Install runtime dependencies
-RUN apk update && apk add --no-cache libcurl-openssl4=~8.12.1 git=~2.45.0
-
-
-# Copy JRuby, gem environment, and application from builder
+# Copy custom JDK, JRuby, gem environment, and application from builder
+COPY --from=builder /opt/jdk-crawler /opt/jdk-crawler
 COPY --from=builder /opt/jruby /opt/jruby
 COPY --from=builder /usr/local/bundle /usr/local/bundle
 COPY --from=builder --chown=java:java /home/app /home/app
