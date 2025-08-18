@@ -11,7 +11,7 @@ java_import javax.net.ssl.X509TrustManager
 # A simple implementation of the trust manager interface that trusts everyone
 # Used by the Crawler HTTP client to implement ssl_verification_mode=none.
 module Crawler
-  module HttpUtils
+  module Http
     class AllTrustingTrustManager
       include X509TrustManager
 
