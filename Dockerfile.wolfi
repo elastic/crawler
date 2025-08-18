@@ -54,8 +54,8 @@ RUN make clean install
 RUN rm -rf .git .github .idea .devcontainer .buildkite
 
 # ------------------------------------------------------------------------------
-# Runtime stage - using the same base image
-FROM docker.elastic.co/wolfi/jdk:openjdk-21.35-r1@sha256:d7ca36452a68f28e4c4683062241e817b548844820a0ffd087451214e61eb188
+# Runtime stage - using wolfi-base
+FROM docker.elastic.co/wolfi/chainguard-base:latest@sha256:661355310ab9ecc86082d247341881eb272853eb8fe4c91e53e02f0f2e30fb2c
 
 USER root
 
