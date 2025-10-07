@@ -33,6 +33,9 @@ notice:
 build-docker-ci:
 	docker build -t crawler-ci .
 
+build-docker-wolfi:
+	docker build -t crawler-ci-wolfi -f Dockerfile.wolfi .
+
 list-gems:
 	script/bundle exec gem dependency
 

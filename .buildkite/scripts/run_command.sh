@@ -23,6 +23,9 @@ SCRIPT_CMD="/ci/.buildkite/scripts/run_ci_step.sh"
 if [[ "${COMMAND_TO_RUN:-}" == "docker" ]]; then
   echo "---- running docker build"
   make build-docker-ci
+elif [[ "${COMMAND_TO_RUN:-}" == "wolfi" ]]; then
+  echo "---- running wolfi docker build"
+  make build-docker-wolfi
 else
   docker run --interactive --rm             \
               --sig-proxy=true --init      \
