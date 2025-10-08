@@ -74,7 +74,7 @@ group :test do
 end
 
 group :development, :test do
-  gem 'rack', '~> 2.2.14'
+  gem 'rack', '~> 2.2.19'
   gem 'httpclient'
   gem 'pry', '~> 0.14.2', platform: :jruby
   gem 'factory_bot', '~> 6.2.0', require: false
