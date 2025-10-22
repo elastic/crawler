@@ -28,7 +28,7 @@ group :default do
   gem 'dry-cli', '~> 0.7.0'
   gem 'elasticsearch', '~> 8.13.0'
   gem 'json-schema', '~> 4.3.0'
-  gem 'rexml', '~> 3.4.0'
+  gem 'rexml', '~> 3.4.2'
   gem 'rufus-scheduler', '~> 3.9.1'
 
   # Gems that need jruby as the platform
