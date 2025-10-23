@@ -28,7 +28,7 @@ group :default do
   gem 'dry-cli', '~> 0.7.0'
   gem 'elasticsearch', '~> 8.13.0'
   gem 'json-schema', '~> 4.3.0'
-  gem 'rexml', '~> 3.4.0'
+  gem 'rexml', '~> 3.4.2'
   gem 'rufus-scheduler', '~> 3.9.1'
 
   # Gems that need jruby as the platform
@@ -74,7 +74,7 @@ group :test do
 end
 
 group :development, :test do
-  gem 'rack', '~> 2.2.19'
+  gem 'rack', '~> 2.2.20'
   gem 'httpclient'
   gem 'pry', '~> 0.14.2', platform: :jruby
   gem 'factory_bot', '~> 6.2.0', require: false
