@@ -85,6 +85,8 @@ module Crawler
 
         begin
           doc = parametrized_doc(crawl_result)
+          # Ensure 'headings' field is always present
+          doc[:headings] = [] unless doc.key?(:headings)
           index_op = { index: { _index: index_name, _id: doc[:id] } }
 
           flush unless operation_queue.will_fit?(index_op, doc)
