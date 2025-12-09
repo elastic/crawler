@@ -1,0 +1,45 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  id: 'Build docker image'
+  args: ['build', '-t', 'gcr.io/$PROJECT_ID/$_REPO_NAME/$_CR_JOB_NAME', '.']
+  dir: 'elastic-crawler'
+  env:
+    - DOCKER_BUILDKIT=1
+
+- name: 'gcr.io/cloud-builders/docker'
+  id: 'Push docker image'
+  args: ['push', 'gcr.io/$PROJECT_ID/$_REPO_NAME/$_CR_JOB_NAME']
+
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  id: 'Deploy image to Cloud Run Job'
+  entrypoint: 'bash'
+  args:
+    - '-c'
+    - |
+      gcloud beta run jobs deploy '$_CR_JOB_NAME' \
+      --image 'gcr.io/$PROJECT_ID/$_REPO_NAME/$_CR_JOB_NAME' \
+      --command 'jruby' \
+      --args 'bin/crawler,crawl,$_MOUNT_PATH/$_CONFIG_PATH/$_CONFIG_FILE' \
+      --add-volume 'name=$_VOLUME_NAME,type=cloud-storage,bucket=$_GCS_BUCKET,readonly=true' \
+      --add-volume-mount 'volume=$_VOLUME_NAME,mount-path=$_MOUNT_PATH' \
+      --region '$_REGION' \
+      --task-timeout '180m' \
+      --memory '2Gi' \
+      --cpu '1' \
+      --max-retries '1' \
+      --set-env-vars 'ES_HOST=$_ES_HOST,ES_PORT=$_ES_PORT,ES_API_KEY=$_ES_API_KEY'
+
+substitutions:
+  _CR_JOB_NAME: 'elastic-crawler-job'
+  _REPO_NAME: 'genai-engine-optimization'
+  _VOLUME_NAME: 'elastic-crawler-config'
+  _MOUNT_PATH: '/genai-engine-optimization'
+  _CONFIG_PATH: 'elastic-crawler/config'
+  _CONFIG_FILE: 'crawl-config.yaml'
+  _GCS_BUCKET: 'genai-engine-optimization'
+  _REGION: 'europe-west1'
+  _ES_HOST: 'https://geo-dev.es.europe-west1.gcp.cloud.es.io'
+  _ES_PORT: '9243'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
