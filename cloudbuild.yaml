@@ -2,7 +2,6 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   id: 'Build docker image'
   args: ['build', '-t', 'gcr.io/$PROJECT_ID/$_REPO_NAME/$_CR_JOB_NAME', '.']
-  dir: 'elastic-crawler'
   env:
     - DOCKER_BUILDKIT=1
 
