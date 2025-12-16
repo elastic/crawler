@@ -29,7 +29,8 @@ steps:
       --set-env-vars 'ES_HOST=$_ES_HOST,ES_PORT=$_ES_PORT,ES_API_KEY=$_ES_API_KEY'
 
 substitutions:
-  _CR_JOB_NAME: 'elastic-crawler-job'
+  _ENV: dev
+  _CR_JOB_NAME: 'elastic-crawler-job-${_ENV}'
   _REPO_NAME: 'genai-engine-optimization'
   _VOLUME_NAME: 'elastic-crawler-config'
   _MOUNT_PATH: '/genai-engine-optimization'
