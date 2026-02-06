@@ -219,7 +219,10 @@ module Crawler
 
         def get_body_tag(exclude_tags)
           exclude_tags ||= {}
-          tags_to_exclude_for_domain = exclude_tags.fetch(url, [])
+          # Config stores exclude_tags keyed by domain URL (e.g., "https://example.com")
+          # Try site first (scheme + host), which is the standard format
+          tags_to_exclude_for_domain = exclude_tags.fetch(url.site, nil) ||
+                                       exclude_tags.fetch(url.to_s, [])
 
           if tags_to_exclude_for_domain.empty?
             parsed_content.body
