@@ -329,10 +329,39 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
     end
 
     context 'when given a list of tags to exclude' do
-      let(:body_text) { crawl_result.document_body(exclude_tags: { url => ['h1'] }) }
+      # Keys must be site strings (scheme + host) to match how config stores them
+      let(:body_text) { crawl_result.document_body(exclude_tags: { url.site => ['h1'] }) }
 
       it 'should remove content associated with those tags, even if there is a data-elastic-include' do
         expect(body_text).to_not match('Page header')
+      end
+    end
+
+    context 'when given a list of tags to exclude with string keys (as from config)' do
+      let(:html) do
+        <<~HTML
+          <html>
+          <body>
+            <header>HEADER TEXT Should not be indexed</header>
+            <h2>title</h2>
+            <p>BODY content</p>
+            <address>main street 123 to be ignored too</address>
+            <footer>FOOTER TEXT</footer>
+          </body>
+          </html>
+        HTML
+      end
+
+      # This reproduces the bug from https://github.com/elastic/crawler/issues/416
+      # The config stores exclude_tags with string keys (site URLs like "https://example.com"),
+      # so the lookup must use url.site to match the config format
+      let(:body_text) { crawl_result.document_body(exclude_tags: { url.site => %w[header address] }) }
+
+      it 'should remove content associated with those tags when keys are strings' do
+        expect(body_text).to_not match('HEADER TEXT')
+        expect(body_text).to_not match('main street')
+        expect(body_text).to match('BODY content')
+        expect(body_text).to match('FOOTER TEXT')
       end
     end
 
