@@ -813,7 +813,7 @@ License: Apache-2.0
    limitations under the License.
 
 --------------------------------------------------------------------------------
-Library: elasticsearch 8.13.0
+Library: elasticsearch 8.14.0
 URL: https://www.elastic.co/guide/en/elasticsearch/client/ruby-api/current/index.html
 License: Apache-2.0
 
@@ -1021,7 +1021,7 @@ License: Apache-2.0
    limitations under the License.
 
 --------------------------------------------------------------------------------
-Library: elasticsearch-api 8.13.0
+Library: elasticsearch-api 8.14.0
 URL: https://www.elastic.co/guide/en/elasticsearch/client/ruby-api/current/index.html
 License: Apache-2.0
 
@@ -1538,21 +1538,6 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
-Library: nokogiri 1.18.8
-URL: https://nokogiri.org
-License: MIT
-
-The MIT License
-
-Copyright 2008 -- 2023 by Mike Dalessio, Aaron Patterson, Yoko Harada, Akinori MUSHA, John Shahid, Karol Bucek, Sam Ruby, Craig Barnes, Stephen Checkoway, Lars Kanis, Sergio Arbeo, Timothy Elliott, Nobuyoshi Nakada, Charles Nutter, Patrick Mahoney.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
---------------------------------------------------------------------------------
 Library: public_suffix 6.0.1
 URL: https://simonecarletti.com/code/publicsuffix-ruby
 License: MIT
@@ -1639,7 +1624,7 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
-Library: rexml 3.4.0
+Library: rexml 3.4.2
 URL: https://github.com/ruby/rexml
 License: BSD-2-Clause
 

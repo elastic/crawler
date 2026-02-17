@@ -26,7 +26,7 @@ group :default do
   gem 'addressable', '>= 2.8.0'
   gem 'concurrent-ruby', '~> 1.1.4'
   gem 'dry-cli', '~> 0.7.0'
-  gem 'elasticsearch', '~> 8.13.0'
+  gem 'elasticsearch', '~> 8.14.0'
   gem 'json-schema', '~> 4.3.0'
   gem 'rexml', '~> 3.4.2'
   gem 'rufus-scheduler', '~> 3.9.1'
