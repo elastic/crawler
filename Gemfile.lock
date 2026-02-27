@@ -33,10 +33,10 @@ GEM
     elastic-transport (8.3.2)
       faraday (< 3)
       multi_json
-    elasticsearch (8.13.0)
+    elasticsearch (8.14.0)
       elastic-transport (~> 8.3)
-      elasticsearch-api (= 8.13.0)
-    elasticsearch-api (8.13.0)
+      elasticsearch-api (= 8.14.0)
+    elasticsearch-api (8.14.0)
       multi_json
     et-orbi (1.2.11)
       tzinfo
@@ -163,7 +163,7 @@ DEPENDENCIES
   bundler (~> 2.6.6)
   concurrent-ruby (~> 1.1.4)
   dry-cli (~> 0.7.0)
-  elasticsearch (~> 8.13.0)
+  elasticsearch (~> 8.14.0)
   factory_bot (~> 6.2.0)
   faux!
   httpclient
