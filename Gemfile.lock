@@ -19,7 +19,6 @@ GEM
     addressable (2.8.7)
       public_suffix (>= 2.0.2, < 7.0)
     ast (2.4.2)
-    base64 (0.2.0)
     bigdecimal (3.1.8-java)
     bson (4.15.0-java)
     coderay (1.1.3)
@@ -42,10 +41,10 @@ GEM
       tzinfo
     factory_bot (6.2.1)
       activesupport (>= 5.0.0)
-    faraday (2.8.1)
-      base64
-      faraday-net_http (>= 2.0, < 3.1)
-      ruby2_keywords (>= 0.0.4)
+    faraday (2.14.1)
+      faraday-net_http (>= 2.0, < 3.5)
+      json
+      logger
     faraday-net_http (3.0.2)
     ffi (1.16.3-java)
     fugit (1.11.1)
@@ -60,6 +59,7 @@ GEM
     json-schema (4.3.0)
       addressable (>= 2.8)
     language_server-protocol (3.17.0.3)
+    logger (1.7.0)
     method_source (1.1.0)
     minitest (5.22.3)
     multi_json (1.15.0)
@@ -121,7 +121,6 @@ GEM
     ruby-debug-ide (0.7.3)
       rake (>= 0.8.1)
     ruby-progressbar (1.13.0)
-    ruby2_keywords (0.0.5)
     rufus-scheduler (3.9.1)
       fugit (~> 1.1, >= 1.1.6)
     simplecov (0.22.0)
