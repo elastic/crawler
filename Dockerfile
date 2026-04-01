@@ -19,4 +19,11 @@ RUN make clean install
 # Clean up build dependencies
 RUN rm -r /home/crawleruser/.m2
 
+# Remove ruby-maven and ruby-maven-libs gems, which are only needed at build time
+# for JAR dependency resolution. This also removes the bundled plexus-utils-3.5.1.jar
+# (CVE-2025-67030) from the production image.
+RUN rm -rf /usr/local/bundle/gems/ruby-maven-* \
+    /usr/local/bundle/specifications/ruby-maven-* \
+    /usr/local/bundle/cache/ruby-maven-*
+
 ENTRYPOINT [ "/bin/bash" ]
