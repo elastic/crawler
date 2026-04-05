@@ -1,5 +1,5 @@
 # Build stage
-FROM docker.elastic.co/wolfi/jdk:openjdk-21.0.10-jmods-dev@sha256:626d78b3bf1c6dd8d3ca464913f8d82c556479ff166ac7cde231bf1d1d62d001 AS builder
+FROM docker.elastic.co/wolfi/jdk:openjdk-21.0.10-jmods-dev@sha256:aedd934a86ac88bf25285b61ebaa6824c925855d02e88b2dd2b975fd52b971e7 AS builder
 USER root
 
 # ------------------------------------------------------------------------------
