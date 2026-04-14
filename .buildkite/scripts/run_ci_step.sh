@@ -8,6 +8,10 @@ JAVA_VERSION="$(cat .java-version)"
 export RUBY_VERSION
 export JAVA_VERSION
 
+# The Docker image excludes dev/test gems for a leaner production build.
+# CI needs them, so clear the 'without' config before installing.
+bundle config unset without
+
 case $1 in
   lint)
     echo "---- running linter"
