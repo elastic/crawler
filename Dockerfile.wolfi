@@ -48,6 +48,9 @@ WORKDIR /home/app
 # skip jenv/rbenv setup
 ENV IS_DOCKER=1
 
+# Exclude development and test gems from the production image to reduce
+# image size and CVE surface area (e.g. rack, rspec, rubocop, pry, etc.)
+RUN bundle config set --local without 'development test'
 RUN make clean install
 # add more directories and files not to be copied to the runtime image from /home/app
 RUN rm -rf .git .github .idea .devcontainer .buildkite

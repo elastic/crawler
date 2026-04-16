@@ -14,6 +14,9 @@ RUN groupadd -g 451 crawlergroup && \
 USER crawleruser
 COPY --chown=crawleruser:crawlergroup --chmod=775 . /home/app
 WORKDIR /home/app
+# Exclude development and test gems from the production image to reduce
+# image size and CVE surface area (e.g. rack, rspec, rubocop, pry, etc.)
+RUN bundle config set --local without 'development test'
 RUN make clean install
 
 # Clean up build dependencies
