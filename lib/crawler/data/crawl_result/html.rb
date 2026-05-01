@@ -8,6 +8,7 @@
 
 require_dependency(File.join(__dir__, 'success'))
 require_dependency(File.join(__dir__, '..', '..', '..', 'constants'))
+require_dependency(File.join(__dir__, '..', '..', 'content_engine', 'markdown'))
 
 java_import org.jsoup.nodes.TextNode
 
@@ -192,12 +193,16 @@ module Crawler
         end
 
         # Returns the body of the document, cleaned up for indexing
-        def document_body(limit: 5.megabytes, exclude_tags: nil)
+        def document_body(limit: 5.megabytes, exclude_tags: nil, markdown: false)
           body_tag = get_body_tag(exclude_tags)
           return '' unless body_tag
 
           body_tag = Crawler::ContentEngine::Transformer.transform(body_tag)
-          body_content = Crawler::ContentEngine::Utils.node_descendant_text(body_tag)
+          body_content = if markdown
+                           Crawler::ContentEngine::Markdown.convert(body_tag)
+                         else
+                           Crawler::ContentEngine::Utils.node_descendant_text(body_tag)
+                         end
           Crawler::ContentEngine::Utils.limit_bytesize(body_content, limit)
         end
 

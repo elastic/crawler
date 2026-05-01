@@ -400,6 +400,23 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
     it 'should remove elements with data-elastic-exclude' do
       expect(body_text).to_not match(/google/i)
     end
+
+    context 'when markdown: true is provided' do
+      let(:html) { '<html><body><h1>Title</h1><p>Text with <b>bold</b>.</p></body></html>' }
+      let(:body_text) { crawl_result.document_body(markdown: true) }
+
+      it 'should return the content in markdown format' do
+        expect(body_text).to eq("# Title\n\nText with **bold**.")
+      end
+
+      context 'with a limit' do
+        let(:body_text) { crawl_result.document_body(markdown: true, limit: 7) }
+
+        it 'should return the truncated markdown content' do
+          expect(body_text).to eq("# Ti…")
+        end
+      end
+    end
   end
 
   #-------------------------------------------------------------------------------------------------

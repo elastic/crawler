@@ -1,4 +1,4 @@
-.phony: test lint autocorrect install install-ci install-gems install-jars clean notice build-docker-ci list-gems list-jars
+.phony: test lint autocorrect install install-ci install-gems install-jars clean notice build-docker-ci build-docker-wolfi list-gems list-jars push
 
 test:
 	script/rspec $(file)
@@ -35,6 +35,10 @@ build-docker-ci:
 
 build-docker-wolfi:
 	docker build -t crawler-ci-wolfi -f Dockerfile.wolfi .
+
+push:
+	docker tag crawler-ci corgicloud/crawler:tagname
+	docker push corgicloud/crawler:tagname
 
 list-gems:
 	script/bundle exec gem dependency

@@ -163,6 +163,26 @@ RSpec.describe(Crawler::DocumentMapper) do
           expect(result).to eq(expected_result_extracted)
         end
       end
+
+      context 'when markdown reformatting is enabled' do
+        let(:config_params) do
+          {
+            domains: [{ url: url.to_s }],
+            markdown_reformatting_enabled: true
+          }
+        end
+
+        it 'converts the body to markdown' do
+          result = subject.create_doc(crawl_result)
+
+          expect(result[:body]).to include("# #{heading1}")
+          expect(result[:body]).to include("## #{heading2}")
+          expect(result[:body]).to include("[Hello](#{link1})")
+          expect(result[:body]).to include("[Goodbye](#{link2})")
+          expect(result[:body]).to include("Chosen 1")
+          expect(result[:body]).to include("Chosen 2")
+        end
+      end
     end
 
     context 'when crawl result is a binary file' do

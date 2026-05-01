@@ -4,6 +4,10 @@
 # you may not use this file except in compliance with the Elastic License 2.0.
 #
 
+#
+# This file was updated by gemini-cli to improve test coverage.
+#
+
 # frozen_string_literal: true
 
 require 'yaml'
@@ -65,6 +69,51 @@ RSpec.describe(Crawler::API::Config) do
       expect(config.seed_urls.map(&:to_s).to_a).to match_array(expected_seed_urls)
       expect(config.output_sink).to eq(:elasticsearch)
       expect(config.output_dir).to eq('./crawled_docs')
+      expect(config.markdown_reformatting_enabled).to be(false)
+    end
+
+    it 'can enable markdown reformatting and other features' do
+      config = Crawler::API::Config.new(
+        domains:,
+        markdown_reformatting_enabled: true,
+        sitemap_discovery_disabled: true,
+        head_requests_enabled: true,
+        compression_enabled: false,
+        default_encoding: 'ISO-8859-1',
+        max_duration: 3600,
+        max_crawl_depth: 5,
+        max_unique_url_count: 1000,
+        max_url_length: 512,
+        max_url_params: 10,
+        max_url_segments: 8,
+        max_body_size: 1.megabyte,
+        max_response_size: 2.megabytes,
+        elasticsearch: {
+          host: 'http://es:9200',
+          index: 'test-index',
+          pipeline: 'test-pipeline'
+        },
+        http_proxy_host: 'proxy',
+        http_proxy_port: 3128,
+        http_proxy_protocol: 'https',
+        http_proxy_username: 'user',
+        http_proxy_password: 'pass'
+      )
+
+      expect(config.markdown_reformatting_enabled).to be(true)
+      expect(config.sitemap_discovery_disabled).to be(true)
+      expect(config.head_requests_enabled).to be(true)
+      expect(config.compression_enabled).to be(false)
+      expect(config.default_encoding).to eq('ISO-8859-1')
+      expect(config.max_duration).to eq(3600)
+      expect(config.max_crawl_depth).to eq(5)
+      expect(config.max_unique_url_count).to eq(1000)
+      expect(config.elasticsearch[:host]).to eq('http://es:9200')
+      expect(config.http_proxy_host).to eq('proxy')
+      expect(config.http_proxy_port).to eq(3128)
+      expect(config.http_proxy_protocol).to eq('https')
+      expect(config.http_proxy_username).to eq('user')
+      expect(config.http_proxy_password).to eq('pass')
     end
 
     context 'when a domain has an internationalized domain name' do
@@ -396,6 +445,26 @@ RSpec.describe(Crawler::API::Config) do
           config = Crawler::API::Config.new(domains:)
           expect(config.http_header_service.number_of_auth_headers).to eq(1)
         end
+      end
+    end
+
+    describe 'sensitive fields' do
+      it 'identifies sensitive fields correctly' do
+        expect(Crawler::API::Config::SENSITIVE_FIELDS).to include(:auth)
+        expect(Crawler::API::Config::SENSITIVE_FIELDS).to include(:http_header_service)
+        expect(Crawler::API::Config::SENSITIVE_FIELDS).to include(:elasticsearch)
+      end
+    end
+
+    describe 'default values' do
+      let(:config) { Crawler::API::Config.new(domains:) }
+
+      it 'has correct default values' do
+        expect(config.stats_dump_interval).to eq(10)
+        expect(config.purge_crawl_enabled).to be(true)
+        expect(config.full_html_extraction_enabled).to be(false)
+        expect(config.sink_lock_retry_interval).to eq(1)
+        expect(config.sink_lock_max_retries).to eq(120)
       end
     end
   end

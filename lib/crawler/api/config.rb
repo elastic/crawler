@@ -63,6 +63,7 @@ module Crawler
         :stats_dump_interval,  # How often should we output stats in the logs during a crawl
         :purge_crawl_enabled,  # Whether or not to purge ES docs after a crawl, only possible for elasticsearch sinks
         :full_html_extraction_enabled, # Whether or not to include the full HTML in the crawl result JSON
+        :markdown_reformatting_enabled, # Whether or not to reformat HTML into Markdown for indexing
 
         # Elasticsearch settings
         :elasticsearch, # Elasticsearch connection settings
@@ -206,6 +207,7 @@ module Crawler
         crawl_rules: {},
         purge_crawl_enabled: true,
         full_html_extraction_enabled: false,
+        markdown_reformatting_enabled: false,
 
         # Sink lock retry settings
         sink_lock_retry_interval: 1,

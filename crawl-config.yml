@@ -1,0 +1,6 @@
+output_sink: console
+markdown_reformatting_enabled: true
+domains:
+  - url: https://www.elastic.co
+    seed_urls:
+      - https://www.elastic.co/docs/solutions/search

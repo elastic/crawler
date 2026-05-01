@@ -243,6 +243,7 @@ GET /web-crawl-test/_search
 
 - [Crawl lifecycle](docs/ADVANCED.md#crawl-lifecycle) - Understand how the crawler discovers, queues, and indexes content across two stages: the primary crawl and the purge crawl
 - [Extraction rules](docs/features/EXTRACTION_RULES.md) - Define how crawler extracts content from HTML
+- [Markdown reformatting](docs/features/MARKDOWN_REFORMATTING.md) - Reformat HTML content into Markdown for LLM/RAG use
 - [Binary content extraction](docs/features/BINARY_CONTENT_EXTRACTION.md) - Extract text from PDFs, DOCX files
 - [Crawler directives](docs/features/CRAWLER_DIRECTIVES.md) - Use robots.txt, meta tags, or embedded data attributes to guide discovery and content extraction
 - [Scheduling](docs/features/SCHEDULING.md) - Automate crawls with cron scheduling

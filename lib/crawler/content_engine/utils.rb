@@ -13,11 +13,18 @@ module Crawler
     module Utils
       # A list of tags we want to remove before extracting content
       NON_CONTENT_TAGS = %w[
+        audio
+        canvas
         comment
+        embed
+        iframe
+        math
+        noscript
         object
         script
         style
         svg
+        template
         video
       ].freeze
 

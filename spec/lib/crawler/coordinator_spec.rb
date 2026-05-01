@@ -4,6 +4,10 @@
 # you may not use this file except in compliance with the Elastic License 2.0.
 #
 
+#
+# This file was updated by gemini-cli to improve test coverage.
+#
+
 # frozen_string_literal: true
 
 RSpec.describe(Crawler::Coordinator) do
@@ -828,6 +832,48 @@ RSpec.describe(Crawler::Coordinator) do
         expect(events).to receive(:crawl_seed).with(1, type: :content).exactly(1).times
         coordinator.send(:enqueue_sitemaps)
       end
+    end
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  describe '#load_robots_txt' do
+    let(:domain_obj) { Crawler::Data::Domain.new(url: 'http://example.com') }
+
+    it 'should handle redirect errors as 404s' do
+      redirect_error = Crawler::Data::CrawlResult::RedirectError.new(
+        url: Crawler::Data::URL.parse('http://example.com/robots.txt'),
+        error: 'Too many redirects'
+      )
+      allow(crawl.executor).to receive(:run).and_return(redirect_error)
+      expect(system_logger).to receive(:warn).with(/Treating a robots.txt redirect error/)
+
+      result = coordinator.send(:load_robots_txt, domain_obj)
+      expect(result.status_code).to eq(404)
+    end
+
+    it 'should handle general errors' do
+      error_result = Crawler::Data::CrawlResult::Error.new(
+        url: Crawler::Data::URL.parse('http://example.com/robots.txt'),
+        error: 'Connection refused'
+      )
+      allow(crawl.executor).to receive(:run).and_return(error_result)
+      expect(system_logger).to receive(:warn).with(/Error while fetching robots.txt/)
+
+      coordinator.send(:load_robots_txt, domain_obj)
+    end
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  describe '#run_urltest_crawl!' do
+    it 'should set up a single-url crawl' do
+      endpoint = 'http://example.com/test'
+      expect(coordinator).to receive(:add_url_to_backlog).with(
+        hash_including(url: kind_of(Crawler::Data::URL), type: :content)
+      )
+      expect(coordinator).to receive(:run_crawl_loop)
+
+      coordinator.run_urltest_crawl!(endpoint)
+      expect(coordinator.instance_variable_get(:@is_url_test)).to be(true)
     end
   end
 end

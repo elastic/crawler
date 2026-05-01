@@ -83,7 +83,11 @@
 ##   dramatically increase the index size if the site being crawled is large. Defaults to false.
 #full_html_extraction_enabled: false
 #
+## Whether or not to reformat HTML into Markdown for indexing. Defaults to false.
+#markdown_reformatting_enabled: false
+
 ## Scheduling using cron expressions
+
 #schedule:
 #  pattern: "0 12 * * *"     # every day at noon
 #
