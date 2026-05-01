@@ -5,7 +5,6 @@
 #
 
 #
-# This file was updated by gemini-cli to improve test coverage.
 #
 
 # frozen_string_literal: true
@@ -837,7 +836,7 @@ RSpec.describe(Crawler::Coordinator) do
 
   #-------------------------------------------------------------------------------------------------
   describe '#load_robots_txt' do
-    let(:domain_obj) { Crawler::Data::Domain.new(url: 'http://example.com') }
+    let(:domain_obj) { Crawler::Data::Domain.new('http://example.com') }
 
     it 'should handle redirect errors as 404s' do
       redirect_error = Crawler::Data::CrawlResult::RedirectError.new(

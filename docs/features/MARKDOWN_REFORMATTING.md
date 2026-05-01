@@ -1,6 +1,5 @@
 # HTML to Markdown Reformatting
 
-*This feature was implemented by gemini-cli.*
 
 The Open Crawler can automatically reformat HTML content into Markdown before indexing it into Elasticsearch. This is particularly useful for Large Language Model (LLM) applications and Retrieval-Augmented Generation (RAG), as Markdown is often a preferred format for these systems.
 

@@ -5,7 +5,6 @@
 #
 
 #
-# This file was updated by gemini-cli to improve test coverage.
 #
 
 # frozen_string_literal: true

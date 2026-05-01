@@ -4,10 +4,6 @@
 # you may not use this file except in compliance with the Elastic License 2.0.
 #
 
-#
-# This file was created by gemini-cli to implement Markdown reformatting.
-#
-
 # frozen_string_literal: true
 
 module Crawler
@@ -37,49 +33,45 @@ module Crawler
         tag = node.tagName.downcase
         return if Crawler::ContentEngine::Utils::NON_CONTENT_TAGS.include?(tag)
 
-        # Handle start of tags
-        case tag
-        when 'h1' then markdown << "\n\n# "
-        when 'h2' then markdown << "\n\n## "
-        when 'h3' then markdown << "\n\n### "
-        when 'h4' then markdown << "\n\n#### "
-        when 'h5' then markdown << "\n\n##### "
-        when 'h6' then markdown << "\n\n###### "
-        when 'p' then markdown << "\n\n"
-        when 'br' then markdown << "\n"
-        when 'strong', 'b' then markdown << "**"
-        when 'em', 'i' then markdown << "*"
-        when 'a' then markdown << "["
-        when 'ul'
-          markdown << "\n"
-          list_type = :ul
-        when 'ol'
-          markdown << "\n"
-          list_type = :ol
-        when 'li'
-          markdown << (list_type == :ol ? "\n1. " : "\n* ")
-        when 'code' then markdown << "`"
-        when 'pre' then markdown << "\n```\n"
-        when 'img'
-          alt = node.attr('alt')
-          src = node.attr('src')
-          markdown << "![#{alt}](#{src})"
-        end
+        handle_start_tag(tag, node, markdown, list_type)
 
         # Process children
-        node.childNodes.each { |child| process_node(child, markdown, list_type) }
+        list_type_for_children = %w[ul ol].include?(tag) ? tag.to_sym : list_type
+        node.childNodes.each { |child| process_node(child, markdown, list_type_for_children) }
 
-        # Handle end of tags
-        case tag
-        when 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' then markdown << "\n\n"
-        when 'p' then markdown << "\n\n"
-        when 'strong', 'b' then markdown << "**"
-        when 'em', 'i' then markdown << "*"
-        when 'a'
-          href = node.attr('href')
-          markdown << "](#{href})"
-        when 'code' then markdown << "`"
-        when 'pre' then markdown << "\n```\n"
+        handle_end_tag(tag, node, markdown)
+      end
+
+      START_TAG_MAPPING = {
+        'h1' => "\n\n# ", 'h2' => "\n\n## ", 'h3' => "\n\n### ",
+        'h4' => "\n\n#### ", 'h5' => "\n\n##### ", 'h6' => "\n\n###### ",
+        'p' => "\n\n", 'br' => "\n", 'strong' => '**', 'b' => '**',
+        'em' => '*', 'i' => '*', 'a' => '[', 'ul' => "\n", 'ol' => "\n",
+        'code' => '`', 'pre' => "\n```\n"
+      }.freeze
+
+      END_TAG_MAPPING = {
+        'h1' => "\n\n", 'h2' => "\n\n", 'h3' => "\n\n",
+        'h4' => "\n\n", 'h5' => "\n\n", 'h6' => "\n\n", 'p' => "\n\n",
+        'strong' => '**', 'b' => '**', 'em' => '*', 'i' => '*',
+        'code' => '`', 'pre' => "\n```\n"
+      }.freeze
+
+      def self.handle_start_tag(tag, node, markdown, list_type)
+        if START_TAG_MAPPING.key?(tag)
+          markdown << START_TAG_MAPPING[tag]
+        elsif tag == 'li'
+          markdown << (list_type == :ol ? "\n1. " : "\n* ")
+        elsif tag == 'img'
+          markdown << "![#{node.attr('alt')}](#{node.attr('src')})"
+        end
+      end
+
+      def self.handle_end_tag(tag, node, markdown)
+        if END_TAG_MAPPING.key?(tag)
+          markdown << END_TAG_MAPPING[tag]
+        elsif tag == 'a'
+          markdown << "](#{node.attr('href')})"
         end
       end
     end

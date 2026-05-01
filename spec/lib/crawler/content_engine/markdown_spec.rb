@@ -1,5 +1,4 @@
 #
-# This file was updated by gemini-cli to improve test coverage.
 #
 
 # frozen_string_literal: true
@@ -25,11 +24,11 @@ RSpec.describe Crawler::ContentEngine::Markdown do
       let(:html) { '<p><strong>Strong</strong> <b>Bold</b> <em>Em</em> <i>Italic</i> <br> line break</p>' }
 
       it 'converts formatting tags to markdown' do
-        expect(subject).to include("**Strong**")
-        expect(subject).to include("**Bold**")
-        expect(subject).to include("*Em*")
-        expect(subject).to include("*Italic*")
-        expect(subject).to include("line break")
+        expect(subject).to include('**Strong**')
+        expect(subject).to include('**Bold**')
+        expect(subject).to include('*Em*')
+        expect(subject).to include('*Italic*')
+        expect(subject).to include('line break')
       end
     end
 
@@ -37,14 +36,14 @@ RSpec.describe Crawler::ContentEngine::Markdown do
       let(:html) { '<a href="https://example.com">Example</a>' }
 
       it 'converts links to markdown' do
-        expect(subject).to eq("[Example](https://example.com)")
+        expect(subject).to eq('[Example](https://example.com)')
       end
 
       context 'when href is missing' do
         let(:html) { '<a>Example</a>' }
 
         it 'handles missing href gracefully' do
-          expect(subject).to eq("[Example]()")
+          expect(subject).to eq('[Example]()')
         end
       end
     end
@@ -71,21 +70,21 @@ RSpec.describe Crawler::ContentEngine::Markdown do
       let(:html) { '<img src="image.png" alt="An image">' }
 
       it 'converts images to markdown' do
-        expect(subject).to eq("![An image](image.png)")
+        expect(subject).to eq('![An image](image.png)')
       end
 
       context 'when attributes are missing' do
         let(:html) { '<img>' }
 
         it 'handles missing attributes gracefully' do
-          expect(subject).to eq("![]()")
+          expect(subject).to eq('![]()')
         end
       end
     end
 
     context 'with code and pre' do
       it 'converts inline code' do
-        expect(described_class.convert(org.jsoup.Jsoup.parse('<code>code block</code>').body)).to eq("`code block`")
+        expect(described_class.convert(org.jsoup.Jsoup.parse('<code>code block</code>').body)).to eq('`code block`')
       end
 
       it 'converts pre blocks' do
@@ -102,10 +101,12 @@ RSpec.describe Crawler::ContentEngine::Markdown do
     end
 
     context 'with non-content tags' do
-      let(:html) { '<div>Content<script>...</script><style>...</style><object>...</object><svg>...</svg><video>...</video></div>' }
+      let(:html) do
+        '<div>Content<script>...</script><style>...</style><object>...</object><svg>...</svg><video>...</video></div>'
+      end
 
       it 'removes all non-content tags' do
-        expect(subject).to eq("Content")
+        expect(subject).to eq('Content')
       end
     end
 
@@ -120,26 +121,26 @@ RSpec.describe Crawler::ContentEngine::Markdown do
     context 'with deeply nested structure' do
       let(:html) do
         <<~HTML
-          <div>
-            <h1>Main Title</h1>
-            <p>Intro text with <b>bold</b> and <i>italic</i>.</p>
-            <ul>
-              <li>Item 1 with <a href="/1">link</a></li>
-              <li>Item 2 with <code>code</code></li>
-            </ul>
-            <pre>Preformatted
-block</pre>
-          </div>
+                    <div>
+                      <h1>Main Title</h1>
+                      <p>Intro text with <b>bold</b> and <i>italic</i>.</p>
+                      <ul>
+                        <li>Item 1 with <a href="/1">link</a></li>
+                        <li>Item 2 with <code>code</code></li>
+                      </ul>
+                      <pre>Preformatted
+          block</pre>
+                    </div>
         HTML
       end
 
       it 'converts complex structures correctly' do
-        expect(subject).to include("# Main Title")
-        expect(subject).to include("Intro text with **bold** and *italic*.")
-        expect(subject).to include("* Item 1 with [link](/1)")
-        expect(subject).to include("* Item 2 with `code`")
-        expect(subject).to include("```")
-        expect(subject).to include("Preformatted")
+        expect(subject).to include('# Main Title')
+        expect(subject).to include('Intro text with **bold** and *italic*.')
+        expect(subject).to include('* Item 1 with [link](/1)')
+        expect(subject).to include('* Item 2 with `code`')
+        expect(subject).to include('```')
+        expect(subject).to include('Preformatted')
       end
     end
 
@@ -147,8 +148,8 @@ block</pre>
       let(:html) { '<ul><li>UL</li></ul><ol><li>OL</li></ol>' }
 
       it 'handles switching between list types' do
-        expect(subject).to include("* UL")
-        expect(subject).to include("1. OL")
+        expect(subject).to include('* UL')
+        expect(subject).to include('1. OL')
       end
     end
 

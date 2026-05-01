@@ -179,8 +179,8 @@ RSpec.describe(Crawler::DocumentMapper) do
           expect(result[:body]).to include("## #{heading2}")
           expect(result[:body]).to include("[Hello](#{link1})")
           expect(result[:body]).to include("[Goodbye](#{link2})")
-          expect(result[:body]).to include("Chosen 1")
-          expect(result[:body]).to include("Chosen 2")
+          expect(result[:body]).to include('Chosen 1')
+          expect(result[:body]).to include('Chosen 2')
         end
       end
     end
