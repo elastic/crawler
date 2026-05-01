@@ -467,7 +467,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
         threads = [crawl_result_one, crawl_result_two].map do |crawl_result|
           Thread.new do
             subject.write(crawl_result)
-          end
+          end.tap { |t| t.report_on_exception = false }
         end
         # second call will fail, but we can't differentiate that here
         expect { threads.each(&:join) }.to raise_error(Errors::SinkLockedError)

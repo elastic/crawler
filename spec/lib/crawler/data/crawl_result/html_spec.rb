@@ -413,7 +413,7 @@ RSpec.describe(Crawler::Data::CrawlResult::HTML) do
         let(:body_text) { crawl_result.document_body(markdown: true, limit: 7) }
 
         it 'should return the truncated markdown content' do
-          expect(body_text).to eq("# Ti…")
+          expect(body_text).to eq('# Ti…')
         end
       end
     end
