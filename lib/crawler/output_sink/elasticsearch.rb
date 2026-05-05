@@ -103,6 +103,10 @@ module Crawler
       end
 
       def fetch_purge_docs(crawl_start_time)
+        # `unmapped_type: 'date'` lets the search succeed when `last_crawled_at` has no
+        # mapping yet (e.g. the index was just created and the primary crawl indexed
+        # zero documents). Without it, ES returns a 400 query_shard_exception and the
+        # whole crawl fails. See https://github.com/elastic/crawler/issues/381.
         query = {
           _source: ['url'],
           query: {
@@ -113,7 +117,7 @@ module Crawler
             }
           },
           size: SEARCH_PAGINATION_SIZE,
-          sort: [{ last_crawled_at: 'asc' }]
+          sort: [{ last_crawled_at: { order: 'asc', unmapped_type: 'date' } }]
         }.deep_stringify_keys
         system_logger.debug(
           "Fetching docs for pages that were not encountered during the sync. Full query: #{query.inspect}"
