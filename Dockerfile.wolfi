@@ -1,5 +1,5 @@
 # Build stage
-FROM docker.elastic.co/wolfi/jdk:openjdk-21.0.10-jmods-dev@sha256:626d78b3bf1c6dd8d3ca464913f8d82c556479ff166ac7cde231bf1d1d62d001 AS builder
+FROM docker.elastic.co/wolfi/jdk:openjdk-21.0.10-jmods-dev@sha256:db18ce668a56aa9b44a7347343fe823d512d9d90ef16fc26e6f638da74e1c227 AS builder
 USER root
 
 # ------------------------------------------------------------------------------
@@ -73,7 +73,7 @@ RUN jlink \
 
 # ------------------------------------------------------------------------------
 # Runtime stage - using wolfi-base
-FROM docker.elastic.co/wolfi/chainguard-base:latest@sha256:780990eb5ebbbbcf2927b465a4b206b961ea112b18784b92259e2a3109032bd4
+FROM docker.elastic.co/wolfi/chainguard-base:latest@sha256:1ac0a7fe82937eda954a0bbf718047d66df5ed8cf9ababd833cc91946a999c4f
 
 USER root
 
