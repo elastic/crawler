@@ -73,7 +73,7 @@ RUN jlink \
 
 # ------------------------------------------------------------------------------
 # Runtime stage - using wolfi-base
-FROM docker.elastic.co/wolfi/chainguard-base:latest@sha256:780990eb5ebbbbcf2927b465a4b206b961ea112b18784b92259e2a3109032bd4
+FROM docker.elastic.co/wolfi/chainguard-base:latest@sha256:1ac0a7fe82937eda954a0bbf718047d66df5ed8cf9ababd833cc91946a999c4f
 
 USER root
 
