@@ -78,9 +78,11 @@
 #elasticsearch.retry_on_failure: 3
 #
 #
-## The amount of time to wait between requests after a failure occurs.
-##    Default: 2000
-#elasticsearch.delay_on_retry: 10000
+## The amount of time, in seconds, to wait before the first retry after a failed
+##    Elasticsearch request. Each subsequent retry doubles this wait time, so a value of
+##    `2` produces a backoff sequence of 2s, 4s, 8s, ...
+##    Default: 2
+#elasticsearch.delay_on_retry: 10
 #
 #
 ## Whether to reload connections (refresh node list) after a connection failure.

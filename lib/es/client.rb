@@ -238,7 +238,10 @@ module ES
       rescue StandardError => e
         try += 1
         if try < max_tries
-          wait_time = @retry_delay**try
+          # Exponential backoff: the first retry waits @retry_delay seconds, and each
+          # subsequent retry doubles that wait (e.g. 2s, 4s, 8s, ...).
+          # See https://github.com/elastic/crawler/issues/380.
+          wait_time = @retry_delay * (2**(try - 1))
           @system_logger.warn(
             "#{description} attempt #{try}/#{max_tries} failed: '#{e.message}'. Retrying in #{wait_time.to_f}s.."
           )

@@ -380,7 +380,7 @@ RSpec.describe(ES::Client) do
     end
 
     context 'when success requires retries' do
-      let(:config) { { elasticsearch: { host:, port:, retry_on_failure: 2, delay_on_retry: 1 } } }
+      let(:config) { { elasticsearch: { host:, port:, retry_on_failure: 2, delay_on_retry: 3 } } }
       let(:attempts) { instance_double(Proc) }
       let(:attempt_counter) { double(count: 0) }
 
@@ -396,13 +396,13 @@ RSpec.describe(ES::Client) do
 
       it 'succeeds after retrying, sleeps with exponential backoff, and logs warnings' do
         expect(system_logger).to receive(:warn).with(
-          %r{#{description} attempt 1/3 failed: 'Failed attempt 1'. Retrying in 1.0s..}
+          %r{#{description} attempt 1/3 failed: 'Failed attempt 1'. Retrying in 3.0s..}
         ).ordered
-        expect(subject).to receive(:sleep).with(1.0**1).ordered
+        expect(subject).to receive(:sleep).with(3).ordered
         expect(system_logger).to receive(:warn).with(
-          %r{#{description} attempt 2/3 failed: 'Failed attempt 2'. Retrying in 1.0s..}
+          %r{#{description} attempt 2/3 failed: 'Failed attempt 2'. Retrying in 6.0s..}
         ).ordered
-        expect(subject).to receive(:sleep).with(1.0**2).ordered
+        expect(subject).to receive(:sleep).with(6).ordered
         expect(system_logger).not_to receive(:error)
 
         result = execute_retry { block_spy.call }
@@ -413,7 +413,7 @@ RSpec.describe(ES::Client) do
     end
 
     context 'when all retries fail' do
-      let(:config) { { elasticsearch: { host:, port:, retry_on_failure: 2, delay_on_retry: 1 } } }
+      let(:config) { { elasticsearch: { host:, port:, retry_on_failure: 2, delay_on_retry: 3 } } }
 
       before do
         allow(block_spy).to receive(:call).and_raise(error_class, 'Persistent failure')
@@ -421,13 +421,13 @@ RSpec.describe(ES::Client) do
 
       it 'raises the original error after exhausting retries, sleeps, logs warnings and final error' do
         expect(system_logger).to receive(:warn).with(
-          %r{#{description} attempt 1/3 failed: 'Persistent failure'. Retrying in 1.0s..}
+          %r{#{description} attempt 1/3 failed: 'Persistent failure'. Retrying in 3.0s..}
         ).ordered
-        expect(subject).to receive(:sleep).with(1.0**1).ordered
+        expect(subject).to receive(:sleep).with(3).ordered
         expect(system_logger).to receive(:warn).with(
-          %r{#{description} attempt 2/3 failed: 'Persistent failure'. Retrying in 1.0s..}
+          %r{#{description} attempt 2/3 failed: 'Persistent failure'. Retrying in 6.0s..}
         ).ordered
-        expect(subject).to receive(:sleep).with(1.0**2).ordered
+        expect(subject).to receive(:sleep).with(6).ordered
         expect(system_logger).to receive(:error).with(
           /#{description} failed after 3 attempts: 'Persistent failure'/
         ).ordered
@@ -437,6 +437,30 @@ RSpec.describe(ES::Client) do
         end.to raise_error(error_class, 'Persistent failure')
 
         expect(block_spy).to have_received(:call).exactly(3).times
+      end
+    end
+
+    # Regression test for https://github.com/elastic/crawler/issues/380.
+    # Previously the code computed `wait_time = @retry_delay ** try`, which made a 60s
+    # delay jump to 3600s on the second retry. The backoff should instead double the
+    # configured delay each attempt: 60s -> 120s -> 240s.
+    context 'when delay_on_retry is large (regression for #380)' do
+      let(:config) { { elasticsearch: { host:, port:, retry_on_failure: 3, delay_on_retry: 60 } } }
+
+      before do
+        allow(block_spy).to receive(:call).and_raise(error_class, 'Persistent failure')
+      end
+
+      it 'doubles the configured delay each retry instead of exponentiating it' do
+        expect(subject).to receive(:sleep).with(60).ordered
+        expect(subject).to receive(:sleep).with(120).ordered
+        expect(subject).to receive(:sleep).with(240).ordered
+
+        expect do
+          execute_retry { block_spy.call }
+        end.to raise_error(error_class, 'Persistent failure')
+
+        expect(block_spy).to have_received(:call).exactly(4).times
       end
     end
 
