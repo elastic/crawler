@@ -522,7 +522,7 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
           }
         },
         size: Crawler::OutputSink::Elasticsearch::SEARCH_PAGINATION_SIZE,
-        sort: [{ last_crawled_at: 'asc' }]
+        sort: [{ last_crawled_at: { order: 'asc', unmapped_type: 'date' } }]
       }.deep_stringify_keys
     end
     let(:hit1) do
@@ -556,6 +556,29 @@ RSpec.describe(Crawler::OutputSink::Elasticsearch) do
 
       results = subject.fetch_purge_docs(crawl_start_time)
       expect(results).to match_array(formatted_results)
+    end
+
+    # Regression test for https://github.com/elastic/crawler/issues/381.
+    # When the primary crawl indexes zero documents into a freshly-created index, the
+    # `last_crawled_at` field has no mapping yet. Without `unmapped_type: 'date'`, ES
+    # responds with a 400 query_shard_exception ("No mapping found for [last_crawled_at]
+    # in order to sort on") and the entire crawl fails after exhausting retries.
+    context 'when the index has no mapping for last_crawled_at (regression for #381)' do
+      it 'sorts with unmapped_type: date so the search succeeds against an empty index' do
+        expect(es_client).to receive(:paginated_search) do |_idx, query|
+          sort = query.fetch('sort').first.fetch('last_crawled_at')
+          expect(sort).to include('unmapped_type' => 'date', 'order' => 'asc')
+          es_results
+        end
+
+        subject.fetch_purge_docs(crawl_start_time)
+      end
+
+      it 'returns an empty array when the search returns no hits, allowing the coordinator to skip the purge' do
+        allow(es_client).to receive(:paginated_search).and_return([])
+
+        expect(subject.fetch_purge_docs(crawl_start_time)).to eq([])
+      end
     end
   end
 
