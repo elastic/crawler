@@ -8,11 +8,6 @@ This CLI-driven tool streamlines web content ingestion into Elasticsearch, enabl
 > This repository contains code and documentation for the Elastic Open Web Crawler.
 Docker images are available for the crawler at [the Elastic Docker registry](https://www.docker.elastic.co/r/integrations/crawler).
 
-> [!IMPORTANT]
-> _The Open Crawler is currently in **beta**_.
-Beta features are subject to change and are not covered by the support SLA of generally available (GA) features.
-Elastic plans to promote this feature to GA in a future release.
-
 ### Version compatibility
 
 | Elasticsearch | Open Crawler       | Operating System |
