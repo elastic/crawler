@@ -29,10 +29,20 @@ RSpec.describe(Crawler::HttpClient) do
   let(:site_server) { Faux::Site.new(site, site_server_settings) }
 
   #-------------------------------------------------------------------------------------------------
-  # Stubs DNS resolution in HTTP client to always return localhost IPs
+  # Stubs DNS resolution in HTTP client to always return localhost IPs.
+  # Mirrors both overloads of the httpcore DnsResolver interface:
+  #   * resolve(String)           -> InetAddress[]
+  #   * resolve(String, int port) -> List<InetSocketAddress>
   def stub_http_resolver!
-    allow_any_instance_of(Crawler::HttpUtils::FilteringDnsResolver).to receive(:resolve) do |resolver, _host|
-      resolver.default_resolver.resolve('localhost')
+    allow_any_instance_of(Crawler::HttpUtils::FilteringDnsResolver).to receive(:resolve) do |resolver, _host, port|
+      resolved_addresses = resolver.default_resolver.resolve('localhost')
+      if port.nil?
+        resolved_addresses
+      else
+        socket_addresses = java.util.ArrayList.new
+        resolved_addresses.each { |address| socket_addresses.add(java.net.InetSocketAddress.new(address, port)) }
+        socket_addresses
+      end
     end
   end
 
