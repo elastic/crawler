@@ -11,6 +11,7 @@ require_dependency File.join(__dir__, '..', 'http_client')
 module Crawler
   module HttpUtils
     class FilteringDnsResolver
+      java_import java.net.InetSocketAddress
       java_import org.apache.hc.client5.http.DnsResolver
       java_import org.apache.hc.client5.http.SystemDefaultDnsResolver
 
@@ -25,9 +26,29 @@ module Crawler
         @logger = logger
       end
 
-      def resolve(host)
+      # Implements both overloads of the httpcore DnsResolver interface:
+      #   * resolve(String)           -> InetAddress[]
+      #   * resolve(String, int port) -> List<InetSocketAddress>
+      # httpclient5 5.3+ invokes the two-argument variant from the connection
+      # manager, so we must accept the optional port and return socket addresses
+      # in that case while still applying our private-address filtering.
+      def resolve(host, port = nil)
         resolved_addresses = default_resolver.resolve(host)
-        remove_private_addresses(host, resolved_addresses)
+        filtered_addresses = remove_private_addresses(host, resolved_addresses)
+
+        if port.nil?
+          # resolve(String) must return an InetAddress[]
+          filtered_addresses.to_java(java.net.InetAddress)
+        else
+          # resolve(String, int) must return a List<InetSocketAddress>
+          socket_addresses = java.util.ArrayList.new
+          filtered_addresses.each { |address| socket_addresses.add(InetSocketAddress.new(address, port)) }
+          socket_addresses
+        end
+      end
+
+      def resolve_canonical_hostname(host)
+        default_resolver.resolve_canonical_hostname(host)
       end
 
       def loopback_allowed?
