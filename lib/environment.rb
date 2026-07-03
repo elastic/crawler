@@ -18,6 +18,7 @@ require 'bundler'
 Bundler.setup(:default, CRAWLER_ENV)
 
 # Load common dependencies
+require 'logger' # ActiveSupport 6.1 expects ::Logger to be defined
 require 'active_support'
 require 'active_support/core_ext'
 require 'active_support/dependencies'
