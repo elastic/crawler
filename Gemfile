@@ -31,6 +31,10 @@ group :default do
   gem 'rexml', '~> 3.4.2'
   gem 'rufus-scheduler', '~> 3.9.1'
 
+  # jruby-openssl 0.16.0 bundles Bouncy Castle 1.84, fixing CVE-2026-5588.
+  # JRuby 9.4.12.0's default jruby-openssl 0.15.3 ships the vulnerable 1.79.
+  gem 'jruby-openssl', '0.16.0', platform: :jruby
+
   # Gems that need jruby as the platform
   gem 'bson', '~> 4.15.0', platform: :jruby
   gem 'bigdecimal', '~> 3.1.7', platform: :jruby
