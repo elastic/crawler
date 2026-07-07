@@ -62,6 +62,11 @@ RUN rm -rf /usr/local/bundle/gems/ruby-maven-* \
     /usr/local/bundle/specifications/ruby-maven-* \
     /usr/local/bundle/cache/ruby-maven-*
 
+# Drop the vulnerable Bouncy Castle 1.79 jars from JRuby's default jruby-openssl
+# 0.15.3 (CVE-2026-5588); the pinned 0.16.0 gem provides 1.84 at runtime.
+# Done in the builder stage, before /opt/jruby is copied into the runtime image.
+RUN rm -rf /opt/jruby/lib/ruby/stdlib/org/bouncycastle
+
 # Create custom JDK using jlink
 RUN jlink \
     --add-modules java.base,jdk.crypto.ec,java.logging,java.management,java.naming,java.net.http,java.scripting,java.security.jgss,java.security.sasl,java.sql,jdk.unsupported \
