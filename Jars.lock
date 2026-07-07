@@ -7,6 +7,10 @@ xalan:serializer:2.7.3:compile:
 xalan:xalan:2.7.3:compile:
 xerces:xercesImpl:2.12.2:compile:
 xml-apis:xml-apis:1.4.01:compile:
+org.bouncycastle:bcprov-jdk18on:1.84:compile:
+org.bouncycastle:bcpkix-jdk18on:1.84:compile:
+org.bouncycastle:bctls-jdk18on:1.84:compile:
+org.bouncycastle:bcutil-jdk18on:1.84:compile:
 com.github.crawler-commons:crawler-commons:1.2:compile:
 org.slf4j:slf4j-api:1.7.7:compile:
 commons-io:commons-io:2.16.1:compile:

@@ -29,4 +29,11 @@ RUN rm -rf /usr/local/bundle/gems/ruby-maven-* \
     /usr/local/bundle/specifications/ruby-maven-* \
     /usr/local/bundle/cache/ruby-maven-*
 
+# Drop the vulnerable Bouncy Castle 1.79 jars from JRuby's default jruby-openssl
+# 0.15.3 (CVE-2026-5588); the pinned 0.16.0 gem provides 1.84 at runtime.
+# Needs root as /opt/jruby is root-owned.
+USER root
+RUN rm -rf /opt/jruby/lib/ruby/stdlib/org/bouncycastle
+USER crawleruser
+
 ENTRYPOINT [ "/bin/bash" ]
