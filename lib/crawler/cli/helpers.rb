@@ -51,12 +51,25 @@ module Crawler
         return config unless config.is_a?(Hash)
 
         config.each_with_object({}) do |(key, value), nested_config|
-          all_fields = key.split('.')
+          all_fields = key.to_s.split('.')
           last_key = all_fields.pop
 
           target_hash = find_or_create_target_hash(nested_config, all_fields)
 
-          target_hash[last_key] = value.is_a?(Hash) ? dedot_hash(value) : value
+          target_hash[last_key] = dedot_value(value)
+        end
+      end
+
+      # Dedots a value, descending into nested hashes and arrays (e.g. per-domain
+      # config), while leaving scalar values untouched.
+      def self.dedot_value(value)
+        case value
+        when Hash
+          dedot_hash(value)
+        when Array
+          value.map { |element| dedot_value(element) }
+        else
+          value
         end
       end
 

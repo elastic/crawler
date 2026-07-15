@@ -274,5 +274,68 @@ RSpec.describe Crawler::CLI::Helpers do
       end
       it { is_expected.to eq(expected) }
     end
+
+    context 'with dot notation keys inside an array of hashes' do
+      let(:input) do
+        {
+          'domains' => [
+            {
+              'url' => 'http://host.docker.internal:3000',
+              'auth.type' => 'raw',
+              'auth.header' => 'Bearer <token>'
+            }
+          ]
+        }
+      end
+      let(:expected) do
+        {
+          'domains' => [
+            {
+              'url' => 'http://host.docker.internal:3000',
+              'auth' => { 'type' => 'raw', 'header' => 'Bearer <token>' }
+            }
+          ]
+        }
+      end
+      it { is_expected.to eq(expected) }
+    end
+
+    context 'with arrays of scalars' do
+      let(:input) do
+        { 'domains' => [{ 'seed_urls' => %w[https://a.example https://b.example] }] }
+      end
+      let(:expected) do
+        { 'domains' => [{ 'seed_urls' => %w[https://a.example https://b.example] }] }
+      end
+      it { is_expected.to eq(expected) }
+    end
+
+    context 'with nested arrays of hashes' do
+      let(:input) do
+        {
+          'domains' => [
+            {
+              'url' => 'https://example.com',
+              'extraction_rulesets' => [
+                { 'url_filters' => [{ 'type' => 'begins', 'pattern' => '/blog' }] }
+              ]
+            }
+          ]
+        }
+      end
+      let(:expected) do
+        {
+          'domains' => [
+            {
+              'url' => 'https://example.com',
+              'extraction_rulesets' => [
+                { 'url_filters' => [{ 'type' => 'begins', 'pattern' => '/blog' }] }
+              ]
+            }
+          ]
+        }
+      end
+      it { is_expected.to eq(expected) }
+    end
   end
 end
