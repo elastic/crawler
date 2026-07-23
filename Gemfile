@@ -35,6 +35,10 @@ group :default do
   # JRuby 9.4.12.0's default jruby-openssl 0.15.3 ships the vulnerable 1.79.
   gem 'jruby-openssl', '0.16.0', platform: :jruby
 
+  # JRuby 9.4.12.0 ships net-imap 0.2.3 as a default gem (CVE-2026-42246 STARTTLS
+  # stripping). Pin the lowest fixed release so Bundler installs over the default.
+  gem 'net-imap', '0.3.10'
+
   # Gems that need jruby as the platform
   gem 'bson', '~> 4.15.0', platform: :jruby
   gem 'bigdecimal', '~> 3.1.7', platform: :jruby
