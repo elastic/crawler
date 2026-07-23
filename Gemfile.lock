@@ -26,6 +26,7 @@ GEM
     crack (1.0.0)
       bigdecimal
       rexml
+    date (3.5.1-java)
     diff-lcs (1.5.1)
     docile (1.4.0)
     dry-cli (0.7.0)
@@ -64,6 +65,11 @@ GEM
     method_source (1.1.0)
     minitest (5.22.3)
     multi_json (1.15.0)
+    net-imap (0.3.10)
+      date
+      net-protocol
+    net-protocol (0.2.2)
+      timeout
     nokogiri (1.18.9-java)
       racc (~> 1.4)
     parallel (1.24.0)
@@ -137,6 +143,7 @@ GEM
       ffi
     strscan (3.1.0-java)
     thread_safe (0.3.6-java)
+    timeout (0.6.1)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
     tzinfo-data (1.2024.1)
@@ -173,6 +180,7 @@ DEPENDENCIES
   jruby-openssl (= 0.16.0)
   json (~> 2.7.2)
   json-schema (~> 4.3.0)
+  net-imap (= 0.3.10)
   nokogiri (~> 1.18.9)
   pry (~> 0.14.2)
   pry-nav

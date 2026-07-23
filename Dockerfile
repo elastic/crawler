@@ -31,9 +31,17 @@ RUN rm -rf /usr/local/bundle/gems/ruby-maven-* \
 
 # Drop the vulnerable Bouncy Castle 1.79 jars from JRuby's default jruby-openssl
 # 0.15.3 (CVE-2026-5588); the pinned 0.16.0 gem provides 1.84 at runtime.
+# Also drop JRuby's vulnerable net-imap copies (CVE-2026-42246): the default
+# gem 0.2.3 and the older stdlib 0.1.1 (net/imap.rb). The pinned 0.3.10 gem
+# from the Gemfile provides the fixed version at runtime.
 # Needs root as /opt/jruby is root-owned.
 USER root
-RUN rm -rf /opt/jruby/lib/ruby/stdlib/org/bouncycastle
+RUN rm -rf /opt/jruby/lib/ruby/stdlib/org/bouncycastle \
+    /opt/jruby/lib/ruby/gems/shared/gems/net-imap-0.2.3 \
+    /opt/jruby/lib/ruby/gems/shared/specifications/net-imap-0.2.3.gemspec \
+    /opt/jruby/lib/ruby/gems/shared/cache/net-imap-0.2.3.gem \
+    /opt/jruby/lib/ruby/stdlib/net/net-imap.gemspec \
+    /opt/jruby/lib/ruby/stdlib/net/imap.rb
 USER crawleruser
 
 ENTRYPOINT [ "/bin/bash" ]
