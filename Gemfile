@@ -29,6 +29,11 @@ group :default do
   gem 'elasticsearch', '~> 8.14.0'
   gem 'json-schema', '~> 4.3.0'
   gem 'rexml', '~> 3.4.2'
+
+  # Pin erb above JRuby 9.4's default erb 2.2.3 to fix CVE-2026-41316
+  # (@_init deserialization guard bypass via def_module/def_method/def_class).
+  # Use 4.0.4.1 (fixed line; 4.0.3.1 is also patched but some scanners still flag it).
+  gem 'erb', '4.0.4.1'
   gem 'rufus-scheduler', '~> 3.9.1'
 
   # jruby-openssl 0.16.0 bundles Bouncy Castle 1.84, fixing CVE-2026-5588.
