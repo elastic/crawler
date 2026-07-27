@@ -130,7 +130,11 @@ module ThirdParty
       'webrick' => { url: 'http://www.ruby-lang.org/en/LICENSE.txt' },
 
       # https://github.com/ruby/strscan/blob/master/LICENSE.txt
-      'strscan' => { url: 'https://raw.githubusercontent.com/ruby/strscan/master/LICENSE.txt' }
+      'strscan' => { url: 'https://raw.githubusercontent.com/ruby/strscan/master/LICENSE.txt' },
+
+      # https://github.com/ruby/date/tree/v3.5.1
+      # The java platform gem build ships without license files in the gem package.
+      'date' => { url: 'https://raw.githubusercontent.com/ruby/date/v3.5.1/COPYING' }
     }.freeze
   end
 end
