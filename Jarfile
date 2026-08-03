@@ -19,6 +19,8 @@ jar 'org.apache.httpcomponents.client5:httpclient5', '5.5.1'
 
 # For managing Brotli input streams
 jar 'org.apache.commons:commons-compress', '1.27.1'
+# Pinned transitive of commons-compress to resolve CVE-2025-48924 (uncontrolled recursion)
+jar 'org.apache.commons:commons-lang3', '3.18.0'
 jar 'org.brotli:dec', '0.1.2'
 
 # for parsing HTML
