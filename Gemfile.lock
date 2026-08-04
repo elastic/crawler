@@ -68,7 +68,7 @@ GEM
     method_source (1.1.0)
     minitest (5.22.3)
     multi_json (1.15.0)
-    net-imap (0.3.10)
+    net-imap (0.5.15)
       date
       net-protocol
     net-protocol (0.2.2)
@@ -183,7 +183,7 @@ DEPENDENCIES
   jruby-openssl (= 0.16.0)
   json (~> 2.7.2)
   json-schema (~> 4.3.0)
-  net-imap (= 0.3.10)
+  net-imap (= 0.5.15)
   nokogiri (~> 1.18.9)
   pry (~> 0.14.2)
   pry-nav
