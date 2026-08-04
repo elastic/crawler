@@ -22,7 +22,9 @@ source 'https://rubygems.org'
 gem 'bundler', supported_bundler_version
 
 group :default do
-  gem 'activesupport', '= 6.1.7.7'
+  # Pin to Rails 7.2.3.1+ to clear CVE-2026-33176 / CVE-2026-33169 / CVE-2026-33170
+  # (DoS / ReDoS / XSS in Active Support number helpers and SafeBuffer#%).
+  gem 'activesupport', '= 7.2.3.1'
   gem 'addressable', '>= 2.9.0'
   gem 'concurrent-ruby', '~> 1.3.7'
   gem 'dry-cli', '~> 0.7.0'
