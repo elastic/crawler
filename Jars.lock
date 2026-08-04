@@ -14,12 +14,12 @@ org.bouncycastle:bcutil-jdk18on:1.84:compile:
 com.github.crawler-commons:crawler-commons:1.2:compile:
 org.slf4j:slf4j-api:1.7.7:compile:
 commons-io:commons-io:2.16.1:compile:
-org.apache.httpcomponents.client5:httpclient5:5.5.1:compile:
-org.apache.httpcomponents.core5:httpcore5:5.3.6:compile:
-org.apache.httpcomponents.core5:httpcore5-h2:5.3.6:compile:
+org.apache.httpcomponents.client5:httpclient5:5.6.2:compile:
+org.apache.httpcomponents.core5:httpcore5:5.4.3:compile:
+org.apache.httpcomponents.core5:httpcore5-h2:5.4.3:compile:
 org.apache.commons:commons-compress:1.27.1:compile:
 commons-codec:commons-codec:1.17.1:compile:
-org.apache.commons:commons-lang3:3.16.0:compile:
+org.apache.commons:commons-lang3:3.18.0:compile:
 org.brotli:dec:0.1.2:compile:
 org.jsoup:jsoup:1.20.1:compile:
 org.slf4j:slf4j-nop:1.7.26:compile:
