@@ -8,10 +8,7 @@ on:
       - labeled
       - closed
 
-# The repository default is read-only, so the scopes this job needs must be
-# granted here: the backport action pushes cherry-pick branches, opens the
-# backport PRs, and comments the result back on the source PR. Approving the
-# backport PRs uses REPO_SCOPED_TOKEN, not GITHUB_TOKEN.
+# Override read-only GITHUB_TOKEN default: push backport branches and comment on PRs.
 permissions:
   contents: write
   pull-requests: write
