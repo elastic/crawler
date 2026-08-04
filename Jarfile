@@ -13,9 +13,9 @@ jar 'com.github.crawler-commons:crawler-commons', '1.2'
 jar 'commons-io:commons-io', '2.16.1'
 
 # Apache HTTP client used for requests to websites
-# Pinned to 5.5.1+ to pull in httpcore5/httpcore5-h2 5.3.6, resolving CVE-2025-8671
-# (HTTP/2 stream-reset DoS in httpcore5-h2 < 5.3.5)
-jar 'org.apache.httpcomponents.client5:httpclient5', '5.5.1'
+# Pinned to 5.6.2+ to pull in httpcore5/httpcore5-h2 5.4.3, resolving
+# CVE-2025-8671, CVE-2026-54399, and CVE-2026-54428 (HTTP DoS in httpcore5-h2).
+jar 'org.apache.httpcomponents.client5:httpclient5', '5.6.2'
 
 # For managing Brotli input streams
 jar 'org.apache.commons:commons-compress', '1.27.1'
