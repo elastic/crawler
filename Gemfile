@@ -22,7 +22,9 @@ source 'https://rubygems.org'
 gem 'bundler', supported_bundler_version
 
 group :default do
-  gem 'activesupport', '= 6.1.7.7'
+  # Pin to Rails 7.2.3.1+ to clear CVE-2026-33176 / CVE-2026-33169 / CVE-2026-33170
+  # (DoS / ReDoS / XSS in Active Support number helpers and SafeBuffer#%).
+  gem 'activesupport', '= 7.2.3.1'
   gem 'addressable', '>= 2.9.0'
   gem 'concurrent-ruby', '~> 1.3.7'
   gem 'dry-cli', '~> 0.7.0'
@@ -40,9 +42,10 @@ group :default do
   # JRuby 9.4.12.0's default jruby-openssl 0.15.3 ships the vulnerable 1.79.
   gem 'jruby-openssl', '0.16.0', platform: :jruby
 
-  # JRuby 9.4.12.0 ships net-imap 0.2.3 as a default gem (CVE-2026-42246 STARTTLS
-  # stripping). Pin the lowest fixed release so Bundler installs over the default.
-  gem 'net-imap', '0.3.10'
+  # JRuby 9.4.12.0 ships net-imap 0.2.3 as a default gem. Pin above the fixed
+  # lines for CVE-2026-42246 / CVE-2026-42257 / CVE-2026-42245 / CVE-2026-42258
+  # / CVE-2026-47240 / CVE-2026-47242 / CVE-2026-47241 (0.5.15 clears all).
+  gem 'net-imap', '0.5.15'
 
   # Gems that need jruby as the platform
   gem 'bson', '~> 4.15.0', platform: :jruby

@@ -8,6 +8,11 @@
 
 require 'nokogiri' # https://github.com/sparklemotion/nokogiri/issues/2550
 
+# Active Support 7.2+ — factory_bot needs Inflector before Delegation loads
+require 'logger'
+require 'active_support'
+require 'active_support/inflector'
+
 require 'factory_bot'
 
 # Enable coverage information collection
