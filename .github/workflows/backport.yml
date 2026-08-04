@@ -8,6 +8,11 @@ on:
       - labeled
       - closed
 
+# Override read-only GITHUB_TOKEN default: push backport branches and comment on PRs.
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   backport:
     if: |
