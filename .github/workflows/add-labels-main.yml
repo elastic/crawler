@@ -7,8 +7,7 @@ on:
     types:
       - opened
 
-# The repository default is read-only, so the scopes this job needs must be
-# granted here: checkout reads product_version; the action labels the PR.
+# Override read-only GITHUB_TOKEN default: label newly opened PRs.
 permissions:
   contents: read
   pull-requests: write
