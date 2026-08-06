@@ -18,7 +18,9 @@ require 'bundler'
 Bundler.setup(:default, CRAWLER_ENV)
 
 # Load common dependencies
+require 'logger' # ActiveSupport expects ::Logger to be defined
 require 'active_support'
+require 'active_support/inflector' # needed by factory_bot with Active Support 7.2+
 require 'active_support/core_ext'
 require 'active_support/dependencies'
 
