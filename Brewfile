@@ -6,7 +6,7 @@ brew 'jenv'
 brew 'icu4c'
 
 # Stack services
-cask 'homebrew/cask-versions/temurin11'
+cask 'temurin@21'
 
 # For testing SSL locally
 brew 'mkcert'
