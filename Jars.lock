@@ -1,3 +1,12 @@
+isorelax:isorelax:20030108:compile:
+org.nokogiri:nekodtd:0.1.11.noko2:compile:
+net.sourceforge.htmlunit:neko-htmlunit:2.63.0:compile:
+nu.validator:jing:20200702VNU:compile:
+net.sf.saxon:Saxon-HE:9.6.0-4:compile:
+xalan:serializer:2.7.3:compile:
+xalan:xalan:2.7.3:compile:
+xerces:xercesImpl:2.12.2:compile:
+xml-apis:xml-apis:1.4.01:compile:
 org.bouncycastle:bcprov-jdk18on:1.85:compile:
 org.bouncycastle:bcpkix-jdk18on:1.85:compile:
 org.bouncycastle:bctls-jdk18on:1.85:compile:
@@ -12,5 +21,5 @@ org.apache.commons:commons-compress:1.27.1:compile:
 commons-codec:commons-codec:1.17.1:compile:
 org.apache.commons:commons-lang3:3.18.0:compile:
 org.brotli:dec:0.1.2:compile:
-org.jsoup:jsoup:1.20.1:compile:
+org.jsoup:jsoup:1.23.1:compile:
 org.slf4j:slf4j-nop:1.7.26:compile:
