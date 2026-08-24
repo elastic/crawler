@@ -24,7 +24,7 @@ jar 'org.apache.commons:commons-lang3', '3.18.0'
 jar 'org.brotli:dec', '0.1.2'
 
 # for parsing HTML
-jar 'org.jsoup:jsoup', '1.20.1'
+jar 'org.jsoup:jsoup', '1.23.1'
 
 # Cleaner Java logs handling
 jar 'org.slf4j:slf4j-nop', '1.7.26'
