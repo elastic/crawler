@@ -30,7 +30,8 @@ RUN rm -rf /usr/local/bundle/gems/ruby-maven-* \
     /usr/local/bundle/cache/ruby-maven-*
 
 # Drop the vulnerable Bouncy Castle 1.79 jars from JRuby's default jruby-openssl
-# 0.15.3 (CVE-2026-5588); the pinned 0.16.0 gem provides 1.84 at runtime.
+# 0.15.3 (CVE-2026-5588); the pinned 0.16.2 gem provides BC 1.85 at runtime
+# (CVE-2026-12185 and sibling BC 1.84 CVEs).
 # Also drop JRuby's vulnerable net-imap copies (CVE-2026-42246 and later): the default
 # gem 0.2.3 and the older stdlib 0.1.1 (net/imap.rb). The pinned 0.5.15 gem
 # from the Gemfile provides the fixed version at runtime.
