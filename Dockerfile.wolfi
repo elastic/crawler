@@ -93,7 +93,7 @@ USER root
 
 # Create java user and install runtime dependencies
 RUN addgroup -g 1000 java && adduser -u 1000 -G java -s /bin/bash -D java && \
-    apk update && apk add --no-cache libcurl-openssl4=~8.12.1 git=~2.50.1-r1 bash=~5.3.0
+    apk update && apk add --no-cache libcurl-openssl4=~8.12.1 git=~2.54.0-r0 bash=~5.3.0
 
 # Set environment variables
 ENV JAVA_HOME=/opt/jdk-crawler \
