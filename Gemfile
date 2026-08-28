@@ -38,9 +38,10 @@ group :default do
   gem 'erb', '4.0.4.1'
   gem 'rufus-scheduler', '~> 3.9.1'
 
-  # jruby-openssl 0.16.0 bundles Bouncy Castle 1.84, fixing CVE-2026-5588.
-  # JRuby 9.4.12.0's default jruby-openssl 0.15.3 ships the vulnerable 1.79.
-  gem 'jruby-openssl', '0.16.0', platform: :jruby
+  # jruby-openssl 0.16.2 bundles Bouncy Castle 1.85, fixing CVE-2026-12185
+  # (and clearing the remaining BC 1.84 CVE cluster). JRuby 9.4.12.0's default
+  # jruby-openssl 0.15.3 ships BC 1.79; older pin 0.16.0 shipped BC 1.84.
+  gem 'jruby-openssl', '0.16.2', platform: :jruby
 
   # JRuby 9.4.12.0 ships net-imap 0.2.3 as a default gem. Pin above the fixed
   # lines for CVE-2026-42246 / CVE-2026-42257 / CVE-2026-42245 / CVE-2026-42258
