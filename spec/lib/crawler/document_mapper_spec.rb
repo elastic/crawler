@@ -98,6 +98,46 @@ RSpec.describe(Crawler::DocumentMapper) do
           expect(result[:id]).to eq(canonical_url.normalized_hash)
           expect(result[:additional_urls]).to eq([crawled_url.to_s])
         end
+
+        it 'accumulates multiple crawled URLs that share the same canonical URL' do
+          other_crawled_url = Crawler::Data::URL.parse('https://example.com/page?CMP=other')
+          other_crawl_result = FactoryBot.build(:html_crawl_result, url: other_crawled_url, content:)
+
+          subject.create_doc(crawl_result)
+          result = subject.create_doc(other_crawl_result)
+
+          expect(result[:additional_urls]).to eq([crawled_url.to_s, other_crawled_url.to_s])
+        end
+
+        it 'preserves accumulated additional_urls when the canonical URL is crawled directly' do
+          subject.create_doc(crawl_result)
+          canonical_crawl_result = FactoryBot.build(:html_crawl_result, url: canonical_url, content:)
+          result = subject.create_doc(canonical_crawl_result)
+
+          expect(result[:url]).to eq(canonical_url.to_s)
+          expect(result[:additional_urls]).to eq([crawled_url.to_s])
+        end
+      end
+
+      context 'when the canonical URL matches the crawled URL' do
+        let(:content) do
+          <<~HTML
+            <html>
+              <head>
+                <link rel="canonical" href="https://example.com/page" />
+              </head>
+              <body><p>Hello</p></body>
+            </html>
+          HTML
+        end
+        let(:crawl_result) { FactoryBot.build(:html_crawl_result, url:, content:) }
+
+        it 'does not populate additional_urls' do
+          result = subject.create_doc(crawl_result)
+
+          expect(result[:url]).to eq(url.to_s)
+          expect(result).not_to have_key(:additional_urls)
+        end
       end
 
       context 'when extraction rules are present' do

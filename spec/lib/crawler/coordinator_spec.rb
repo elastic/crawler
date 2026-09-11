@@ -302,8 +302,12 @@ RSpec.describe(Crawler::Coordinator) do
 
     context 'when canonical URL is invalid' do
       let(:canonical_link) { Crawler::Data::Link.new(base_url: url, link: 'foo%:') }
-      it 'should not use it' do
-        expect(coordinator).to_not receive(:add_urls_to_backlog)
+
+      it 'logs a warning and does not enqueue the canonical url' do
+        expect(coordinator.system_logger).to receive(:warn).with(
+          /Failed to parse canonical URL 'foo%:' on '#{url}'/
+        )
+        expect(coordinator).not_to receive(:add_urls_to_backlog)
         process_crawl_result
       end
     end

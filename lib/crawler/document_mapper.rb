@@ -71,16 +71,30 @@ module Crawler
 
     def index_url_info(crawl_result)
       crawled_url = crawl_result.url
+      primary_url = crawled_url
       canonical_link = crawl_result.canonical_link
 
       if canonical_link&.valid?
         canonical_url = canonical_link.to_url
-        unless canonical_url.normalized_url.to_s == crawled_url.normalized_url.to_s
-          return { primary_url: canonical_url, additional_urls: [crawled_url.to_s] }
-        end
+        primary_url = canonical_url unless canonical_url.normalized_url.to_s == crawled_url.normalized_url.to_s
       end
 
-      { primary_url: crawled_url, additional_urls: nil }
+      canonical_key = primary_url.normalized_hash
+      if primary_url.normalized_url.to_s != crawled_url.normalized_url.to_s
+        accumulate_additional_url(canonical_key, crawled_url.to_s)
+      end
+
+      { primary_url:, additional_urls: additional_urls_for(canonical_key) }
+    end
+
+    def accumulate_additional_url(canonical_key, url)
+      @additional_urls_by_canonical ||= {}
+      (@additional_urls_by_canonical[canonical_key] ||= Set.new) << url
+    end
+
+    def additional_urls_for(canonical_key)
+      urls = @additional_urls_by_canonical&.fetch(canonical_key, nil)
+      urls&.any? ? urls.to_a.sort : nil
     end
 
     def html_fields(crawl_result) # rubocop:disable Metrics/AbcSize

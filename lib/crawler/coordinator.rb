@@ -365,7 +365,7 @@ module Crawler
     end
 
     # Process a crawl_result:
-    # - Extract canonical_url and add it to the backlog (if applicable)
+    # - Warn about invalid canonical URLs (if applicable)
     # - Extract links contained in the page and add them to the backlog (if applicable)
     # - Output the crawl_result to the sink
     def process_crawl_result(crawl_task, crawl_result)
