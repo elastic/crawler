@@ -106,7 +106,7 @@ RSpec.describe(Crawler::DocumentMapper) do
           subject.create_doc(crawl_result)
           result = subject.create_doc(other_crawl_result)
 
-          expect(result[:additional_urls]).to eq([crawled_url.to_s, other_crawled_url.to_s])
+          expect(result[:additional_urls]).to eq([other_crawled_url.to_s, crawled_url.to_s])
         end
 
         it 'preserves accumulated additional_urls when the canonical URL is crawled directly' do
@@ -124,7 +124,7 @@ RSpec.describe(Crawler::DocumentMapper) do
           <<~HTML
             <html>
               <head>
-                <link rel="canonical" href="https://example.com/page" />
+                <link rel="canonical" href="https://example.com" />
               </head>
               <body><p>Hello</p></body>
             </html>
