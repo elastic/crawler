@@ -6,6 +6,8 @@
 
 # frozen_string_literal: true
 
+require 'set'
+
 module Crawler
   class DocumentMapper
     class UnsupportedCrawlResultError < StandardError; end
