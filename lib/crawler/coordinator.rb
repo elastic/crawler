@@ -431,24 +431,10 @@ module Crawler
 
     def extract_and_enqueue_html_links(crawl_task, crawl_result)
       canonical_link = crawl_result.canonical_link
-      if canonical_link
-        # If there is a valid canonical URL defined for the crawl_result,
-        # add it to the backlog, so it can be visited during this crawl.
-        #
-        # We do not increment the depth, because we want to be sure that the canonical URL is visited.
-        if canonical_link.valid?
-          add_urls_to_backlog(
-            urls: [canonical_link.to_url],
-            type: :content,
-            source_type: :canonical_url,
-            source_url: crawl_task.url,
-            crawl_depth: crawl_task.depth
-          )
-        else
-          system_logger.warn(
-            "Failed to parse canonical URL '#{canonical_link.link}' on '#{crawl_result.url}': #{canonical_link.error}"
-          )
-        end
+      if canonical_link && !canonical_link.valid?
+        system_logger.warn(
+          "Failed to parse canonical URL '#{canonical_link.link}' on '#{crawl_result.url}': #{canonical_link.error}"
+        )
       end
 
       # Extract all links, analyze them and create crawl tasks for those we want to follow

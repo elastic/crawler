@@ -76,6 +76,30 @@ RSpec.describe(Crawler::DocumentMapper) do
         expect(result).to eq(expected_result)
       end
 
+      context 'when the page has a canonical URL different from the crawled URL' do
+        let(:crawled_url) { Crawler::Data::URL.parse('https://example.com/page?CMP=test') }
+        let(:canonical_url) { Crawler::Data::URL.parse('https://example.com/page') }
+        let(:content) do
+          <<~HTML
+            <html>
+              <head>
+                <link rel="canonical" href="#{canonical_url}" />
+              </head>
+              <body><p>Hello</p></body>
+            </html>
+          HTML
+        end
+        let(:crawl_result) { FactoryBot.build(:html_crawl_result, url: crawled_url, content:) }
+
+        it 'indexes the canonical URL and records the crawled URL in additional_urls' do
+          result = subject.create_doc(crawl_result)
+
+          expect(result[:url]).to eq(canonical_url.to_s)
+          expect(result[:id]).to eq(canonical_url.normalized_hash)
+          expect(result[:additional_urls]).to eq([crawled_url.to_s])
+        end
+      end
+
       context 'when extraction rules are present' do
         let(:config_params) do
           {

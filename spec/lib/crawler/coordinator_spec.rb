@@ -318,14 +318,8 @@ RSpec.describe(Crawler::Coordinator) do
     context 'when canonical_link is present' do
       let(:canonical_link) { Crawler::Data::Link.new(base_url: url, link: 'http://example.com/canonical') }
 
-      it 'should add the canonical url to the backlog' do
-        expect(coordinator).to receive(:add_urls_to_backlog).with(
-          urls: [canonical_link.to_url],
-          type: :content,
-          source_type: :canonical_url,
-          source_url: url,
-          crawl_depth: crawl_task.depth
-        )
+      it 'should not enqueue the canonical url for a separate crawl' do
+        expect(coordinator).not_to receive(:add_urls_to_backlog)
         process_crawl_result
       end
     end
