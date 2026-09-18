@@ -1,5 +1,8 @@
 ## 🏠/.buildkite/pipeline-release.yml
-# Manual triggered pipeline to build and publish Docker images
+# Manual triggered pipeline to build and publish Docker images.
+#
+# Defaults to SNAPSHOT. To publish a release image, the operator must
+# explicitly choose "Release" in the input step AND trigger from an N.N branch.
 
 notify:
   - if: 'build.branch =~ /^((main)|([0-9]+\.[0-9]+))\$/ && (build.state == "failed" || pipeline.started_passing)'
@@ -11,8 +14,19 @@ notify:
 steps:
   - input: "Build information"
     fields:
+      - select: "Build type"
+        key: "build_type"
+        hint: "Snapshot is the default. Choose Release only when cutting an actual release from an N.N branch."
+        default: "snapshot"
+        options:
+          - label: "Snapshot"
+            value: "snapshot"
+          - label: "Release"
+            value: "release"
       - select: "Apply :latest tag?"
         key: "is_latest"
+        hint: "Only applies to Release builds. Ignored for Snapshots."
+        default: "false"
         options:
           - label: "Yes"
             value: "true"
@@ -21,20 +35,32 @@ steps:
   - wait: ~
 
   # ----
-  # Set is_snapshot to false initially
+  # Resolve build type into is_snapshot metadata.
+  # Release builds are only allowed from N.N branches — requesting a
+  # release from main is rejected to prevent accidents.
   # ----
-  - command: "buildkite-agent meta-data set is_snapshot false"
+  - label: ":shield: Resolve build type"
+    command: |
+      BUILD_TYPE=$$(buildkite-agent meta-data get build_type)
+      if [[ "$$BUILD_TYPE" == "release" ]]; then
+        if [[ "$$BUILDKITE_BRANCH" == "main" ]]; then
+          echo "ERROR: Release builds cannot be triggered from main. Use an N.N branch."
+          exit 1
+        fi
+        buildkite-agent meta-data set is_snapshot false
+        echo "Build type: RELEASE (branch: $$BUILDKITE_BRANCH)"
+      else
+        buildkite-agent meta-data set is_snapshot true
+        echo "Build type: SNAPSHOT (branch: $$BUILDKITE_BRANCH)"
+      fi
+  - wait: ~
 
   # ----
   # Docker builds for amd64
   # ----
   - group: ":package: amd64 Build and Test"
     key: "build_and_test_amd64"
-    if: "(build.branch =~ /^[0-9]+\\.[0-9x]+.*/ || build.branch == \"main\")"
     steps:
-      - label: "Determine if snapshot"
-        command: "buildkite-agent meta-data set is_snapshot true"
-        if: "(build.branch == \"main\")"
       - label: "Building amd64 Docker image"
         agents:
           provider: aws
@@ -64,11 +90,7 @@ steps:
   # ----
   - group: ":package: arm64 Build and Test"
     key: "build_and_test_arm64"
-    if: "(build.branch =~ /^[0-9]+\\.[0-9x]+.*/ || build.branch == \"main\")"
     steps:
-      - label: "Determine if snapshot"
-        command: "buildkite-agent meta-data set is_snapshot true"
-        if: "(build.branch == \"main\")"
       - label: "Building arm64 Docker image"
         agents:
           provider: aws
@@ -101,7 +123,6 @@ steps:
   # Multiarch Docker image build and push
   # ----
   - group: ":truck: Publish images"
-    if: "(build.branch =~ /^[0-9]+\\.[0-9x]+.*/ || build.branch == \"main\")"
     depends_on:
       - "build_and_test_amd64"
       - "build_and_test_arm64"
