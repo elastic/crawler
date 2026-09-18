@@ -77,9 +77,7 @@ RUN rm -rf /opt/jruby/lib/ruby/stdlib/org/bouncycastle \
     /opt/jruby/lib/ruby/stdlib/net/imap.rb
 
 # Create custom JDK using jlink
-# jdk.net is required by httpclient5 5.6+, which loads jdk.net.Sockets while
-# initializing DefaultHttpClientConnectionOperator. Without it every crawl fails
-# on its first request with NoClassDefFoundError: jdk/net/Sockets.
+# jdk.net is required by httpclient5 5.6+, which loads jdk.net.Sockets
 RUN jlink \
     --add-modules java.base,jdk.crypto.ec,java.logging,java.management,java.naming,java.net.http,java.scripting,java.security.jgss,java.security.sasl,java.sql,jdk.net,jdk.unsupported \
     --strip-debug \
