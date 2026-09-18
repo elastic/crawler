@@ -42,9 +42,8 @@ steps:
   - label: ":shield: Resolve build type"
     command: |
       BUILD_TYPE=$$(buildkite-agent meta-data get build_type)
-      if [[ "$$BUILD_TYPE" == "release" ]]; then
-        if [[ "$$BUILDKITE_BRANCH" == "main" ]]; then
-          echo "ERROR: Release builds cannot be triggered from main. Use an N.N branch."
+        if [[ ! "$$BUILDKITE_BRANCH" =~ ^[0-9]+\.[0-9]+$$ ]]; then
+          echo "ERROR: Release builds require an N.N branch (for example, 1.0)."
           exit 1
         fi
         buildkite-agent meta-data set is_snapshot false
