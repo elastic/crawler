@@ -1,0 +1,32 @@
+# Keep the Docker build context limited to what's actually tracked in git.
+#
+# Dockerfile/Dockerfile.wolfi both do `COPY . /home/app`, and gems/jars are
+# installed fresh inside the build (script/bundle -> /usr/local/bundle,
+# script/vendor_jars -> vendor/jars), not from these paths. Without this file,
+# a developer's local, gitignored build state (e.g. an old vendor/bundle left
+# over from before a dependency bump) would get copied verbatim into the
+# image and could ship stale/vulnerable jars or gems that a filesystem-based
+# vulnerability scan would flag, even though they're never loaded at runtime.
+#
+# Mirrors the "bundler state" section of .gitignore.
+.git
+.bundle
+vendor/bundle/
+vendor/ruby/
+vendor/filebeat/
+vendor/metricbeat/
+vendor/jruby/
+
+# Local caches / IDE / editor artifacts
+.m2/
+.local/
+.cache/
+.idea/
+.vscode/
+.DS_Store
+
+# Build/test output, not build input
+coverage
+/logs
+/crawled_docs
+/.artifacts
