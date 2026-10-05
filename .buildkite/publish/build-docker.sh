@@ -24,7 +24,7 @@ pushd "$PROJECT_ROOT"
 
 # set our complete tag name and build the image
 TAG_NAME="$BASE_TAG_NAME:${VERSION}-${ARCHITECTURE}"
-docker build -f "$DOCKERFILE_PATH" -t "$TAG_NAME" .
+DOCKER_BUILDKIT=1 docker build -f "$DOCKERFILE_PATH" -t "$TAG_NAME" .
 
 # save the image to an archive file
 OUTPUT_PATH="$PROJECT_ROOT/.artifacts"
