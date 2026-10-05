@@ -18,6 +18,11 @@ VERSION=$(cat "$VERSION_PATH")
 IS_SNAPSHOT=$(buildkite-agent meta-data get is_snapshot)
 IS_LATEST=$(buildkite-agent meta-data get is_latest)
 
+if [[ "${IS_SNAPSHOT}" != "true" && "${IS_SNAPSHOT}" != "false" ]]; then
+  echo "!! is_snapshot has unexpected value '${IS_SNAPSHOT}'. Aborting to prevent accidental release."
+  exit 2
+fi
+
 if [[ "${IS_SNAPSHOT:-}" == "false" && "${IS_LATEST:-}" == "true" ]]; then
   # don't apply LATEST tag to SNAPSHOT builds
   export APPLY_LATEST_TAG="true"
