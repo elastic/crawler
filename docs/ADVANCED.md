@@ -15,7 +15,7 @@ Crawls are performed in two stages: a primary crawl and a purge crawl.
 ### The Primary crawl
 
 Beginning with URLs included as `seed_urls`, the crawler begins crawling web content.
-While crawling, each link it encounters will be added to the crawl queue, unless the link should be ignored due to [crawl rules](./docs/features/CRAWL_RULES.md) or [crawler directives](./docs/features/CRAWLER_DIRECTIVES.md).
+While crawling, each link it encounters will be added to the crawl queue, unless the link should be ignored due to [crawl rules](./features/CRAWL_RULES.md) or [crawler directives](./features/CRAWLER_DIRECTIVES.md).
 
 The crawl results from visiting these webpages are added to a pool of results.
 These are indexed into Elasticsearch using the `_bulk` API once the pool reaches the configured threshold.
@@ -30,8 +30,8 @@ The crawler then re-crawls all of these webpages.
 If a page is still accessible, it updates the corresponding document in Elasticsearch.
 A webpage can be inaccessible due to any of the following reasons:
 
-- Updated [crawl rules](./docs/features/CRAWL_RULES.md) in the configuration file that now exclude the URL
-- Updated [crawler directives](./docs/features/CRAWLER_DIRECTIVES.md) on the server or webpage that now exclude the URL
+- Updated [crawl rules](./features/CRAWL_RULES.md) in the configuration file that now exclude the URL
+- Updated [crawler directives](./features/CRAWLER_DIRECTIVES.md) on the server or webpage that now exclude the URL
 - Non-`200` response from the webserver
 
 At the end of the purge crawl, all docs in the index that were not updated during either the primary crawl or the purge crawl are deleted.
