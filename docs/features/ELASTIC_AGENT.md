@@ -94,6 +94,14 @@ The input unit's payload carries the status of the current or last crawl: `crawl
 - Check-in chunking is not advertised to Agent.
 - Crawl state is kept in memory; a restarted component starts without a crawl history.
 
+## Protocol conformance check
+
+`script/agent/harness` is a small Go program that plays Elastic Agent using the official [elastic-agent-client](https://github.com/elastic/elastic-agent-client) stub server: it starts a mutual-TLS gRPC server, spawns `bin/crawler agent` with the `StartUpInfo` on STDIN, hands it a policy that crawls a local test site, sends `crawl` and `status` actions (including the Fleet `INPUT_ACTION` form) and checks the reported unit states and crawl payload.
+
+```bash
+make test-agent-harness
+```
+
 ## Protocol definitions
 
 The protocol messages are built at runtime from `lib/crawler/agent/proto/elastic-agent-client.textproto`, a descriptor set generated from the upstream `.proto` files.

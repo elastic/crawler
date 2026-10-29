@@ -1,0 +1,4 @@
+github.com/elastic/elastic-agent-client/v7 v7.20.0 h1:3aMCdZx+3ZqFT4YghogqWxTxtyGafxWjWQnJQJ10Rg8=
+github.com/elastic/elastic-agent-client/v7 v7.20.0/go.mod h1:dRGR6EAk5QnFvI5U1SDjwhKO1uva9BEqdDyJbput9Hk=
+github.com/magefile/mage v1.13.0 h1:XtLJl8bcCM7EFoO8FyH8XK3t7G5hQAeK+i4tq+veT9M=
+github.com/magefile/mage v1.13.0/go.mod h1:z5UZb/iS3GoOSn0JgWuiw7dxlurVYTu+/jHXqQg881A=
