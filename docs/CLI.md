@@ -39,6 +39,7 @@ For example:
 $ bin/crawler --help
 
 > Commands:
+>   crawler agent                                # Run the crawler as an Elastic Agent component (connection details are read from STDIN)
 >   crawler crawl CRAWL_CONFIG                   # Run a crawl of the site
 >   crawler schedule CRAWL_CONFIG                # Schedule a recurrent crawl of the site
 >   crawler urltest CRAWL_CONFIG                 # Test a URL against a configuration
@@ -48,11 +49,22 @@ $ bin/crawler --help
 
 ### Commands
 
+- [`crawler agent`](#crawler-agent)
 - [`crawler crawl`](#crawler-crawl)
 - [`crawler schedule`](#crawler-schedule)
 - [`crawler urltest`](#crawler-urltest)
 - [`crawler validate`](#crawler-validate)
 - [`crawler version`](#crawler-version)
+
+#### `crawler agent`
+
+Runs the crawler as an [Elastic Agent component](features/ELASTIC_AGENT.md).
+This command is started by Elastic Agent, which provides the connection details on STDIN and the crawl configuration through the agent policy; it is not meant to be run manually.
+
+```bash
+# executed by Elastic Agent, see config/agent/crawler.spec.yml
+$ bin/crawler agent --checkin-interval=5
+```
 
 #### `crawler crawl`
 

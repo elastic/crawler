@@ -18,5 +18,6 @@ module Crawler
     register 'schedule', Crawler::CLI::Schedule
     register 'validate', Crawler::CLI::Validate
     register 'urltest', Crawler::CLI::UrlTest
+    register 'agent', Crawler::CLI::Agent
   end
 end

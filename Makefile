@@ -1,4 +1,4 @@
-.phony: test lint autocorrect install install-ci install-gems install-jars clean notice build-docker-ci list-gems list-jars
+.phony: test lint autocorrect install install-ci install-gems install-jars clean notice build-docker-ci list-gems list-jars generate-agent-descriptor
 
 test:
 	script/rspec $(file)
@@ -41,3 +41,6 @@ list-gems:
 
 list-jars:
 	script/bundle exec lock_jars --tree
+
+generate-agent-descriptor:
+	script/agent/generate_descriptor.sh
