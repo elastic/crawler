@@ -60,12 +60,23 @@ module Crawler
       # Actions
 
       def handle_action(action)
-        case action[:name]
+        command = action_command(action)
+        case command
         when CRAWL_ACTION then start_crawl(trigger: 'action')
         when STATUS_ACTION then { configured: configured?, crawl: @runner.status }
         when STOP_ACTION then stop_crawl
-        else raise ActionError, "Unknown action #{action[:name].inspect}"
+        else raise ActionError, "Unknown action #{command.inspect}"
         end
+      end
+
+      # Actions sent through Fleet (INPUT_ACTION) arrive named after the input type with the
+      # Fleet action document as params; the command is then taken from its `data`
+      def action_command(action)
+        return action[:name] unless action[:name] == ConfigMapper::INPUT_TYPE
+
+        params = action[:params] || {}
+        data = params['data'].is_a?(Hash) ? params['data'] : params
+        data['action'] || data['command']
       end
 
       def start_crawl(trigger:)

@@ -61,6 +61,8 @@ Agent can send actions to the crawler component. Every action gets exactly one J
 | `status` | `{"configured": true, "crawl": {<status of the last crawl or null>}}` | — |
 | `stop` | `{"status": "stopping", "crawl_id": ...}` | No crawl is in progress |
 
+Actions sent through Fleet (`INPUT_ACTION` with `input_type: crawler`) reach the component under the name `crawler`; the command is then read from the action's `data.action` field, for example `{"action": "crawl"}`.
+
 Only one crawl runs at a time; a `crawl` action received during a crawl is rejected with `A crawl is already in progress (crawl id: ...)`.
 Diagnostics actions are not supported and are answered with a failure.
 

@@ -138,6 +138,16 @@ RSpec.describe(Crawler::Agent::CrawlHandler) do
       expect { handler.handle_action(name: 'stop', params: {}) }.to raise_error(Crawler::Agent::ActionError, /No crawl/)
     end
 
+    it 'takes the command from the data of Fleet input actions' do
+      apply(input_unit, output_unit)
+      expect(runner).to receive(:start).with(an_instance_of(Crawler::API::Config), trigger: 'action')
+                                       .and_return(crawl_id: 'x', status: 'running')
+      fleet_action = { name: 'crawler', params: { 'type' => 'INPUT_ACTION', 'data' => { 'action' => 'crawl' } } }
+      expect(handler.handle_action(fleet_action)).to eq(crawl_id: 'x', status: 'running')
+      expect { handler.handle_action(name: 'crawler', params: { 'data' => {} }) }
+        .to raise_error(Crawler::Agent::ActionError, /Unknown action nil/)
+    end
+
     it 'rejects unknown actions' do
       expect do
         handler.handle_action(name: 'dance',
