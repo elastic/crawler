@@ -96,6 +96,12 @@ Notes on the protocol as implemented by Elastic Agent:
 - Agent selects the TLS certificate for a component by the TLS server name (SNI), which is the component id (for example `crawler-default`). Java TLS engines do not send SNI for names without a dot, so the crawler sets it explicitly.
 - Agent appends `-E path.data=<dir>` to the component command line; the crawler runs from that directory.
 
+## Running inside the Elastic Agent container image
+
+The agentless ("service") image built by `elastic/elastic-agent` adds the crawler to the wolfi agent image: the JRE is installed from the wolfi packages (`openjdk-21-jre`), while `/opt/jruby`, `/usr/local/bundle` and the application are copied from the crawler release image. The crawler's own jlinked JDK is not reusable there because it is built against a newer glibc than the agent base image ships. The same recipe applied on top of `docker.elastic.co/elastic-agent/elastic-agent-wolfi:9.2.0` was verified end to end: the component reports HEALTHY, scheduled crawls run from the policy and documents are indexed into Elasticsearch through the policy's `elasticsearch` output.
+
+When running the official image standalone, the policy is copied into the agent's `state` directory on the first start; recreate the container to pick up a changed `elastic-agent.yml`.
+
 ## Limitations
 
 - Only TCP gRPC addresses are supported (the default for Elastic Agent); local socket addresses (`unix://`, `npipe://`) are rejected.
