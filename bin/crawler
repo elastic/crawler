@@ -25,4 +25,4 @@ java_import 'java.lang.System'
 System.setProperty('force.http.jre.executor', 'true')
 System.setProperty('https.protocols', 'SSLv3')
 
-Dry::CLI.new(Crawler::CLI).call
+Dry::CLI.new(Crawler::CLI).call(arguments: Crawler::CLI.normalize_agent_arguments(ARGV))
