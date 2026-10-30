@@ -22,6 +22,7 @@ Running it from a terminal blocks until STDIN is closed and then fails with `No 
 | Option | Default | Description |
 |---|---|---|
 | `--checkin-interval` | `5` | Seconds between check-ins. Agent marks a component as failed when it does not check in for 30 seconds. |
+| `--data-dir` | current directory | Working directory for crawl output files. Elastic Agent passes it as `-E path.data=DIR`, which `bin/crawler` translates. |
 
 The process exits with a non-zero status when the connection to Agent is lost, which makes Agent restart it.
 
@@ -83,10 +84,17 @@ The input unit's payload carries the status of the current or last crawl: `crawl
 
 ## Running with a local Elastic Agent
 
+Verified with the Elastic Agent 9.2.0 tarball run standalone (`./elastic-agent run -e`).
+
 1. Install the crawler and its dependencies (`make install`), or use the Docker image.
-2. Copy `config/agent/crawler` and `config/agent/crawler.spec.yml` into the `components` directory of the Elastic Agent installation (for example `data/elastic-agent-<version>/components`). Set `CRAWLER_HOME` in the launcher's environment, or edit it, so that it points at the crawler checkout.
-3. Add a `crawler` input and an `elasticsearch` output to the agent policy, see `config/agent/elastic-agent.yml.example`.
-4. Restart Elastic Agent. The crawler logs are part of the Agent logs; `elastic-agent status` shows the crawler input as `HEALTHY` once it is configured.
+2. Copy `config/agent/crawler` and `config/agent/crawler.spec.yml` into the `components` directory of the Elastic Agent installation (for example `data/elastic-agent-<version>/components`). Set `CRAWLER_HOME` in the launcher's environment, or edit it, so that it points at the crawler checkout, and make sure `ruby` on the PATH is JRuby.
+3. Add a `crawler` input and an `elasticsearch` output to the agent policy, see `config/agent/elastic-agent.yml.example`. When another Elastic Agent is installed on the machine, set `agent.grpc.port` to a free port (the default `6789` is taken).
+4. Start Elastic Agent. The crawler logs are part of the Agent logs; `elastic-agent status --output full` shows the crawler component with its input and output units as `HEALTHY` once it is configured, and the input unit's message follows the current or last crawl. Editing the policy file is picked up by Agent and applied to the crawler on the next check-in.
+
+Notes on the protocol as implemented by Elastic Agent:
+
+- Agent selects the TLS certificate for a component by the TLS server name (SNI), which is the component id (for example `crawler-default`). Java TLS engines do not send SNI for names without a dot, so the crawler sets it explicitly.
+- Agent appends `-E path.data=<dir>` to the component command line; the crawler runs from that directory.
 
 ## Limitations
 
