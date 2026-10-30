@@ -59,6 +59,14 @@ RSpec.describe(Crawler::Agent::CrawlRunner) do
     expect(runner.status).to include(status: 'failure', message: 'bad sink')
   end
 
+  it 'reports failures when the crawl exits because Elasticsearch is unreachable' do
+    allow(crawl).to receive(:start!).and_raise(Errors::ExitIfESConnectionError, 'Failed to reach ES at es:9200: [403]')
+    runner.start(config, trigger: 'action')
+    runner.wait(5)
+    expect(runner).not_to be_running
+    expect(runner.status).to include(status: 'failure', message: 'Failed to reach ES at es:9200: [403]')
+  end
+
   it 'has no status before the first crawl' do
     expect(runner.status).to be_nil
     expect(runner).not_to be_running

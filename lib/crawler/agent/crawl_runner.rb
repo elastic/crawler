@@ -62,7 +62,9 @@ module Crawler
         @mutex.synchronize { @crawl = crawl }
         crawl.start!
         finish(crawl.outcome, crawl.outcome_message)
-      rescue StandardError => e
+      rescue StandardError, SystemExit => e
+        # the Elasticsearch sink raises SystemExit subclasses when it cannot reach ES or create the
+        # index; under Elastic Agent a failed crawl must never take the component down
         @logger.error("Crawl #{config.crawl_id} failed: #{e.class}: #{e.message}")
         finish(:failure, e.message)
       ensure

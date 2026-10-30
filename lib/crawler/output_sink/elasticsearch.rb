@@ -60,8 +60,9 @@ module Crawler
         )
       rescue Elastic::Transport::Transport::Error => e
         # rescue bc client.info crashes ungracefully when ES is unreachable
-        system_logger.info("Failed to reach ES at #{es_host}: #{e}")
-        raise Errors::ExitIfESConnectionError
+        message = "Failed to reach ES at #{es_host}: #{e}"
+        system_logger.info(message)
+        raise Errors::ExitIfESConnectionError, message
       end
 
       def verify_output_index
@@ -75,8 +76,11 @@ module Crawler
 
       def attempt_index_creation_or_exit
         # helper method for verify_output_index
-        raise Errors::ExitIfUnableToCreateIndex, system_logger.info("Failed to create #{config.output_index}") unless
-          client.indices.create(index: config.output_index)
+        return if client.indices.create(index: config.output_index)
+
+        message = "Failed to create #{config.output_index}"
+        system_logger.info(message)
+        raise Errors::ExitIfUnableToCreateIndex, message
       end
 
       def write(crawl_result)
