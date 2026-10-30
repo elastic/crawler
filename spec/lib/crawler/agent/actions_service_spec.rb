@@ -64,6 +64,13 @@ RSpec.describe(Crawler::Agent::ActionsService) do
                                 result: { 'error' => 'Diagnostics actions are not supported' })
   end
 
+  it 'treats null params as empty' do
+    response
+    expect(handler).to receive(:handle_action).with(hash_including(id: 'a0', params: {})).and_return({})
+    agent.send_action(id: 'a0', name: 'status', params: 'null')
+    expect(response).to include(id: 'a0', status: :SUCCESS)
+  end
+
   it 'rejects actions with invalid params' do
     response
     agent.send_action(id: 'a4', name: 'crawl', params: 'not json')

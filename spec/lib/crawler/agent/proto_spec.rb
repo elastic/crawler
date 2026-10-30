@@ -76,6 +76,22 @@ RSpec.describe(Crawler::Agent::Proto) do
   end
 
   describe '.encode / .decode' do
+    it 'converts structs and timestamps parsed from the wire' do
+      time = Time.at(1_700_000_000, 5, :nsec)
+      message = described_class.build(
+        :CheckinExpected,
+        units_timestamp: time,
+        units: [
+          { id: 'u', config: { source: { 'domains' => [{ 'url' => 'https://a' }], 'depth' => 2, 'on' => true } } }
+        ]
+      )
+      decoded = described_class.to_h(described_class.decode(:CheckinExpected, described_class.encode(message)))
+      expect(decoded[:units_timestamp]).to eq(time)
+      expect(decoded[:units].first[:config][:source]).to eq(
+        'domains' => [{ 'url' => 'https://a' }], 'depth' => 2, 'on' => true
+      )
+    end
+
     it 'serializes messages to and from binary' do
       message = described_class.build(:StartUpInfo, addr: '127.0.0.1:6789', token: 't', services: %i[CheckinV2 Log])
       decoded = described_class.decode(:StartUpInfo, described_class.encode(message))

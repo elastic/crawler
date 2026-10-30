@@ -46,22 +46,32 @@ module Crawler
             Java::ComGoogleProtobuf::Timestamp.newBuilder.setSeconds(time.to_i).setNanos(time.nsec).build
           end
 
+          # Messages parsed from the wire are DynamicMessages, so only reflection is used here
           def struct_to_ruby(struct)
-            struct.getFieldsMap.each_with_object({}) { |(key, value), hash| hash[key.to_s] = value_to_ruby(value) }
+            field(struct, 'fields').each_with_object({}) do |entry, hash|
+              hash[field(entry, 'key').to_s] = value_to_ruby(field(entry, 'value'))
+            end
           end
 
           def value_to_ruby(value)
-            case value.getKindCase.name
-            when 'NUMBER_VALUE' then number_to_ruby(value.getNumberValue)
-            when 'STRING_VALUE' then value.getStringValue.to_s
-            when 'BOOL_VALUE' then value.getBoolValue
-            when 'STRUCT_VALUE' then struct_to_ruby(value.getStructValue)
-            when 'LIST_VALUE' then value.getListValue.getValuesList.map { |item| value_to_ruby(item) }
+            kind = value.getOneofFieldDescriptor(value.getDescriptorForType.getOneofs.first)
+            return nil if kind.nil?
+
+            case kind.getName
+            when 'number_value' then number_to_ruby(value.getField(kind))
+            when 'string_value' then value.getField(kind).to_s
+            when 'bool_value' then value.getField(kind)
+            when 'struct_value' then struct_to_ruby(value.getField(kind))
+            when 'list_value' then field(value.getField(kind), 'values').map { |item| value_to_ruby(item) }
             end
           end
 
           def timestamp_to_ruby(timestamp)
-            Time.at(timestamp.getSeconds, timestamp.getNanos, :nsec)
+            Time.at(field(timestamp, 'seconds'), field(timestamp, 'nanos'), :nsec)
+          end
+
+          def field(message, name)
+            message.getField(message.getDescriptorForType.findFieldByName(name))
           end
 
           # Struct numbers are always doubles; whole numbers are turned back into integers so that

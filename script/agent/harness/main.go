@@ -24,6 +24,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"os/exec"
+	"strings"
 	"sync"
 	"time"
 
@@ -141,7 +142,7 @@ func main() {
 	inputCfg := mustStruct(map[string]interface{}{
 		"id": "crawler-harness", "type": "crawler", "name": "harness", "revision": 1,
 		"domains":     []interface{}{map[string]interface{}{"url": site.URL}},
-		"output_sink": "console", "log_level": "info", "max_crawl_depth": 2,
+		"output_sink": "console", "log_level": "info", "max_crawl_depth": 2, "loopback_allowed": true,
 	})
 	outputCfg := mustStruct(map[string]interface{}{
 		"type": "elasticsearch", "hosts": []interface{}{"http://127.0.0.1:9200"}, "api_key": "id:key",
@@ -257,13 +258,21 @@ func main() {
 	waitFor("crawl reported as success in unit payload", 120*time.Second, func() bool { return crawlStatus() == "success" })
 	fmt.Printf("     payload: %v\n", st.snapshot()["crawler-unit"].Payload.AsMap()["crawl"])
 
-	status, err := srv.PerformAction("crawler-unit", proto.UnitType_INPUT, "status", nil)
+	status, err := srv.PerformAction("crawler-unit", proto.UnitType_INPUT, "status", map[string]interface{}{})
 	if err != nil {
 		fmt.Printf("FAIL status action: %v\n", err)
 		os.Exit(1)
 	}
 	b, _ = json.Marshal(status)
 	fmt.Printf("OK   status action: %s\n", b)
+
+	logFile.Sync()
+	logBytes, _ := os.ReadFile(os.Args[2])
+	if !strings.Contains(string(logBytes), "Harness home") || !strings.Contains(string(logBytes), "about page") {
+		fmt.Println("FAIL crawled pages were not written by the console sink")
+		os.Exit(1)
+	}
+	fmt.Println("OK   both test pages were crawled and emitted by the console sink")
 
 	st.mu.Lock()
 	st.stop = true

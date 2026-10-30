@@ -80,6 +80,7 @@ module Crawler
         return {} if params.to_s.strip.empty?
 
         parsed = JSON.parse(params)
+        return {} if parsed.nil?
         raise ActionError, 'Action params must be a JSON object' unless parsed.is_a?(Hash)
 
         parsed

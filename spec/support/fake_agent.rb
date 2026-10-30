@@ -39,7 +39,7 @@ module RSpec
         end
 
         def onNext(message) # rubocop:disable Naming/MethodName
-          @agent.received(@name, Crawler::Agent::Proto.to_h(message))
+          @agent.received(@name, Crawler::Agent::Proto.to_h(FakeAgent.wire(message)))
         end
 
         def onError(_error) # rubocop:disable Naming/MethodName
@@ -75,12 +75,18 @@ module RSpec
         Crawler::Agent::Proto.encode(Crawler::Agent::Proto.build(:StartUpInfo, info.merge(attributes)))
       end
 
+      # The in-process transport hands objects over as-is; re-parsing them from bytes gives the
+      # client the same DynamicMessage shapes it sees from a real Agent over the network
+      def self.wire(message)
+        Java::ComGoogleProtobuf::DynamicMessage.parseFrom(message.getDescriptorForType, message.toByteArray)
+      end
+
       def send_expected(attributes)
-        responder(CHECKIN).onNext(Crawler::Agent::Proto.build(:CheckinExpected, attributes))
+        responder(CHECKIN).onNext(FakeAgent.wire(Crawler::Agent::Proto.build(:CheckinExpected, attributes)))
       end
 
       def send_action(attributes)
-        responder(ACTIONS).onNext(Crawler::Agent::Proto.build(:ActionRequest, attributes))
+        responder(ACTIONS).onNext(FakeAgent.wire(Crawler::Agent::Proto.build(:ActionRequest, attributes)))
       end
 
       def complete(method)
