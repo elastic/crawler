@@ -14,9 +14,32 @@ module Crawler
     module Connection
       LOCAL_ADDRESS_SCHEMES = %w[unix npipe].freeze
 
+      # Elastic Agent picks the certificate for a component by the TLS server name (SNI), which is
+      # the component id (e.g. "crawler-default"). Java TLS engines only send SNI automatically for
+      # host names containing a dot, so the server name is set explicitly on every engine.
+      class SniSslContext < Java::IoGrpcNettyShadedIoNettyHandlerSsl::DelegatingSslContext
+        def initialize(context, server_name)
+          super(context)
+          @server_name = server_name
+        end
+
+        def initEngine(engine) # rubocop:disable Naming/MethodName
+          return if @server_name.to_s.empty?
+
+          params = engine.getSSLParameters
+          params.setServerNames([Java::JavaxNetSsl::SNIHostName.new(@server_name)])
+          engine.setSSLParameters(params)
+        end
+      end
+
       def self.channel(info)
         validate_address!(info.addr)
-        builder = Java::IoGrpc::Grpc.newChannelBuilder(info.addr, credentials(info))
+        builder = Java::IoGrpcNettyShadedIoGrpcNetty::NettyChannelBuilder.forTarget(info.addr)
+        if info.tls?
+          builder.sslContext(ssl_context(info))
+        else
+          builder.usePlaintext
+        end
         builder.overrideAuthority(info.server_name) unless info.server_name.to_s.empty?
         builder.maxInboundMessageSize(info.max_message_size) if info.max_message_size.to_i.positive?
         builder.build
@@ -29,13 +52,11 @@ module Crawler
         raise Error, "Unsupported Elastic Agent address #{addr}: only TCP addresses are supported"
       end
 
-      def self.credentials(info)
-        return Java::IoGrpc::InsecureChannelCredentials.create unless info.tls?
-
-        builder = Java::IoGrpc::TlsChannelCredentials.newBuilder
+      def self.ssl_context(info)
+        builder = Java::IoGrpcNettyShadedIoGrpcNetty::GrpcSslContexts.forClient
         builder.trustManager(pem_stream(info.ca_cert)) unless info.ca_cert.to_s.empty?
         builder.keyManager(pem_stream(info.peer_cert), pem_stream(info.peer_key)) unless info.peer_cert.to_s.empty?
-        builder.build
+        SniSslContext.new(builder.build, info.server_name)
       end
 
       def self.pem_stream(pem)

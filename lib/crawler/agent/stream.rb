@@ -85,8 +85,22 @@ module Crawler
       end
 
       def handle_error(error)
-        @error = error.respond_to?(:getMessage) ? error.getMessage : error.to_s
+        @error = describe_error(error)
         @finished.set
+      end
+
+      # Includes the cause chain, which carries the useful detail for TLS and connection failures
+      def describe_error(error)
+        return error.to_s unless error.respond_to?(:getMessage)
+
+        messages = []
+        cause = error
+        while cause && messages.size < 6
+          messages << "#{cause.java_class.simple_name}: #{cause.getMessage}"
+          # gRPC keeps the transport failure in the status rather than as the exception cause
+          cause = cause.respond_to?(:getStatus) ? cause.getStatus.getCause || cause.getCause : cause.getCause
+        end
+        messages.join(' <- ')
       end
 
       def handle_completed

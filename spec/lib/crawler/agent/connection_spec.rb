@@ -38,6 +38,17 @@ RSpec.describe(Crawler::Agent::Connection) do
     channel.shutdownNow
   end
 
+  it 'sends the server name as SNI even without a dot in it' do
+    cert, key = self_signed_pair
+    info = Crawler::Agent::StartupInfo.new(
+      base.merge(server_name: 'crawler-default', ca_cert: cert, peer_cert: cert, peer_key: key)
+    )
+    engine = described_class.ssl_context(info).newEngine(
+      Java::IoGrpcNettyShadedIoNettyBuffer::ByteBufAllocator::DEFAULT, 'crawler-default', 6789
+    )
+    expect(engine.getSSLParameters.getServerNames.map(&:getAsciiName)).to eq(['crawler-default'])
+  end
+
   it 'builds an insecure channel when no certificates are provided' do
     channel = described_class.channel(Crawler::Agent::StartupInfo.new(base))
     expect(channel.authority).to eq('localhost')

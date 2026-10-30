@@ -6,6 +6,8 @@
 
 # frozen_string_literal: true
 
+require 'tmpdir'
+
 RSpec.describe(Crawler::CLI::Agent) do
   describe '.call' do
     let(:cli) { Dry::CLI(Crawler::CLI) }
@@ -20,6 +22,25 @@ RSpec.describe(Crawler::CLI::Agent) do
     it 'accepts a custom check-in interval' do
       expect(Crawler::Agent::Component).to receive(:new).with(checkin_interval: 10).and_return(component)
       cli.call(arguments: ['agent', '--checkin-interval=10'])
+    end
+
+    it 'accepts Elastic Agent setting overrides and switches to the data directory' do
+      expect(Crawler::Agent::Component).to receive(:new).and_return(component)
+      data_dir = Dir.mktmpdir
+      original = Dir.pwd
+      begin
+        arguments = Crawler::CLI.normalize_agent_arguments(['agent', '-E', "path.data=#{data_dir}/run", '-E',
+                                                            'other=1'])
+        expect(arguments).to eq(['agent', "--data-dir=#{data_dir}/run"])
+        cli.call(arguments:)
+        expect(File.realpath(Dir.pwd)).to eq(File.realpath("#{data_dir}/run"))
+      ensure
+        Dir.chdir(original)
+      end
+    end
+
+    it 'leaves other commands untouched' do
+      expect(Crawler::CLI.normalize_agent_arguments(['crawl', '-E', 'x'])).to eq(['crawl', '-E', 'x'])
     end
 
     it 'prints an error and exits when the component fails' do
