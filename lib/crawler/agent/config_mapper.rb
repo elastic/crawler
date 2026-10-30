@@ -87,6 +87,7 @@ module Crawler
 
           params = {}
           params['ssl_verify'] = false if ssl['verification_mode'].to_s == 'none'
+          params['ca_fingerprint'] = ssl['ca_trusted_fingerprint'] unless ssl['ca_trusted_fingerprint'].to_s.empty?
           authorities = Array(ssl['certificate_authorities'])
           params['ca_file'] = ca_file(authorities) if authorities.any?
           params

@@ -127,6 +127,11 @@ RSpec.describe(Crawler::Agent::ConfigMapper) do
       expect(result).to include('ssl_verify' => false)
     end
 
+    it 'maps a trusted CA fingerprint' do
+      result = described_class.elasticsearch_params('hosts' => ['https://es'], 'ssl' => { 'ca_trusted_fingerprint' => 'AB:CD' })
+      expect(result).to include('ca_fingerprint' => 'AB:CD')
+    end
+
     it 'writes inline certificate authorities to a file' do
       pem = "-----BEGIN CERTIFICATE-----\nabc\n-----END CERTIFICATE-----"
       result = described_class.elasticsearch_params('hosts' => ['https://es'],

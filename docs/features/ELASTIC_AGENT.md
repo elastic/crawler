@@ -39,6 +39,7 @@ Agent assigns two kinds of units to the crawler component:
 | `api_key` (`id:key` pairs are base64-encoded as Elasticsearch expects) | `elasticsearch.api_key` |
 | `username` / `password` | `elasticsearch.username` / `elasticsearch.password` |
 | `ssl.verification_mode: none` | `elasticsearch.ssl_verify: false` |
+| `ssl.ca_trusted_fingerprint` | `elasticsearch.ca_fingerprint` |
 | `ssl.certificate_authorities` (inline PEM or paths) | `elasticsearch.ca_file` |
 
 `elasticsearch.*` settings on the input take precedence over the output, matching the behaviour of `--es-config` on the CLI.
