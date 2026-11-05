@@ -34,3 +34,13 @@ jar 'org.bouncycastle:bcprov-jdk18on', '1.85'
 jar 'org.bouncycastle:bcpkix-jdk18on', '1.85'
 jar 'org.bouncycastle:bctls-jdk18on',  '1.85'
 jar 'org.bouncycastle:bcutil-jdk18on', '1.85'
+
+# Elastic Agent V2 control protocol (gRPC over TLS) used when running as an Elastic Agent component.
+# grpc-java is used because the gRPC C-core ruby gem does not support JRuby.
+jar 'io.grpc:grpc-netty-shaded', '1.85.1'
+jar 'io.grpc:grpc-protobuf', '1.85.1'
+jar 'io.grpc:grpc-stub', '1.85.1'
+# In-process transport, used by specs to run a fake Elastic Agent server
+jar 'io.grpc:grpc-inprocess', '1.85.1'
+# Pinned transitive of grpc-protobuf (declares 3.25.x) to stay on a supported protobuf line
+jar 'com.google.protobuf:protobuf-java', '4.36.2'
