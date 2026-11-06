@@ -247,12 +247,6 @@ GET /web-crawl-test/_search
 
 ---
 
-### ⚖️ Elastic Crawler comparison
-
-- [Feature comparison](docs/FEATURE_COMPARISON.md) - See how Open Crawler compares to Elastic Crawler, including feature support and deployment differences
-
----
-
 ## 👩🏽‍💻 Developer guide
 
 ### Build from source
