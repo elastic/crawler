@@ -13,9 +13,10 @@ jar 'com.github.crawler-commons:crawler-commons', '1.2'
 jar 'commons-io:commons-io', '2.16.1'
 
 # Apache HTTP client used for requests to websites
-# Pinned to 5.6.3+ to resolve CVE-2026-64607 (connection leak on bad Content-Encoding)
+# Pinned to 5.6.4+ to resolve CVE-2026-71290 (improper certificate validation) and
+# CVE-2026-64607 (connection leak on bad Content-Encoding, fixed in 5.6.3)
 # and to pull in httpcore5/httpcore5-h2 5.4.3 (CVE-2025-8671, CVE-2026-54399, CVE-2026-54428).
-jar 'org.apache.httpcomponents.client5:httpclient5', '5.6.3'
+jar 'org.apache.httpcomponents.client5:httpclient5', '5.6.4'
 
 # For managing Brotli input streams
 jar 'org.apache.commons:commons-compress', '1.27.1'
