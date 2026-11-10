@@ -1,0 +1,26 @@
+# Example standalone Elastic Agent policy running Open Crawler as a component.
+# Place it at the root of the Elastic Agent installation as elastic-agent.yml.
+
+outputs:
+  default:
+    type: elasticsearch
+    hosts:
+      - "http://localhost:9200"
+    api_key: "id:api_key"
+
+inputs:
+  # Every `crawler` input accepts the same settings as a crawler.yml file.
+  # The Elasticsearch connection comes from the output referenced in `use_output`.
+  - type: crawler
+    id: crawler-elastic-co
+    use_output: default
+    output_index: search-elastic-co
+    domains:
+      - url: https://www.elastic.co
+        seed_urls:
+          - https://www.elastic.co/search-labs
+    max_crawl_depth: 2
+    schedule:
+      pattern: "0 * * * *"
+
+agent.logging.to_stderr: true
