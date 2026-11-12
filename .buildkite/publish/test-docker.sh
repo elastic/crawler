@@ -74,11 +74,11 @@ TEST_CONFIG_TEXT='
 schemaVersion: "2.0.0"
 
 commandTests:
-  # ensure JRuby 9.4.* is installed
-  - name: "JRuby Installation 9.4.*"
+  # ensure JRuby 10.0.* is installed
+  - name: "JRuby Installation 10.0.*"
     command: "ruby"
     args: ["--version"]
-    expectedOutput: ["jruby\\s9\\.4\\.*"]
+    expectedOutput: ["jruby\\s10\\.0\\.*"]
   - name: "Crawler installation"
     command: "/home/app/bin/crawler"
     args: ["--version"]

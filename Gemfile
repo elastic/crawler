@@ -28,43 +28,25 @@ group :default do
   gem 'addressable', '>= 2.9.0'
   gem 'concurrent-ruby', '~> 1.3.7'
   gem 'dry-cli', '~> 0.7.0'
+  # bin/crawler requires getoptlong, which is no longer a default gem as of Ruby 3.4
+  gem 'getoptlong'
   gem 'elasticsearch', '~> 8.14.0'
   gem 'json-schema', '~> 4.3.0'
   gem 'rexml', '~> 3.4.2'
 
-  # Pin erb above JRuby 9.4's default erb 2.2.3 to fix CVE-2026-41316
-  # (@_init deserialization guard bypass via def_module/def_method/def_class).
-  # Use 4.0.4.1 (fixed line; 4.0.3.1 is also patched but some scanners still flag it).
-  gem 'erb', '4.0.4.1'
   gem 'rufus-scheduler', '~> 3.9.1'
 
-  # jruby-openssl 0.16.2 bundles Bouncy Castle 1.85, fixing CVE-2026-12185
-  # (and clearing the remaining BC 1.84 CVE cluster). JRuby 9.4.12.0's default
-  # jruby-openssl 0.15.3 ships BC 1.79; older pin 0.16.0 shipped BC 1.84.
-  gem 'jruby-openssl', '0.16.2', platform: :jruby
-
-  # JRuby 9.4.12.0 ships net-imap 0.2.3 as a default gem. Pin above the fixed
-  # lines for CVE-2026-42246 / CVE-2026-42257 / CVE-2026-42245 / CVE-2026-42258
-  # / CVE-2026-47240 / CVE-2026-47242 / CVE-2026-47241 (0.5.15 clears all).
-  gem 'net-imap', '0.5.15'
-
   # Gems that need jruby as the platform
-  gem 'bson', '~> 4.15.0', platform: :jruby
-  gem 'bigdecimal', '~> 3.1.7', platform: :jruby
-  gem 'json', '~> 2.7.2', platform: :jruby
-  gem 'racc', '~> 1.7.3', platform: :jruby
-  gem 'strscan', '~> 3.1.0', platform: :jruby
+  gem 'bson', '~> 5.2', platform: :jruby
+  gem 'bigdecimal', '~> 3.1', platform: :jruby
+  gem 'json', '~> 2.16', platform: :jruby
+  gem 'racc', '~> 1.8', platform: :jruby
   gem 'thread_safe', '~> 0.3.6', platform: :jruby
-
-  # override ipaddr 1.2.2 that comes from jruby-jars 9.3.3.0
-  # issue https://github.com/elastic/enterprise-search-team/issues/2137
-  # it can be removed when jruby-jars includes ipaddr ~> 1.2.4
-  gem 'ipaddr', '~> 1.2.4'
 
   # We need to bundle TZ data because on windows and in some minimal Linux installations there is
   # no system-level TZ data info and the app blows up when trying to use timezone information
   # See https://github.com/tzinfo/tzinfo/wiki/Resolving-TZInfo::DataSourceNotFound-Errors for details
-  gem 'tzinfo-data', '~> 1.2024.1'
+  gem 'tzinfo-data', '~> 1.2026'
 
 end
 
@@ -79,20 +61,21 @@ end
 
 group :test do
   gem 'rspec', '~> 3.13.0'
-  gem 'webmock', '~> 3.23.1'
+  gem 'webmock', '~> 3.26'
   gem 'simplecov'
   gem 'simplecov-material', require: false
 
   gem 'webrick', '~> 1.8.2'
 
-  # Faux is a local gem for testing fake sites, requires nokogiri
-  gem 'nokogiri', '~> 1.18.9', require: false, platform: :jruby
+  # Faux is a local gem for testing fake sites
   gem 'faux', path: 'vendor/faux', require: false
 end
 
 group :development, :test do
   gem 'rack', '~> 2.2.23'
   gem 'httpclient'
+  # httpclient 2.8.3 requires mutex_m, which is no longer a default gem as of Ruby 3.4
+  gem 'mutex_m'
   gem 'pry', '~> 0.14.2', platform: :jruby
-  gem 'factory_bot', '~> 6.2.0', require: false
+  gem 'factory_bot', '~> 6.5', require: false
 end

@@ -10,8 +10,8 @@ RUN apk update && apk add --no-cache libcurl-openssl4=~8.12.1 curl=~8.12.1 make
 # jruby install steps below have been adapted from:
 # https://github.com/jruby/docker-jruby/blob/f325c86e2c2ca0bbe82f64c0aded0719372507fa/9.4/jdk21/Dockerfile
 
-ENV JRUBY_VERSION=9.4.12.0
-ENV JRUBY_SHA256=05c5d203d6990c92671cc42f57d2fa1c1083bbfd16fa7023dc5848cdb8f0aa2e
+ENV JRUBY_VERSION=10.0.8.0
+ENV JRUBY_SHA256=e33cd86d198d695bd67dc867daf4c31bced385a9f138a00c47f7c12aa1f4e789
 RUN mkdir /opt/jruby \
   && curl -fSL https://repo1.maven.org/maven2/org/jruby/jruby-dist/${JRUBY_VERSION}/jruby-dist-${JRUBY_VERSION}-bin.tar.gz -o /tmp/jruby.tar.gz \
   && echo "$JRUBY_SHA256 /tmp/jruby.tar.gz" | sha256sum -c - \
@@ -61,20 +61,6 @@ RUN rm -rf .git .github .idea .devcontainer .buildkite
 RUN rm -rf /usr/local/bundle/gems/ruby-maven-* \
     /usr/local/bundle/specifications/ruby-maven-* \
     /usr/local/bundle/cache/ruby-maven-*
-
-# Drop the vulnerable Bouncy Castle 1.79 jars from JRuby's default jruby-openssl
-# 0.15.3 (CVE-2026-5588); the pinned 0.16.2 gem provides BC 1.85 at runtime
-# (CVE-2026-12185 and sibling BC 1.84 CVEs).
-# Also drop JRuby's vulnerable net-imap copies (CVE-2026-42246 and later): the default
-# gem 0.2.3 and the older stdlib 0.1.1 (net/imap.rb). The pinned 0.5.15 gem
-# from the Gemfile provides the fixed version at runtime.
-# Done in the builder stage, before /opt/jruby is copied into the runtime image.
-RUN rm -rf /opt/jruby/lib/ruby/stdlib/org/bouncycastle \
-    /opt/jruby/lib/ruby/gems/shared/gems/net-imap-0.2.3 \
-    /opt/jruby/lib/ruby/gems/shared/specifications/net-imap-0.2.3.gemspec \
-    /opt/jruby/lib/ruby/gems/shared/cache/net-imap-0.2.3.gem \
-    /opt/jruby/lib/ruby/stdlib/net/net-imap.gemspec \
-    /opt/jruby/lib/ruby/stdlib/net/imap.rb
 
 # Create custom JDK using jlink
 # jdk.net is required by httpclient5 5.6+, which loads jdk.net.Sockets

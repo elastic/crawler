@@ -1,4 +1,4 @@
-FROM jruby:9.4.12.0-jdk21@sha256:5641622b488d298362b96fdaea0f328248ce55962e68e224118be11ddb48d16e
+FROM jruby:10.0.8.0-jdk21@sha256:021c6dab10d96bf0f1200785f36914ed901654c6b8cb53e9c602e81484709b83
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     libicu-dev netbase make
@@ -28,21 +28,5 @@ RUN rm -r /home/crawleruser/.m2
 RUN rm -rf /usr/local/bundle/gems/ruby-maven-* \
     /usr/local/bundle/specifications/ruby-maven-* \
     /usr/local/bundle/cache/ruby-maven-*
-
-# Drop the vulnerable Bouncy Castle 1.79 jars from JRuby's default jruby-openssl
-# 0.15.3 (CVE-2026-5588); the pinned 0.16.2 gem provides BC 1.85 at runtime
-# (CVE-2026-12185 and sibling BC 1.84 CVEs).
-# Also drop JRuby's vulnerable net-imap copies (CVE-2026-42246 and later): the default
-# gem 0.2.3 and the older stdlib 0.1.1 (net/imap.rb). The pinned 0.5.15 gem
-# from the Gemfile provides the fixed version at runtime.
-# Needs root as /opt/jruby is root-owned.
-USER root
-RUN rm -rf /opt/jruby/lib/ruby/stdlib/org/bouncycastle \
-    /opt/jruby/lib/ruby/gems/shared/gems/net-imap-0.2.3 \
-    /opt/jruby/lib/ruby/gems/shared/specifications/net-imap-0.2.3.gemspec \
-    /opt/jruby/lib/ruby/gems/shared/cache/net-imap-0.2.3.gem \
-    /opt/jruby/lib/ruby/stdlib/net/net-imap.gemspec \
-    /opt/jruby/lib/ruby/stdlib/net/imap.rb
-USER crawleruser
 
 ENTRYPOINT [ "/bin/bash" ]

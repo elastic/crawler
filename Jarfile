@@ -29,9 +29,3 @@ jar 'org.jsoup:jsoup', '1.23.2'
 
 # Cleaner Java logs handling
 jar 'org.slf4j:slf4j-nop', '1.7.26'
-
-# Pinned transitive to resolve CVE-2026-59646 / CVE-2026-12185 (BC < 1.85)
-jar 'org.bouncycastle:bcprov-jdk18on', '1.85'
-jar 'org.bouncycastle:bcpkix-jdk18on', '1.85'
-jar 'org.bouncycastle:bctls-jdk18on',  '1.85'
-jar 'org.bouncycastle:bcutil-jdk18on', '1.85'
