@@ -38,21 +38,15 @@ group :default do
 
   # Gems that need jruby as the platform
   gem 'bson', '~> 5.2', platform: :jruby
-  gem 'bigdecimal', '~> 3.1.7', platform: :jruby
-  gem 'json', '~> 2.7.2', platform: :jruby
-  gem 'racc', '~> 1.7.3', platform: :jruby
-  gem 'strscan', '~> 3.1.0', platform: :jruby
+  gem 'bigdecimal', '~> 3.1', platform: :jruby
+  gem 'json', '~> 2.16', platform: :jruby
+  gem 'racc', '~> 1.8', platform: :jruby
   gem 'thread_safe', '~> 0.3.6', platform: :jruby
-
-  # override ipaddr 1.2.2 that comes from jruby-jars 9.3.3.0
-  # issue https://github.com/elastic/enterprise-search-team/issues/2137
-  # it can be removed when jruby-jars includes ipaddr ~> 1.2.4
-  gem 'ipaddr', '~> 1.2.4'
 
   # We need to bundle TZ data because on windows and in some minimal Linux installations there is
   # no system-level TZ data info and the app blows up when trying to use timezone information
   # See https://github.com/tzinfo/tzinfo/wiki/Resolving-TZInfo::DataSourceNotFound-Errors for details
-  gem 'tzinfo-data', '~> 1.2024.1'
+  gem 'tzinfo-data', '~> 1.2026'
 
 end
 
