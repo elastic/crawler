@@ -1,4 +1,4 @@
-FROM jruby:9.4.12.0-jdk21@sha256:5641622b488d298362b96fdaea0f328248ce55962e68e224118be11ddb48d16e
+FROM jruby:10.0.8.0-jdk21@sha256:021c6dab10d96bf0f1200785f36914ed901654c6b8cb53e9c602e81484709b83
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     libicu-dev netbase make

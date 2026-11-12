@@ -28,6 +28,8 @@ group :default do
   gem 'addressable', '>= 2.9.0'
   gem 'concurrent-ruby', '~> 1.3.7'
   gem 'dry-cli', '~> 0.7.0'
+  # bin/crawler requires getoptlong, which is no longer a default gem as of Ruby 3.4
+  gem 'getoptlong'
   gem 'elasticsearch', '~> 8.14.0'
   gem 'json-schema', '~> 4.3.0'
   gem 'rexml', '~> 3.4.2'
@@ -49,7 +51,7 @@ group :default do
   gem 'net-imap', '0.5.15'
 
   # Gems that need jruby as the platform
-  gem 'bson', '~> 4.15.0', platform: :jruby
+  gem 'bson', '~> 5.2', platform: :jruby
   gem 'bigdecimal', '~> 3.1.7', platform: :jruby
   gem 'json', '~> 2.7.2', platform: :jruby
   gem 'racc', '~> 1.7.3', platform: :jruby
@@ -79,7 +81,7 @@ end
 
 group :test do
   gem 'rspec', '~> 3.13.0'
-  gem 'webmock', '~> 3.23.1'
+  gem 'webmock', '~> 3.26'
   gem 'simplecov'
   gem 'simplecov-material', require: false
 
@@ -92,6 +94,8 @@ end
 group :development, :test do
   gem 'rack', '~> 2.2.23'
   gem 'httpclient'
+  # httpclient 2.8.3 requires mutex_m, which is no longer a default gem as of Ruby 3.4
+  gem 'mutex_m'
   gem 'pry', '~> 0.14.2', platform: :jruby
-  gem 'factory_bot', '~> 6.2.0', require: false
+  gem 'factory_bot', '~> 6.5', require: false
 end
