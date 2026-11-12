@@ -5,7 +5,7 @@
 #
 
 require 'stringio'
-require 'nokogiri'
+require 'rexml/document'
 require 'zlib'
 
 module Faux
@@ -30,27 +30,22 @@ module Faux
       end
 
       def response_body
-        builder = Nokogiri::XML::Builder.new(:encoding => 'UTF-8') do |xml|
-          if options[:index]
-            xml.sitemapindex(:xmlns => "http://www.sitemaps.org/schemas/sitemap/0.9") {
-              @links.each do |link|
-                xml.sitemap {
-                  xml.loc "#{link}"
-                }
-              end
-            }
-          else
-            xml.urlset(:xmlns => "http://www.sitemaps.org/schemas/sitemap/0.9") {
-              @links.each do |link|
-                xml.url {
-                  xml.loc "#{link}"
-                }
-              end
-            }
-          end
+        doc = REXML::Document.new
+        doc << REXML::XMLDecl.new('1.0', 'UTF-8')
+        doc.context[:attribute_quote] = :quote
+        if options[:index]
+          root = doc.add_element('sitemapindex', 'xmlns' => 'http://www.sitemaps.org/schemas/sitemap/0.9')
+          item = 'sitemap'
+        else
+          root = doc.add_element('urlset', 'xmlns' => 'http://www.sitemaps.org/schemas/sitemap/0.9')
+          item = 'url'
+        end
+        @links.each do |link|
+          root.add_element(item).add_element('loc').text = link.to_s
         end
 
-        sitemap_txt = builder.to_xml
+        sitemap_txt = +''
+        doc.write(output: sitemap_txt, indent: 2)
 
         if options[:gzip]
           [gzip(sitemap_txt)]
