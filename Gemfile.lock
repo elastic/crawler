@@ -3,9 +3,9 @@ PATH
   specs:
     faux (0.1.0)
       activesupport
-      nokogiri
       rack
       rack-mount
+      rexml
 
 GEM
   remote: https://rubygems.org/
@@ -83,8 +83,6 @@ GEM
       net-protocol
     net-protocol (0.2.2)
       timeout
-    nokogiri (1.18.9-java)
-      racc (~> 1.4)
     parallel (1.24.0)
     parser (3.3.1.0)
       ast (~> 2.4.1)
@@ -195,7 +193,6 @@ DEPENDENCIES
   json (~> 2.7.2)
   json-schema (~> 4.3.0)
   net-imap (= 0.5.15)
-  nokogiri (~> 1.18.9)
   pry (~> 0.14.2)
   pry-nav
   pry-remote
