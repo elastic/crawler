@@ -1,4 +1,4 @@
-.phony: test lint autocorrect install install-ci install-gems install-jars clean notice build-docker-ci list-gems list-jars
+.phony: test lint autocorrect install install-ci install-gems install-jars clean notice build-docker-ci list-gems list-jars generate-agent-descriptor test-agent-harness
 
 test:
 	script/rspec $(file)
@@ -41,3 +41,10 @@ list-gems:
 
 list-jars:
 	script/bundle exec lock_jars --tree
+
+generate-agent-descriptor:
+	script/agent/generate_descriptor.sh
+
+# Requires Go; drives `bin/crawler agent` through the Elastic Agent client stub server
+test-agent-harness:
+	cd script/agent/harness && go run . "$(CURDIR)" "$(CURDIR)/logs/agent-harness.log"

@@ -1,0 +1,1154 @@
+file {
+  name: "elastic-agent-client-deprecated.proto"
+  package: "proto"
+  message_type {
+    name: "StateObserved"
+    field {
+      name: "token"
+      number: 1
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "token"
+    }
+    field {
+      name: "config_state_idx"
+      number: 2
+      label: LABEL_OPTIONAL
+      type: TYPE_UINT64
+      json_name: "configStateIdx"
+    }
+    field {
+      name: "status"
+      number: 3
+      label: LABEL_OPTIONAL
+      type: TYPE_ENUM
+      type_name: ".proto.StateObserved.Status"
+      json_name: "status"
+    }
+    field {
+      name: "message"
+      number: 4
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "message"
+    }
+    field {
+      name: "payload"
+      number: 5
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "payload"
+    }
+    enum_type {
+      name: "Status"
+      value {
+        name: "STARTING"
+        number: 0
+      }
+      value {
+        name: "CONFIGURING"
+        number: 1
+      }
+      value {
+        name: "HEALTHY"
+        number: 2
+      }
+      value {
+        name: "DEGRADED"
+        number: 3
+      }
+      value {
+        name: "FAILED"
+        number: 4
+      }
+      value {
+        name: "STOPPING"
+        number: 5
+      }
+    }
+  }
+  message_type {
+    name: "StateExpected"
+    field {
+      name: "state"
+      number: 1
+      label: LABEL_OPTIONAL
+      type: TYPE_ENUM
+      type_name: ".proto.StateExpected.State"
+      json_name: "state"
+    }
+    field {
+      name: "config_state_idx"
+      number: 2
+      label: LABEL_OPTIONAL
+      type: TYPE_UINT64
+      json_name: "configStateIdx"
+    }
+    field {
+      name: "config"
+      number: 3
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "config"
+    }
+    enum_type {
+      name: "State"
+      value {
+        name: "RUNNING"
+        number: 0
+      }
+      value {
+        name: "STOPPING"
+        number: 1
+      }
+    }
+  }
+  options {
+    go_package: "pkg/proto;proto"
+    cc_enable_arenas: true
+  }
+  syntax: "proto3"
+}
+file {
+  name: "elastic-agent-client.proto"
+  package: "proto"
+  dependency: "google/protobuf/struct.proto"
+  dependency: "google/protobuf/timestamp.proto"
+  dependency: "elastic-agent-client-deprecated.proto"
+  message_type {
+    name: "Package"
+    field {
+      name: "source"
+      number: 1
+      label: LABEL_OPTIONAL
+      type: TYPE_MESSAGE
+      type_name: ".google.protobuf.Struct"
+      json_name: "source"
+    }
+    field {
+      name: "name"
+      number: 2
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "name"
+    }
+    field {
+      name: "version"
+      number: 3
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "version"
+    }
+  }
+  message_type {
+    name: "Meta"
+    field {
+      name: "source"
+      number: 1
+      label: LABEL_OPTIONAL
+      type: TYPE_MESSAGE
+      type_name: ".google.protobuf.Struct"
+      json_name: "source"
+    }
+    field {
+      name: "package"
+      number: 2
+      label: LABEL_OPTIONAL
+      type: TYPE_MESSAGE
+      type_name: ".proto.Package"
+      json_name: "package"
+    }
+  }
+  message_type {
+    name: "DataStream"
+    field {
+      name: "source"
+      number: 1
+      label: LABEL_OPTIONAL
+      type: TYPE_MESSAGE
+      type_name: ".google.protobuf.Struct"
+      json_name: "source"
+    }
+    field {
+      name: "dataset"
+      number: 2
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "dataset"
+    }
+    field {
+      name: "type"
+      number: 3
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "type"
+    }
+    field {
+      name: "namespace"
+      number: 4
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "namespace"
+    }
+  }
+  message_type {
+    name: "Stream"
+    field {
+      name: "source"
+      number: 1
+      label: LABEL_OPTIONAL
+      type: TYPE_MESSAGE
+      type_name: ".google.protobuf.Struct"
+      json_name: "source"
+    }
+    field {
+      name: "id"
+      number: 2
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "id"
+    }
+    field {
+      name: "data_stream"
+      number: 3
+      label: LABEL_OPTIONAL
+      type: TYPE_MESSAGE
+      type_name: ".proto.DataStream"
+      json_name: "dataStream"
+    }
+  }
+  message_type {
+    name: "UnitExpectedConfig"
+    field {
+      name: "source"
+      number: 1
+      label: LABEL_OPTIONAL
+      type: TYPE_MESSAGE
+      type_name: ".google.protobuf.Struct"
+      json_name: "source"
+    }
+    field {
+      name: "id"
+      number: 2
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "id"
+    }
+    field {
+      name: "type"
+      number: 3
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "type"
+    }
+    field {
+      name: "name"
+      number: 4
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "name"
+    }
+    field {
+      name: "revision"
+      number: 5
+      label: LABEL_OPTIONAL
+      type: TYPE_UINT64
+      json_name: "revision"
+    }
+    field {
+      name: "meta"
+      number: 6
+      label: LABEL_OPTIONAL
+      type: TYPE_MESSAGE
+      type_name: ".proto.Meta"
+      json_name: "meta"
+    }
+    field {
+      name: "data_stream"
+      number: 7
+      label: LABEL_OPTIONAL
+      type: TYPE_MESSAGE
+      type_name: ".proto.DataStream"
+      json_name: "dataStream"
+    }
+    field {
+      name: "streams"
+      number: 8
+      label: LABEL_REPEATED
+      type: TYPE_MESSAGE
+      type_name: ".proto.Stream"
+      json_name: "streams"
+    }
+  }
+  message_type {
+    name: "UnitExpected"
+    field {
+      name: "id"
+      number: 1
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "id"
+    }
+    field {
+      name: "type"
+      number: 2
+      label: LABEL_OPTIONAL
+      type: TYPE_ENUM
+      type_name: ".proto.UnitType"
+      json_name: "type"
+    }
+    field {
+      name: "state"
+      number: 3
+      label: LABEL_OPTIONAL
+      type: TYPE_ENUM
+      type_name: ".proto.State"
+      json_name: "state"
+    }
+    field {
+      name: "config_state_idx"
+      number: 4
+      label: LABEL_OPTIONAL
+      type: TYPE_UINT64
+      json_name: "configStateIdx"
+    }
+    field {
+      name: "config"
+      number: 5
+      label: LABEL_OPTIONAL
+      type: TYPE_MESSAGE
+      type_name: ".proto.UnitExpectedConfig"
+      json_name: "config"
+    }
+    field {
+      name: "log_level"
+      number: 6
+      label: LABEL_OPTIONAL
+      type: TYPE_ENUM
+      type_name: ".proto.UnitLogLevel"
+      json_name: "logLevel"
+    }
+  }
+  message_type {
+    name: "AgentInfo"
+    field {
+      name: "id"
+      number: 1
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "id"
+    }
+    field {
+      name: "version"
+      number: 2
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "version"
+    }
+    field {
+      name: "snapshot"
+      number: 3
+      label: LABEL_OPTIONAL
+      type: TYPE_BOOL
+      json_name: "snapshot"
+    }
+    field {
+      name: "mode"
+      number: 4
+      label: LABEL_OPTIONAL
+      type: TYPE_ENUM
+      type_name: ".proto.AgentManagedMode"
+      json_name: "mode"
+    }
+    field {
+      name: "Unprivileged"
+      number: 5
+      label: LABEL_OPTIONAL
+      type: TYPE_BOOL
+      json_name: "Unprivileged"
+    }
+    field {
+      name: "tags"
+      number: 6
+      label: LABEL_REPEATED
+      type: TYPE_STRING
+      json_name: "tags"
+    }
+  }
+  message_type {
+    name: "Features"
+    field {
+      name: "source"
+      number: 1
+      label: LABEL_OPTIONAL
+      type: TYPE_MESSAGE
+      type_name: ".google.protobuf.Struct"
+      json_name: "source"
+    }
+    field {
+      name: "fqdn"
+      number: 2
+      label: LABEL_OPTIONAL
+      type: TYPE_MESSAGE
+      type_name: ".proto.FQDNFeature"
+      json_name: "fqdn"
+    }
+  }
+  message_type {
+    name: "FQDNFeature"
+    field {
+      name: "enabled"
+      number: 1
+      label: LABEL_OPTIONAL
+      type: TYPE_BOOL
+      json_name: "enabled"
+    }
+  }
+  message_type {
+    name: "ElasticAPMTLS"
+    field {
+      name: "skip_verify"
+      number: 1
+      label: LABEL_OPTIONAL
+      type: TYPE_BOOL
+      json_name: "skipVerify"
+    }
+    field {
+      name: "server_cert"
+      number: 2
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "serverCert"
+    }
+    field {
+      name: "server_ca"
+      number: 3
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "serverCa"
+    }
+  }
+  message_type {
+    name: "ElasticAPM"
+    field {
+      name: "tls"
+      number: 1
+      label: LABEL_OPTIONAL
+      type: TYPE_MESSAGE
+      type_name: ".proto.ElasticAPMTLS"
+      json_name: "tls"
+    }
+    field {
+      name: "environment"
+      number: 2
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "environment"
+    }
+    field {
+      name: "api_key"
+      number: 3
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "apiKey"
+    }
+    field {
+      name: "secret_token"
+      number: 4
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "secretToken"
+    }
+    field {
+      name: "hosts"
+      number: 5
+      label: LABEL_REPEATED
+      type: TYPE_STRING
+      json_name: "hosts"
+    }
+    field {
+      name: "global_labels"
+      number: 6
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "globalLabels"
+    }
+    field {
+      name: "sampling_rate"
+      number: 7
+      label: LABEL_OPTIONAL
+      type: TYPE_FLOAT
+      oneof_index: 0
+      json_name: "samplingRate"
+      proto3_optional: true
+    }
+    oneof_decl {
+      name: "_sampling_rate"
+    }
+  }
+  message_type {
+    name: "APMConfig"
+    field {
+      name: "elastic"
+      number: 1
+      label: LABEL_OPTIONAL
+      type: TYPE_MESSAGE
+      type_name: ".proto.ElasticAPM"
+      json_name: "elastic"
+    }
+  }
+  message_type {
+    name: "Component"
+    field {
+      name: "limits"
+      number: 1
+      label: LABEL_OPTIONAL
+      type: TYPE_MESSAGE
+      type_name: ".proto.ComponentLimits"
+      json_name: "limits"
+    }
+    field {
+      name: "apm_config"
+      number: 2
+      label: LABEL_OPTIONAL
+      type: TYPE_MESSAGE
+      type_name: ".proto.APMConfig"
+      oneof_index: 0
+      json_name: "apmConfig"
+      proto3_optional: true
+    }
+    oneof_decl {
+      name: "_apm_config"
+    }
+  }
+  message_type {
+    name: "ComponentLimits"
+    field {
+      name: "source"
+      number: 1
+      label: LABEL_OPTIONAL
+      type: TYPE_MESSAGE
+      type_name: ".google.protobuf.Struct"
+      json_name: "source"
+    }
+    field {
+      name: "go_max_procs"
+      number: 2
+      label: LABEL_OPTIONAL
+      type: TYPE_UINT64
+      json_name: "goMaxProcs"
+    }
+  }
+  message_type {
+    name: "CheckinExpected"
+    field {
+      name: "units"
+      number: 1
+      label: LABEL_REPEATED
+      type: TYPE_MESSAGE
+      type_name: ".proto.UnitExpected"
+      json_name: "units"
+    }
+    field {
+      name: "agent_info"
+      number: 2
+      label: LABEL_OPTIONAL
+      type: TYPE_MESSAGE
+      type_name: ".proto.AgentInfo"
+      json_name: "agentInfo"
+    }
+    field {
+      name: "features"
+      number: 3
+      label: LABEL_OPTIONAL
+      type: TYPE_MESSAGE
+      type_name: ".proto.Features"
+      json_name: "features"
+    }
+    field {
+      name: "features_idx"
+      number: 4
+      label: LABEL_OPTIONAL
+      type: TYPE_UINT64
+      json_name: "featuresIdx"
+    }
+    field {
+      name: "component"
+      number: 5
+      label: LABEL_OPTIONAL
+      type: TYPE_MESSAGE
+      type_name: ".proto.Component"
+      json_name: "component"
+    }
+    field {
+      name: "component_idx"
+      number: 6
+      label: LABEL_OPTIONAL
+      type: TYPE_UINT64
+      json_name: "componentIdx"
+    }
+    field {
+      name: "units_timestamp"
+      number: 7
+      label: LABEL_OPTIONAL
+      type: TYPE_MESSAGE
+      type_name: ".google.protobuf.Timestamp"
+      json_name: "unitsTimestamp"
+    }
+  }
+  message_type {
+    name: "UnitObserved"
+    field {
+      name: "id"
+      number: 1
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "id"
+    }
+    field {
+      name: "type"
+      number: 2
+      label: LABEL_OPTIONAL
+      type: TYPE_ENUM
+      type_name: ".proto.UnitType"
+      json_name: "type"
+    }
+    field {
+      name: "config_state_idx"
+      number: 3
+      label: LABEL_OPTIONAL
+      type: TYPE_UINT64
+      json_name: "configStateIdx"
+    }
+    field {
+      name: "state"
+      number: 4
+      label: LABEL_OPTIONAL
+      type: TYPE_ENUM
+      type_name: ".proto.State"
+      json_name: "state"
+    }
+    field {
+      name: "message"
+      number: 5
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "message"
+    }
+    field {
+      name: "payload"
+      number: 6
+      label: LABEL_OPTIONAL
+      type: TYPE_MESSAGE
+      type_name: ".google.protobuf.Struct"
+      json_name: "payload"
+    }
+  }
+  message_type {
+    name: "CheckinObservedVersionInfo"
+    field {
+      name: "name"
+      number: 1
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "name"
+    }
+    field {
+      name: "meta"
+      number: 3
+      label: LABEL_REPEATED
+      type: TYPE_MESSAGE
+      type_name: ".proto.CheckinObservedVersionInfo.MetaEntry"
+      json_name: "meta"
+    }
+    field {
+      name: "build_hash"
+      number: 4
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "buildHash"
+    }
+    nested_type {
+      name: "MetaEntry"
+      field {
+        name: "key"
+        number: 1
+        label: LABEL_OPTIONAL
+        type: TYPE_STRING
+        json_name: "key"
+      }
+      field {
+        name: "value"
+        number: 2
+        label: LABEL_OPTIONAL
+        type: TYPE_STRING
+        json_name: "value"
+      }
+      options {
+        map_entry: true
+      }
+    }
+  }
+  message_type {
+    name: "CheckinObserved"
+    field {
+      name: "token"
+      number: 1
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "token"
+    }
+    field {
+      name: "units"
+      number: 2
+      label: LABEL_REPEATED
+      type: TYPE_MESSAGE
+      type_name: ".proto.UnitObserved"
+      json_name: "units"
+    }
+    field {
+      name: "version_info"
+      number: 3
+      label: LABEL_OPTIONAL
+      type: TYPE_MESSAGE
+      type_name: ".proto.CheckinObservedVersionInfo"
+      oneof_index: 0
+      json_name: "versionInfo"
+      proto3_optional: true
+    }
+    field {
+      name: "features_idx"
+      number: 5
+      label: LABEL_OPTIONAL
+      type: TYPE_UINT64
+      json_name: "featuresIdx"
+    }
+    field {
+      name: "component_idx"
+      number: 6
+      label: LABEL_OPTIONAL
+      type: TYPE_UINT64
+      json_name: "componentIdx"
+    }
+    field {
+      name: "units_timestamp"
+      number: 7
+      label: LABEL_OPTIONAL
+      type: TYPE_MESSAGE
+      type_name: ".google.protobuf.Timestamp"
+      json_name: "unitsTimestamp"
+    }
+    field {
+      name: "supports"
+      number: 8
+      label: LABEL_REPEATED
+      type: TYPE_ENUM
+      type_name: ".proto.ConnectionSupports"
+      json_name: "supports"
+    }
+    field {
+      name: "pid"
+      number: 9
+      label: LABEL_OPTIONAL
+      type: TYPE_UINT64
+      json_name: "pid"
+    }
+    oneof_decl {
+      name: "_version_info"
+    }
+    reserved_range {
+      start: 4
+      end: 5
+    }
+    reserved_name: "features"
+  }
+  message_type {
+    name: "ActionRequest"
+    field {
+      name: "id"
+      number: 1
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "id"
+    }
+    field {
+      name: "name"
+      number: 2
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "name"
+    }
+    field {
+      name: "params"
+      number: 3
+      label: LABEL_OPTIONAL
+      type: TYPE_BYTES
+      json_name: "params"
+    }
+    field {
+      name: "unit_id"
+      number: 4
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "unitId"
+    }
+    field {
+      name: "unit_type"
+      number: 5
+      label: LABEL_OPTIONAL
+      type: TYPE_ENUM
+      type_name: ".proto.UnitType"
+      json_name: "unitType"
+    }
+    field {
+      name: "type"
+      number: 6
+      label: LABEL_OPTIONAL
+      type: TYPE_ENUM
+      type_name: ".proto.ActionRequest.Type"
+      json_name: "type"
+    }
+    field {
+      name: "level"
+      number: 7
+      label: LABEL_OPTIONAL
+      type: TYPE_ENUM
+      type_name: ".proto.ActionRequest.Level"
+      json_name: "level"
+    }
+    enum_type {
+      name: "Type"
+      value {
+        name: "CUSTOM"
+        number: 0
+      }
+      value {
+        name: "DIAGNOSTICS"
+        number: 1
+      }
+    }
+    enum_type {
+      name: "Level"
+      value {
+        name: "ALL"
+        number: 0
+      }
+      value {
+        name: "COMPONENT"
+        number: 1
+      }
+      value {
+        name: "UNIT"
+        number: 2
+      }
+    }
+  }
+  message_type {
+    name: "ActionDiagnosticUnitResult"
+    field {
+      name: "name"
+      number: 1
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "name"
+    }
+    field {
+      name: "filename"
+      number: 2
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "filename"
+    }
+    field {
+      name: "description"
+      number: 3
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "description"
+    }
+    field {
+      name: "content_type"
+      number: 4
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "contentType"
+    }
+    field {
+      name: "content"
+      number: 5
+      label: LABEL_OPTIONAL
+      type: TYPE_BYTES
+      json_name: "content"
+    }
+    field {
+      name: "generated"
+      number: 6
+      label: LABEL_OPTIONAL
+      type: TYPE_MESSAGE
+      type_name: ".google.protobuf.Timestamp"
+      json_name: "generated"
+    }
+  }
+  message_type {
+    name: "ActionResponse"
+    field {
+      name: "token"
+      number: 1
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "token"
+    }
+    field {
+      name: "id"
+      number: 2
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "id"
+    }
+    field {
+      name: "status"
+      number: 3
+      label: LABEL_OPTIONAL
+      type: TYPE_ENUM
+      type_name: ".proto.ActionResponse.Status"
+      json_name: "status"
+    }
+    field {
+      name: "result"
+      number: 4
+      label: LABEL_OPTIONAL
+      type: TYPE_BYTES
+      json_name: "result"
+    }
+    field {
+      name: "diagnostic"
+      number: 5
+      label: LABEL_REPEATED
+      type: TYPE_MESSAGE
+      type_name: ".proto.ActionDiagnosticUnitResult"
+      json_name: "diagnostic"
+    }
+    enum_type {
+      name: "Status"
+      value {
+        name: "SUCCESS"
+        number: 0
+      }
+      value {
+        name: "FAILED"
+        number: 1
+      }
+    }
+  }
+  message_type {
+    name: "StartUpInfo"
+    field {
+      name: "addr"
+      number: 1
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "addr"
+    }
+    field {
+      name: "server_name"
+      number: 2
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "serverName"
+    }
+    field {
+      name: "token"
+      number: 3
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      json_name: "token"
+    }
+    field {
+      name: "ca_cert"
+      number: 4
+      label: LABEL_OPTIONAL
+      type: TYPE_BYTES
+      json_name: "caCert"
+    }
+    field {
+      name: "peer_cert"
+      number: 5
+      label: LABEL_OPTIONAL
+      type: TYPE_BYTES
+      json_name: "peerCert"
+    }
+    field {
+      name: "peer_key"
+      number: 6
+      label: LABEL_OPTIONAL
+      type: TYPE_BYTES
+      json_name: "peerKey"
+    }
+    field {
+      name: "services"
+      number: 7
+      label: LABEL_REPEATED
+      type: TYPE_ENUM
+      type_name: ".proto.ConnInfoServices"
+      json_name: "services"
+    }
+    field {
+      name: "supports"
+      number: 8
+      label: LABEL_REPEATED
+      type: TYPE_ENUM
+      type_name: ".proto.ConnectionSupports"
+      json_name: "supports"
+    }
+    field {
+      name: "max_message_size"
+      number: 9
+      label: LABEL_OPTIONAL
+      type: TYPE_UINT32
+      json_name: "maxMessageSize"
+    }
+    field {
+      name: "agent_info"
+      number: 10
+      label: LABEL_OPTIONAL
+      type: TYPE_MESSAGE
+      type_name: ".proto.AgentInfo"
+      json_name: "agentInfo"
+    }
+  }
+  enum_type {
+    name: "ConnectionSupports"
+    value {
+      name: "CheckinChunking"
+      number: 0
+    }
+  }
+  enum_type {
+    name: "State"
+    value {
+      name: "STARTING"
+      number: 0
+    }
+    value {
+      name: "CONFIGURING"
+      number: 1
+    }
+    value {
+      name: "HEALTHY"
+      number: 2
+    }
+    value {
+      name: "DEGRADED"
+      number: 3
+    }
+    value {
+      name: "FAILED"
+      number: 4
+    }
+    value {
+      name: "STOPPING"
+      number: 5
+    }
+    value {
+      name: "STOPPED"
+      number: 6
+    }
+  }
+  enum_type {
+    name: "UnitType"
+    value {
+      name: "INPUT"
+      number: 0
+    }
+    value {
+      name: "OUTPUT"
+      number: 1
+    }
+  }
+  enum_type {
+    name: "UnitLogLevel"
+    value {
+      name: "ERROR"
+      number: 0
+    }
+    value {
+      name: "WARN"
+      number: 1
+    }
+    value {
+      name: "INFO"
+      number: 2
+    }
+    value {
+      name: "DEBUG"
+      number: 3
+    }
+    value {
+      name: "TRACE"
+      number: 4
+    }
+  }
+  enum_type {
+    name: "AgentManagedMode"
+    value {
+      name: "MANAGED"
+      number: 0
+    }
+    value {
+      name: "STANDALONE"
+      number: 1
+    }
+  }
+  enum_type {
+    name: "ConnInfoServices"
+    value {
+      name: "Checkin"
+      number: 0
+    }
+    value {
+      name: "CheckinV2"
+      number: 1
+    }
+    value {
+      name: "Store"
+      number: 2
+    }
+    value {
+      name: "Artifact"
+      number: 3
+    }
+    value {
+      name: "Log"
+      number: 4
+    }
+  }
+  service {
+    name: "ElasticAgent"
+    method {
+      name: "CheckinV2"
+      input_type: ".proto.CheckinObserved"
+      output_type: ".proto.CheckinExpected"
+      client_streaming: true
+      server_streaming: true
+    }
+    method {
+      name: "Actions"
+      input_type: ".proto.ActionResponse"
+      output_type: ".proto.ActionRequest"
+      client_streaming: true
+      server_streaming: true
+    }
+    method {
+      name: "Checkin"
+      input_type: ".proto.StateObserved"
+      output_type: ".proto.StateExpected"
+      client_streaming: true
+      server_streaming: true
+    }
+  }
+  options {
+    go_package: "pkg/proto;proto"
+    cc_enable_arenas: true
+  }
+  syntax: "proto3"
+}

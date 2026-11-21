@@ -1,0 +1,23 @@
+# Elastic Agent component specification for Open Crawler.
+# Copy this file together with the `crawler` launcher next to it into the `components`
+# directory of an Elastic Agent installation. See docs/features/ELASTIC_AGENT.md.
+version: 2
+inputs:
+  - name: crawler
+    description: "Elastic Open Crawler"
+    platforms:
+      - linux/amd64
+      - linux/arm64
+      - darwin/amd64
+      - darwin/arm64
+      - container/amd64
+      - container/arm64
+    outputs:
+      - elasticsearch
+    command:
+      restart_monitoring_period: 5s
+      maximum_restarts_per_period: 1
+      timeouts:
+        restart: 1s
+      args:
+        - agent

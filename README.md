@@ -241,6 +241,7 @@ GET /web-crawl-test/_search
 - [Binary content extraction](docs/features/BINARY_CONTENT_EXTRACTION.md) - Extract text from PDFs, DOCX files
 - [Crawler directives](docs/features/CRAWLER_DIRECTIVES.md) - Use robots.txt, meta tags, or embedded data attributes to guide discovery and content extraction
 - [Scheduling](docs/features/SCHEDULING.md) - Automate crawls with cron scheduling
+- [Elastic Agent](docs/features/ELASTIC_AGENT.md) - Run the crawler as an Elastic Agent component (technical preview)
 - [Ingest pipelines](docs/features/INGEST_PIPELINES.md) - Elasticsearch ingest pipeline integration
 - [Logging](docs/features/LOGGING.md) - Monitor and troubleshoot crawler activity
 - [Running on Windows](https://www.elastic.co/search-labs/blog/elastic-open-crawler-in-windows-with-docker) - Learn how to run Open Crawler in Windows with Docker
