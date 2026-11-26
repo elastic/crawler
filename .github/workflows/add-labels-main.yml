@@ -16,13 +16,12 @@ jobs:
   add_labels:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2
-      - id: version
-        uses: juliangruber/read-file-action@386973d5b59f826915775874c7d1f82c4bbcfb07
-        with:
-          path: ./product_version
+      # Target the maintenance branches (see .backportrc.json). Do not label with main's own
+      # version (v1.2.0): the backport tool would map it to a non-existent 1.2 branch and fail.
+      # Update this list when a maintenance line is added or retired.
       - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf # v1
         with:
           labels: |
             auto-backport
-            v${{ steps.version.outputs.content }}
+            v1.1.0
+            v1.0.0
