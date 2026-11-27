@@ -10,8 +10,8 @@ RUN apk update && apk add --no-cache libcurl-openssl4=~8.12.1 curl=~8.12.1 make
 # jruby install steps below have been adapted from:
 # https://github.com/jruby/docker-jruby/blob/f325c86e2c2ca0bbe82f64c0aded0719372507fa/9.4/jdk21/Dockerfile
 
-ENV JRUBY_VERSION=9.4.12.0
-ENV JRUBY_SHA256=05c5d203d6990c92671cc42f57d2fa1c1083bbfd16fa7023dc5848cdb8f0aa2e
+ENV JRUBY_VERSION=9.4.16.0
+ENV JRUBY_SHA256=f8dd8041acacac70a150db3353062c6fa7f92653057ce83ed9c7925dd9293cda
 RUN mkdir /opt/jruby \
   && curl -fSL https://repo1.maven.org/maven2/org/jruby/jruby-dist/${JRUBY_VERSION}/jruby-dist-${JRUBY_VERSION}-bin.tar.gz -o /tmp/jruby.tar.gz \
   && echo "$JRUBY_SHA256 /tmp/jruby.tar.gz" | sha256sum -c - \
